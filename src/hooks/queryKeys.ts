@@ -38,6 +38,12 @@ export const queryKeys = {
       [...queryKeys.routes.all, "stops", id] as const,
   },
 
+  search: {
+    all: ["search"] as const,
+    unified: (query: string, lat?: number, lng?: number) =>
+      [...queryKeys.search.all, "unified", { query, lat, lng }] as const,
+  },
+
   trips: {
     all: ["trips"] as const,
     shape: (tripId: string) =>

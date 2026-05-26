@@ -8,6 +8,7 @@ import { StopMarker } from "@/components/maps/StopMarker";
 import { RoutePolyline } from "@/components/maps/RoutePolyline";
 import { RouteEndpointMarker } from "@/components/maps/RouteEndpointMarker";
 import { TransferStopMarker } from "@/components/maps/TransferStopMarker";
+import { PlaceMarker } from "@/components/maps/PlaceMarker";
 import { BottomSheetRouter } from "@/components/bottom-sheet/BottomSheetRouter";
 import { SearchBarOverlay } from "@/components/home/SearchBarOverlay";
 import { OfflineBanner } from "@/components/ui/OfflineBanner";
@@ -34,6 +35,8 @@ export default function HomeScreen() {
   const { status, isGranted, request } = useLocationPermission();
   const { fetchLocation } = useCurrentLocation();
   const currentLocation = useLocationStore((s) => s.currentLocation);
+  const origin = useLocationStore((s) => s.origin);
+  const destination = useLocationStore((s) => s.destination);
   const storeError = useLocationStore((s) => s.locationError);
   const setCurrentLocation = useLocationStore((s) => s.setCurrentLocation);
   const insets = useSafeAreaInsets();
@@ -284,6 +287,18 @@ export default function HomeScreen() {
               onPress={handleStopPress}
             />
           )}
+        {origin?.type === "place" && (
+          <PlaceMarker
+            id="origin-place"
+            coordinate={[origin.longitude, origin.latitude]}
+          />
+        )}
+        {destination?.type === "place" && (
+          <PlaceMarker
+            id="dest-place"
+            coordinate={[destination.longitude, destination.latitude]}
+          />
+        )}
         {selectedOption && (
           <>
             <RoutePolyline
