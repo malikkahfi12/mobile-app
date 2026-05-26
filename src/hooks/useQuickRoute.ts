@@ -11,6 +11,7 @@ function toTripLocation(stop: NearbyStop): TripLocation {
     longitude: stop.longitude,
     name: stop.name,
     stopId: stop.id,
+    type: "stop",
   };
 }
 

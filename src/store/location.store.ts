@@ -4,6 +4,9 @@ import type { Coordinates } from "@/services/location/location.types";
 export interface TripLocation extends Coordinates {
   name: string;
   stopId?: string;
+  address?: string;
+  type: "stop" | "place" | "currentLocation";
+  resolvedStopName?: string;
 }
 
 interface LocationState {

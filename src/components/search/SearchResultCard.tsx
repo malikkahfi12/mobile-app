@@ -2,10 +2,11 @@ import { memo } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { Stop } from "@/services/stops/stops.types";
+import type { SearchStopResult } from "@/services/search/search.types";
 import { colors } from "@/constants/colors";
 
 interface SearchResultCardProps {
-  stop: Stop;
+  stop: Stop | SearchStopResult;
   onPress: () => void;
 }
 
@@ -13,6 +14,8 @@ export const SearchResultCard = memo(function SearchResultCard({
   stop,
   onPress,
 }: SearchResultCardProps) {
+  const isStation = "isStation" in stop ? stop.isStation : false;
+  const code = "code" in stop ? stop.code : undefined;
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -21,11 +24,11 @@ export const SearchResultCard = memo(function SearchResultCard({
     >
       <View
         className={`h-9 w-9 items-center justify-center rounded-full ${
-          stop.isStation ? "bg-primary/20" : "bg-primary/10"
+          isStation ? "bg-primary/20" : "bg-primary/10"
         }`}
       >
         <Ionicons
-          name={stop.isStation ? "train-outline" : "bus-outline"}
+          name={isStation ? "train-outline" : "bus-outline"}
           size={18}
           color={colors.primary}
         />
@@ -38,9 +41,9 @@ export const SearchResultCard = memo(function SearchResultCard({
         >
           {stop.name}
         </Text>
-        {stop.code ? (
+        {code ? (
           <Text className="text-xs text-gray-400" numberOfLines={1}>
-            {stop.code}
+            {code}
           </Text>
         ) : null}
       </View>
@@ -48,15 +51,15 @@ export const SearchResultCard = memo(function SearchResultCard({
       <View className="flex-row items-center">
         <View
           className={`mr-2 rounded-full px-2 py-0.5 ${
-            stop.isStation ? "bg-primary/15" : "bg-gray-100"
+            isStation ? "bg-primary/15" : "bg-gray-100"
           }`}
         >
           <Text
             className={`text-[10px] font-semibold ${
-              stop.isStation ? "text-primary" : "text-gray-500"
+              isStation ? "text-primary" : "text-gray-500"
             }`}
           >
-            {stop.isStation ? "Station" : "Stop"}
+            {isStation ? "Station" : "Stop"}
           </Text>
         </View>
         <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />

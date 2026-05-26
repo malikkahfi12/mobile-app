@@ -5,8 +5,11 @@ export async function getNearbyStops(
   lat: number,
   lng: number,
   radius = 500,
+  limit?: number,
 ): Promise<NearbyStop[]> {
-  return get<NearbyStop[]>("/stops/nearby", { lat, lng, radius });
+  const params: Record<string, unknown> = { lat, lng, radius };
+  if (limit !== undefined) params.limit = limit;
+  return get<NearbyStop[]>("/stops/nearby", params);
 }
 
 export async function getStopById(id: string): Promise<Stop> {
