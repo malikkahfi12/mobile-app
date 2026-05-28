@@ -20,6 +20,7 @@ interface MapCameraProps {
   followUserHeading?: number | null;
   followPitch?: number;
   followAnimationMs?: number;
+  followZoom?: number;
 }
 
 export function MapCamera({
@@ -36,6 +37,7 @@ export function MapCamera({
   followUserHeading,
   followPitch = 0,
   followAnimationMs = CAMERA_FOLLOW_DURATION,
+  followZoom,
 }: MapCameraProps) {
   const cameraRef = useRef<CameraRef>(null);
   const isInitialMount = useRef(true);
@@ -101,7 +103,8 @@ export function MapCamera({
 
     const headingPart =
       followUserHeading != null ? `${followUserHeading.toFixed(1)}` : "";
-    const key = `${lng},${lat},${headingPart},${followPitch}`;
+    const zoomPart = followZoom != null ? `${followZoom}` : "";
+    const key = `${lng},${lat},${headingPart},${followPitch},${zoomPart}`;
     if (lastFollowKeyRef.current === key) return;
     lastFollowKeyRef.current = key;
 
@@ -118,6 +121,10 @@ export function MapCamera({
       options.pitch = followPitch;
     }
 
+    if (followZoom != null) {
+      options.zoom = followZoom;
+    }
+
     cameraRef.current?.easeTo(options as never);
   }, [
     followMode,
@@ -126,6 +133,7 @@ export function MapCamera({
     followUserHeading,
     followPitch,
     followAnimationMs,
+    followZoom,
   ]);
 
   return (
