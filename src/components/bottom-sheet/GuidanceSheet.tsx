@@ -9,27 +9,18 @@ import { useUIStore } from "@/store/ui.store";
 import { useRouteDetail } from "@/hooks/routes/useRouteDetail";
 import { colors } from "@/constants/colors";
 import {
-  formatDistance,
   getLegDurationMinutes,
   getLegIcon,
   getTotalDuration,
   getTransferCount,
-  getBoardingInstruction,
-  getWalkingInstruction,
-  getTransferText,
+  getInstructionTitle,
+  getInstructionSubtitle,
   countLegStops,
   formatETATime,
 } from "@/lib/routing.helpers";
 import type { Leg } from "@/services/routing/routing.types";
 
 const SNAP_POINTS = ["28%", "65%"];
-
-function getInstruction(leg: Leg): string {
-  if (leg.type === "WALK") {
-    return getWalkingInstruction(leg);
-  }
-  return getBoardingInstruction(leg);
-}
 
 function getRemainingMinutes(legs: Leg[], startIndex: number): number {
   let total = 0;
@@ -62,10 +53,13 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
     return routeOption.legs[currentLegIndex + 1] ?? null;
   }, [routeOption, currentLegIndex]);
 
+  const isLastLeg = currentLegIndex >= (routeOption?.legs.length ?? 0) - 1;
   const hasPrevLeg = currentLegIndex > 0;
   const hasNextLeg = currentLegIndex < (routeOption?.legs.length ?? 0) - 1;
   const isTransfer =
     currentLeg?.type === "TRANSIT" && nextLeg?.type === "TRANSIT";
+
+  const totalLegs = routeOption?.legs.length ?? 0;
 
   const remainingMin = useMemo(() => {
     if (!routeOption) return 0;
@@ -111,6 +105,43 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
     return lastLeg?.toStopName ?? null;
   }, [routeOption]);
 
+  const defaultMessage = useMemo(() => {
+    if (!currentLeg) return null;
+    if (isLastLeg) return null;
+    if (currentLeg.type === "WALK") return "Walk to stop";
+    if (currentLeg.type === "TRANSIT" && !isTransfer) return "Stay on board";
+    if (isTransfer) return "Transfer here";
+    return null;
+  }, [currentLeg, isLastLeg, isTransfer]);
+
+  const displayMessage = contextualMessage || defaultMessage;
+
+  const title = useMemo(() => {
+    if (!currentLeg) return "";
+    return getInstructionTitle(currentLeg, isLastLeg, destinationName);
+  }, [currentLeg, isLastLeg, destinationName]);
+
+  const subtitle = useMemo(() => {
+    if (!currentLeg) return "";
+    return getInstructionSubtitle(currentLeg, isLastLeg);
+  }, [currentLeg, isLastLeg]);
+
+  const iconName = useMemo(() => {
+    if (!currentLeg) return "walk-outline" as const;
+    if (isLastLeg) return "flag";
+    if (isTransfer) return "swap-horizontal";
+    return getLegIcon(currentLeg);
+  }, [currentLeg, isLastLeg, isTransfer]);
+
+  const nextTitle = useMemo(() => {
+    if (!nextLeg) return null;
+    const nextIsLast =
+      currentLegIndex + 1 >= (routeOption?.legs.length ?? 0) - 1;
+    return getInstructionTitle(nextLeg, nextIsLast, destinationName);
+  }, [nextLeg, currentLegIndex, routeOption?.legs.length, destinationName]);
+
+  const nextDurationMin = nextLeg ? getLegDurationMinutes(nextLeg) : null;
+
   const handleEnd = useCallback(() => {
     endGuidance();
     useRouteStore.getState().clearSelection();
@@ -143,20 +174,22 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
             className="flex-1 items-center justify-center px-4"
             style={{ paddingBottom: insets.bottom + 8 }}
           >
-            <Ionicons
-              name="bus-outline"
-              size={32}
-              color={colors.textTertiary}
-            />
-            <Text className="mt-2 text-base font-medium text-gray-500">
-              On the way…
+            <View className="h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+              <Ionicons
+                name="navigate-outline"
+                size={24}
+                color={colors.textTertiary}
+              />
+            </View>
+            <Text className="mt-3 text-base font-semibold text-gray-500">
+              On the way
             </Text>
-            <Text className="mt-1 text-xs text-gray-400">
-              Step details unavailable
+            <Text className="mt-1 text-[13px] text-gray-400">
+              Waiting for step details
             </Text>
             <TouchableOpacity
               onPress={handleEnd}
-              className="mt-5 rounded-xl bg-red-50 px-8 py-2.5"
+              className="mt-6 rounded-xl border border-red-200 bg-white px-8 py-2.5"
               activeOpacity={0.7}
             >
               <Text className="text-sm font-semibold text-red-500">
@@ -169,17 +202,6 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
     }
     return null;
   }
-
-  const isWalk = currentLeg.type === "WALK";
-  const iconName = getLegIcon(currentLeg);
-  const instruction = getInstruction(currentLeg);
-  const durationMin = getLegDurationMinutes(currentLeg);
-  const transferText =
-    isTransfer && nextLeg ? getTransferText(currentLeg, nextLeg) : null;
-
-  const nextIconName = nextLeg ? getLegIcon(nextLeg) : null;
-  const nextLabel = nextLeg ? getInstruction(nextLeg) : null;
-  const nextDurationMin = nextLeg ? getLegDurationMinutes(nextLeg) : null;
 
   return (
     <BottomSheet
@@ -195,8 +217,8 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
         className="flex-1 px-4 pt-1"
         style={{ paddingBottom: insets.bottom + 8 }}
       >
-        <View className="flex-row items-center justify-between mb-2.5">
-          <View className="flex-1">
+        <View className="flex-row items-center justify-between mb-2">
+          <View className="flex-1 mr-3">
             {destinationName && (
               <Text
                 className="text-sm font-semibold text-gray-900"
@@ -206,36 +228,35 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
               </Text>
             )}
           </View>
-          {arrivalTime ? (
-            <View className="flex-row items-center rounded-full bg-primary/10 px-2.5 py-1">
-              <Ionicons
-                name="flag-outline"
-                size={11}
-                color={colors.primary}
-              />
-              <Text className="ml-1 text-[11px] font-semibold text-primary">
-                Arrive {arrivalTime}
+          <View className="flex-row items-center gap-2">
+            <View className="flex-row items-center rounded-full bg-gray-100 px-2.5 py-1">
+              <Text className="text-xs font-semibold text-gray-600">
+                {currentLegIndex + 1}/{totalLegs}
               </Text>
             </View>
-          ) : remainingMin > 0 ? (
-            <View className="flex-row items-center rounded-full bg-primary/10 px-2.5 py-1">
-              <Ionicons
-                name="time-outline"
-                size={11}
-                color={colors.primary}
-              />
-              <Text className="ml-1 text-[11px] font-semibold text-primary">
-                {remainingMin} min
-              </Text>
-            </View>
-          ) : null}
+            {arrivalTime ? (
+              <View className="flex-row items-center rounded-full bg-primary/10 px-2.5 py-1">
+                <Ionicons name="flag-outline" size={11} color={colors.primary} />
+                <Text className="ml-1 text-[11px] font-semibold text-primary">
+                  {arrivalTime}
+                </Text>
+              </View>
+            ) : remainingMin > 0 ? (
+              <View className="flex-row items-center rounded-full bg-primary/10 px-2.5 py-1">
+                <Ionicons name="time-outline" size={11} color={colors.primary} />
+                <Text className="ml-1 text-[11px] font-semibold text-primary">
+                  {remainingMin}m
+                </Text>
+              </View>
+            ) : null}
+          </View>
         </View>
 
-        <View className="flex-row gap-1 mb-3">
+        <View className="flex-row gap-1 mb-2.5">
           {routeOption.legs.map((_, i) => (
             <View
               key={i}
-              className="flex-1 h-1.5 rounded-full"
+              className="flex-1 h-2 rounded-full"
               style={{
                 backgroundColor:
                   i < currentLegIndex
@@ -248,241 +269,154 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
           ))}
         </View>
 
-        {contextualMessage && (
-          <View className="mb-2.5 flex-row items-center rounded-lg bg-primary/10 px-3 py-2">
-            <Ionicons
-              name="locate-outline"
-              size={14}
-              color={colors.primary}
-            />
-            <Text className="ml-1.5 text-xs font-semibold text-primary">
-              {contextualMessage}
+        {displayMessage && (
+          <View className="mb-3 flex-row items-center rounded-full bg-primary/10 px-3 py-1.5 self-start">
+            <Ionicons name="locate-outline" size={12} color={colors.primary} />
+            <Text className="ml-1.5 text-[11px] font-semibold text-primary">
+              {displayMessage}
             </Text>
           </View>
         )}
 
         <View
-          className={`rounded-xl p-3 ${
-            isWalk ? "bg-gray-50" : "bg-primary/5 border border-primary/10"
+          className={`rounded-2xl p-3.5 ${
+            isTransfer
+              ? "bg-amber-50 border border-amber-100"
+              : currentLeg.type === "WALK"
+                ? "bg-gray-50 border border-gray-100"
+                : "bg-primary/5 border border-primary/10"
           }`}
         >
-          <View className="flex-row items-start">
+          <View className="flex-row items-center">
             <View
-              className={`h-11 w-11 items-center justify-center rounded-full ${
-                isWalk ? "bg-gray-200" : "bg-primary/15"
+              className={`h-12 w-12 items-center justify-center rounded-full ${
+                isTransfer
+                  ? "bg-amber-200"
+                  : currentLeg.type === "WALK"
+                    ? "bg-gray-200"
+                    : "bg-primary/15"
               }`}
             >
               <Ionicons
                 name={iconName}
-                size={22}
-                color={isWalk ? colors.textSecondary : colors.primary}
+                size={24}
+                color={
+                  isTransfer
+                    ? "#B45309"
+                    : currentLeg.type === "WALK"
+                      ? colors.textSecondary
+                      : colors.primary
+                }
               />
             </View>
 
             <View className="ml-3 flex-1">
               <Text
-                className={`${
-                  isWalk
-                    ? "text-sm font-semibold text-gray-900"
-                    : "text-sm font-bold text-gray-900"
-                }`}
+                className="text-lg font-bold text-gray-900"
                 numberOfLines={2}
               >
-                {instruction}
+                {title}
               </Text>
 
               <View className="flex-row items-center mt-1 flex-wrap gap-x-2 gap-y-0.5">
-                {durationMin > 0 && (
-                  <Text className="text-xs text-gray-500">
-                    {durationMin} min
-                  </Text>
-                )}
-                {isWalk && currentLeg.distanceMeters != null && (
-                  <Text className="text-xs text-gray-400">
-                    {formatDistance(currentLeg.distanceMeters)}
-                  </Text>
-                )}
-                {!isWalk && currentLeg.routeName && (
-                  <Text className="text-xs text-primary font-medium">
+                {subtitle ? (
+                  <Text className="text-sm text-gray-500">{subtitle}</Text>
+                ) : null}
+
+                {currentLeg.type === "TRANSIT" && currentLeg.routeName && (
+                  <Text className="text-sm text-primary font-semibold">
                     {currentLeg.routeName}
                   </Text>
                 )}
-                {!isWalk && currentLeg.headsign && (
-                  <Text className="text-xs text-gray-400" numberOfLines={1}>
-                    → {currentLeg.headsign}
-                  </Text>
+
+                {currentLeg.type === "TRANSIT" && remainingStops != null && remainingStops > 0 && (
+                  <View className="flex-row items-center">
+                    <Ionicons
+                      name="ellipse-outline"
+                      size={9}
+                      color={colors.textTertiary}
+                    />
+                    <Text className="ml-1 text-[12px] text-gray-500">
+                      {remainingStops} stop{remainingStops !== 1 ? "s" : ""}
+                    </Text>
+                  </View>
                 )}
               </View>
-
-              {remainingStops != null && remainingStops > 0 && (
-                <View className="flex-row items-center mt-1.5">
-                  <Ionicons
-                    name="ellipse-outline"
-                    size={10}
-                    color={colors.textTertiary}
-                  />
-                  <Text className="ml-1 text-[11px] text-gray-500">
-                    {remainingStops} stop{remainingStops !== 1 ? "s" : ""}{" "}
-                    remaining
-                  </Text>
-                </View>
-              )}
             </View>
-          </View>
-
-          <View className="mt-2.5 bg-gray-100 rounded-lg px-3 py-2">
-            {isWalk ? (
-              <View className="flex-row gap-3">
-                <View className="flex-1">
-                  <Text className="text-[10px] font-medium text-gray-400 uppercase">
-                    Walk from
-                  </Text>
-                  <Text
-                    className="text-xs font-semibold text-gray-800"
-                    numberOfLines={1}
-                  >
-                    {currentLeg.fromStopName}
-                  </Text>
-                </View>
-                <View className="flex-1">
-                  <Text className="text-[10px] font-medium text-gray-400 uppercase">
-                    to
-                  </Text>
-                  <Text
-                    className="text-xs font-semibold text-gray-800"
-                    numberOfLines={1}
-                  >
-                    {currentLeg.toStopName}
-                  </Text>
-                </View>
-              </View>
-            ) : (
-              <View className="flex-row gap-3">
-                <View className="flex-1">
-                  <Text className="text-[10px] font-medium text-gray-400 uppercase">
-                    From
-                  </Text>
-                  <Text
-                    className="text-xs font-semibold text-gray-800"
-                    numberOfLines={1}
-                  >
-                    {currentLeg.fromStopName}
-                  </Text>
-                </View>
-                <View className="flex-1">
-                  <Text className="text-[10px] font-medium text-gray-400 uppercase">
-                    To
-                  </Text>
-                  <Text
-                    className="text-xs font-semibold text-gray-800"
-                    numberOfLines={1}
-                  >
-                    {currentLeg.toStopName}
-                  </Text>
-                </View>
-              </View>
-            )}
           </View>
         </View>
 
-        {transferText && (
-          <View className="mt-2 rounded-lg bg-amber-50 px-3 py-2.5 border border-amber-100">
-            <View className="flex-row items-center">
-              <Ionicons
-                name="swap-horizontal-outline"
-                size={14}
-                color="#B45309"
-              />
-              <Text className="ml-1.5 text-xs font-semibold text-amber-800">
-                {transferText}
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {nextLeg && !transferText && (
-          <View className="mt-2 bg-gray-50 rounded-lg px-3 py-2">
-            <Text className="text-[10px] font-medium text-gray-400 uppercase mb-1">
-              Next
+        {nextTitle && (
+          <View className="mt-2 flex-row items-center rounded-xl bg-gray-50 px-3 py-2.5">
+            <Ionicons
+              name="arrow-forward"
+              size={12}
+              color={colors.textTertiary}
+            />
+            <Text
+              className="ml-2 text-xs text-gray-500 flex-1"
+              numberOfLines={1}
+            >
+              Then {nextTitle}
             </Text>
-            <View className="flex-row items-center">
-              {nextIconName && (
-                <Ionicons
-                  name={nextIconName}
-                  size={14}
-                  color={colors.textTertiary}
-                />
-              )}
-              <Text
-                className="ml-1.5 text-xs text-gray-500 flex-1"
-                numberOfLines={1}
-              >
-                {nextLabel ?? "Continue"}
+            {nextDurationMin != null && nextDurationMin > 0 && (
+              <Text className="text-xs text-gray-400">
+                {nextDurationMin} min
               </Text>
-              {nextDurationMin != null && nextDurationMin > 0 && (
-                <Text className="text-xs text-gray-400">
-                  {nextDurationMin} min
-                </Text>
-              )}
-            </View>
+            )}
           </View>
         )}
 
-        <View className="flex-row items-center justify-between mt-2.5">
+        <View className="flex-row items-center justify-between mt-3">
           <TouchableOpacity
             onPress={handlePrev}
             disabled={!hasPrevLeg}
-            className={`h-9 w-9 items-center justify-center rounded-full ${
+            className={`h-10 w-10 items-center justify-center rounded-full ${
               hasPrevLeg ? "bg-gray-100" : "opacity-30"
             }`}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             activeOpacity={0.7}
           >
-            <Ionicons
-              name="chevron-back"
-              size={20}
-              color={colors.textSecondary}
-            />
+            <Ionicons name="chevron-back" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleEnd}
+            className="mx-2 flex-row items-center rounded-xl bg-red-50 px-4 py-2.5"
+            hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="stop" size={14} color={colors.error} />
+            <Text className="ml-1.5 text-sm font-semibold text-red-500">
+              End
+            </Text>
           </TouchableOpacity>
 
           {hasNextLeg ? (
             <TouchableOpacity
               onPress={handleNext}
-              className="flex-1 mx-2 items-center justify-center rounded-xl bg-primary py-2.5"
+              className="flex-1 ml-2 items-center justify-center rounded-xl bg-primary py-2.5"
               activeOpacity={0.7}
             >
               <Text className="text-[14px] font-semibold text-white">
-                Next Step
+                Next
               </Text>
             </TouchableOpacity>
           ) : (
-            <View className="flex-1 mx-2 items-center justify-center rounded-xl bg-primary/10 py-2.5">
+            <View className="flex-1 ml-2 items-center justify-center rounded-xl bg-primary/10 py-2.5">
               <View className="flex-row items-center">
                 <Ionicons name="flag" size={16} color={colors.primary} />
                 <Text className="ml-1.5 text-[14px] font-semibold text-primary">
-                  Final Step
+                  Finish
                 </Text>
               </View>
             </View>
           )}
-
-          <TouchableOpacity
-            onPress={handleEnd}
-            className="h-9 w-9 items-center justify-center rounded-full bg-red-50"
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="stop" size={18} color={colors.error} />
-          </TouchableOpacity>
         </View>
 
-        <View className="flex-row items-center justify-center gap-4 mt-2.5">
+        <View className="flex-row items-center justify-center gap-4 mt-2">
           <View className="flex-row items-center">
-            <Ionicons
-              name="time-outline"
-              size={11}
-              color={colors.textSecondary}
-            />
+            <Ionicons name="time-outline" size={11} color={colors.textSecondary} />
             <Text className="ml-1 text-[11px] text-gray-500">
               {totalMin} min
             </Text>
@@ -497,12 +431,15 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
               {transferCount === 0 ? "Direct" : `${transferCount} transfers`}
             </Text>
           </View>
+          {remainingMin > 0 && (
+            <View className="flex-row items-center">
+              <Ionicons name="trending-down" size={11} color={colors.textSecondary} />
+              <Text className="ml-1 text-[11px] text-gray-500">
+                {remainingMin} min left
+              </Text>
+            </View>
+          )}
         </View>
-
-        <Text className="text-center text-[11px] text-gray-300 mt-1">
-          Step {currentLegIndex + 1} of {routeOption.legs.length}{" "}
-          {remainingMin > 0 ? `· ${remainingMin} min remaining` : ""}
-        </Text>
       </View>
     </BottomSheet>
   );
