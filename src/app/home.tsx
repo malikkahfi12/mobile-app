@@ -26,9 +26,7 @@ import { getLastKnownPosition } from "@/services/location/location.service";
 import { INITIAL_CENTER, ZOOM } from "@/constants/map";
 import { colors } from "@/constants/colors";
 import {
-  GUIDANCE_PITCH,
   CAMERA_FOLLOW_DURATION,
-  CAMERA_FOLLOW_DURATION_GUIDANCE,
   GUIDANCE_LEG_FIT_DURATION,
 } from "@/constants/location";
 import type { NearbyStop } from "@/services/stops/stops.types";
@@ -37,6 +35,8 @@ import { useQuickPlacesStore } from "@/store/quickPlaces.store";
 import type { QuickPlace } from "@/types/quickPlaces.types";
 import { getRouteCoordinates } from "@/lib/routing.helpers";
 import { computeBounds, getLegBounds } from "@/lib/map.helpers";
+import { useGuidanceStepProgression } from "@/hooks/guidance/useGuidanceStepProgression";
+import { useStableCameraFollow } from "@/hooks/guidance/useStableCameraFollow";
 
 export default function HomeScreen() {
   const { status, isGranted, request } = useLocationPermission();
@@ -66,6 +66,7 @@ export default function HomeScreen() {
     bottomSheetContent === "journeyDetail";
 
   useLocationWatcher({ enabled: isGranted, guidanceMode: guidanceActive });
+  useGuidanceStepProgression({ enabled: guidanceActive });
 
   const [cameraCenter, setCameraCenter] =
     useState<[number, number]>(INITIAL_CENTER);
@@ -83,6 +84,7 @@ export default function HomeScreen() {
 
   const userHeading = useLocationStore((s) => s.heading);
   const userLocation = useLocationStore((s) => s.currentLocation);
+  const userSpeed = useLocationStore((s) => s.speed);
 
   const handleUserInteraction = useCallback(() => {
     setFollowMode(false);
@@ -251,16 +253,42 @@ export default function HomeScreen() {
 
   const isRouteActive = selectedOption !== null && routeCoords.length > 0;
 
-  const followUserLocation: [number, number] | null = userLocation
-    ? [userLocation.longitude, userLocation.latitude]
+  const currentGuidanceLegType: "walk" | "transit" | "transfer" | null =
+    useMemo(() => {
+      if (!guidanceActive || !selectedOption) return null;
+      const leg = selectedOption.legs[guidanceLegIndex];
+      if (!leg) return null;
+      if (leg.type === "WALK") return "walk";
+      const nextLeg = selectedOption.legs[guidanceLegIndex + 1];
+      return nextLeg?.type === "TRANSIT" ? "transfer" : "transit";
+    }, [guidanceActive, selectedOption, guidanceLegIndex]);
+
+  const stableCamera = useStableCameraFollow({
+    userLocation,
+    userHeading,
+    userSpeed,
+    isActive: guidanceActive,
+    currentLegType: currentGuidanceLegType,
+    currentLegIndex: guidanceLegIndex,
+    guidancePhase: guidanceBoundsPhase,
+  });
+
+  const followUserLocation: [number, number] | null = guidanceActive
+    ? stableCamera.cameraCenter
+    : userLocation
+      ? ([userLocation.longitude, userLocation.latitude] as [number, number])
+      : null;
+
+  const followUserHeading = guidanceActive
+    ? stableCamera.cameraHeading
     : null;
 
-  const followUserHeading = guidanceActive ? userHeading : null;
-
-  const followPitch = guidanceActive ? GUIDANCE_PITCH : 0;
+  const followPitch = guidanceActive
+    ? stableCamera.cameraPitch
+    : 0;
 
   const followAnimationMs = guidanceActive
-    ? CAMERA_FOLLOW_DURATION_GUIDANCE
+    ? stableCamera.cameraAnimationMs
     : CAMERA_FOLLOW_DURATION;
 
   const effectiveFollowMode =
@@ -346,6 +374,7 @@ export default function HomeScreen() {
         followUserHeading={followUserHeading}
         followPitch={followPitch}
         followAnimationMs={followAnimationMs}
+        followZoom={guidanceActive ? stableCamera.cameraZoom : undefined}
       >
         {isGranted && <UserLocationMarker />}
         {nearbyStops?.map((stop) => (

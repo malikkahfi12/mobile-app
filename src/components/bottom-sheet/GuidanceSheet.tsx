@@ -46,6 +46,7 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
   const isActive = useGuidanceStore((s) => s.isActive);
   const routeOption = useGuidanceStore((s) => s.routeOption);
   const currentLegIndex = useGuidanceStore((s) => s.currentLegIndex);
+  const contextualMessage = useGuidanceStore((s) => s.contextualMessage);
   const nextStep = useGuidanceStore((s) => s.nextStep);
   const previousStep = useGuidanceStore((s) => s.previousStep);
   const endGuidance = useGuidanceStore((s) => s.endGuidance);
@@ -246,6 +247,19 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
             />
           ))}
         </View>
+
+        {contextualMessage && (
+          <View className="mb-2.5 flex-row items-center rounded-lg bg-primary/10 px-3 py-2">
+            <Ionicons
+              name="locate-outline"
+              size={14}
+              color={colors.primary}
+            />
+            <Text className="ml-1.5 text-xs font-semibold text-primary">
+              {contextualMessage}
+            </Text>
+          </View>
+        )}
 
         <View
           className={`rounded-xl p-3 ${
