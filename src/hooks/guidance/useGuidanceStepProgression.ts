@@ -60,8 +60,6 @@ function getContextualMessage(
     return null;
   }
 
-  if (leg.type === "WALK" && nextLeg?.type === "TRANSIT")
-    return "Approaching Stop";
   if (leg.type === "TRANSIT") return "Get Off Soon";
 
   return null;

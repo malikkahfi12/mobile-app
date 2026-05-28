@@ -143,6 +143,44 @@ export function getTransferText(leg: Leg, nextLeg?: Leg): string | null {
   return `Transfer to ${routeName} at ${leg.toStopName}`;
 }
 
+export function getInstructionTitle(
+  leg: Leg,
+  isLastLeg: boolean,
+  destinationName?: string | null,
+): string {
+  if (isLastLeg) {
+    if (leg.type === "WALK") return destinationName ? `Arrive at ${destinationName}` : "Arrive at destination";
+    return leg.toStopName ? `Get off at ${leg.toStopName}` : "Get off";
+  }
+  if (leg.type === "WALK") return `Walk to ${leg.toStopName}`;
+  const routeName = leg.routeName || "transit";
+  return `Take ${routeName}`;
+}
+
+export function getInstructionSubtitle(leg: Leg, isLastLeg: boolean): string {
+  const durationMin = Math.round(leg.durationSeconds / 60);
+  const parts: string[] = [];
+
+  if (leg.type === "WALK") {
+    const dist = leg.distanceMeters;
+    if (dist != null) {
+      parts.push(dist >= 1000 ? `${(dist / 1000).toFixed(1)} km` : `${Math.round(dist)} m`);
+    }
+    if (durationMin > 0) parts.push(`${durationMin} min`);
+    return parts.join(" · ");
+  }
+
+  if (durationMin > 0) parts.push(`${durationMin} min`);
+
+  if (isLastLeg) return parts.join(" · ");
+
+  if (leg.type === "TRANSIT" && leg.headsign) {
+    parts.push(`toward ${leg.headsign}`);
+  }
+
+  return parts.join(" · ");
+}
+
 export function countLegStops(
   stops: RouteStop[] | undefined,
   fromStopId: string,
