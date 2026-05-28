@@ -16,6 +16,10 @@ interface LocationState {
   locationAccuracy: number | null;
   locationLoading: boolean;
   locationError: string | null;
+  heading: number | null;
+  speed: number | null;
+  altitude: number | null;
+  lastUpdateTimestamp: number | null;
   origin: TripLocation | null;
   destination: TripLocation | null;
 
@@ -23,6 +27,15 @@ interface LocationState {
     lat: number,
     lng: number,
     accuracy?: number | null,
+  ) => void;
+  setFullLocation: (
+    lat: number,
+    lng: number,
+    accuracy: number | null,
+    heading: number | null,
+    speed: number | null,
+    altitude: number | null,
+    timestamp: number,
   ) => void;
   setPermission: (value: boolean) => void;
   setWatching: (value: boolean) => void;
@@ -41,6 +54,10 @@ export const useLocationStore = create<LocationState>((set) => ({
   locationAccuracy: null,
   locationLoading: false,
   locationError: null,
+  heading: null,
+  speed: null,
+  altitude: null,
+  lastUpdateTimestamp: null,
   origin: null,
   destination: null,
 
@@ -48,6 +65,16 @@ export const useLocationStore = create<LocationState>((set) => ({
     set({
       currentLocation: { latitude: lat, longitude: lng },
       locationAccuracy: accuracy ?? null,
+    }),
+
+  setFullLocation: (lat, lng, accuracy, heading, speed, altitude, timestamp) =>
+    set({
+      currentLocation: { latitude: lat, longitude: lng },
+      locationAccuracy: accuracy,
+      heading,
+      speed,
+      altitude,
+      lastUpdateTimestamp: timestamp,
     }),
 
   setPermission: (value) => set({ hasPermission: value }),

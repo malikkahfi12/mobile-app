@@ -1,4 +1,4 @@
-import { type ReactNode, memo } from "react";
+import { type ReactNode, memo, useCallback } from "react";
 import { Map } from "@maplibre/maplibre-react-native";
 import { MapCamera } from "./MapCamera";
 import { MAP_STYLE, INITIAL_CENTER, INITIAL_ZOOM } from "@/constants/map";
@@ -12,6 +12,12 @@ interface PatheoMapProps {
   animationMs?: number;
   cameraBounds?: Bounds;
   cameraBoundsPadding?: number;
+  onUserInteraction?: () => void;
+  followMode?: boolean;
+  followUserLocation?: [number, number] | null;
+  followUserHeading?: number | null;
+  followPitch?: number;
+  followAnimationMs?: number;
 }
 
 export const PatheoMap = memo(function PatheoMap({
@@ -22,9 +28,31 @@ export const PatheoMap = memo(function PatheoMap({
   animationMs,
   cameraBounds,
   cameraBoundsPadding,
+  onUserInteraction,
+  followMode = false,
+  followUserLocation,
+  followUserHeading,
+  followPitch,
+  followAnimationMs,
 }: PatheoMapProps) {
+  const handleRegionWillChange = useCallback(
+    (feature: Record<string, unknown>) => {
+      const properties = feature?.properties as
+        | { isUserInteraction?: boolean }
+        | undefined;
+      if (properties?.isUserInteraction) {
+        onUserInteraction?.();
+      }
+    },
+    [onUserInteraction],
+  );
+
   return (
-    <Map className="flex-1" mapStyle={MAP_STYLE}>
+    <Map
+      className="flex-1"
+      mapStyle={MAP_STYLE}
+      onRegionWillChange={handleRegionWillChange as never}
+    >
       <MapCamera
         center={cameraCenter}
         zoom={cameraZoom}
@@ -32,6 +60,11 @@ export const PatheoMap = memo(function PatheoMap({
         animationMs={animationMs}
         bounds={cameraBounds}
         boundsPadding={cameraBoundsPadding}
+        followMode={followMode}
+        followUserLocation={followUserLocation}
+        followUserHeading={followUserHeading}
+        followPitch={followPitch}
+        followAnimationMs={followAnimationMs}
       />
       {children}
     </Map>
