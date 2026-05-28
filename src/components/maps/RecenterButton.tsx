@@ -6,11 +6,13 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "@/constants/colors";
 
 interface RecenterButtonProps {
   onPress: () => void;
   isLoading?: boolean;
   hasError?: boolean;
+  isFollowing?: boolean;
 }
 
 const shadowStyle = Platform.select({
@@ -27,6 +29,7 @@ export const RecenterButton = memo(function RecenterButton({
   onPress,
   isLoading = false,
   hasError = false,
+  isFollowing = false,
 }: RecenterButtonProps) {
   const shakeAnim = useRef(new Animated.Value(0)).current;
 
@@ -52,6 +55,20 @@ export const RecenterButton = memo(function RecenterButton({
     outputRange: [0, -4, 4, -2, 0],
   });
 
+  const buttonBg = hasError
+    ? "#FEF2F2"
+    : isFollowing
+      ? colors.primary
+      : colors.white;
+
+  const iconName = isFollowing ? "navigate" : "navigate-outline";
+
+  const iconColor = hasError
+    ? colors.error
+    : isFollowing
+      ? colors.white
+      : "#1A1A1A";
+
   return (
     <Animated.View
       style={[
@@ -61,21 +78,22 @@ export const RecenterButton = memo(function RecenterButton({
       className="absolute bottom-20 right-4"
     >
       <TouchableOpacity
-        className={`h-11 w-11 items-center justify-center rounded-full bg-white ${
+        className={`h-11 w-11 items-center justify-center rounded-full ${
           hasError ? "border-2 border-red-400" : ""
         }`}
+        style={{ backgroundColor: buttonBg }}
         onPress={onPress}
         disabled={isLoading}
-        accessibilityLabel="Recenter map on your location"
+        accessibilityLabel={
+          isFollowing
+            ? "Map is following your location"
+            : "Recenter map on your location"
+        }
       >
         {isLoading ? (
-          <ActivityIndicator size="small" color="#0EA5B7" />
+          <ActivityIndicator size="small" color={isFollowing ? colors.white : colors.primary} />
         ) : (
-          <Ionicons
-            name="navigate"
-            size={22}
-            color={hasError ? "#EF4444" : "#1A1A1A"}
-          />
+          <Ionicons name={iconName} size={22} color={iconColor} />
         )}
       </TouchableOpacity>
     </Animated.View>

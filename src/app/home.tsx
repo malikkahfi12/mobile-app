@@ -15,6 +15,7 @@ import { OfflineBanner } from "@/components/ui/OfflineBanner";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { useCurrentLocation } from "@/hooks/location/useCurrentLocation";
 import { useLocationPermission } from "@/hooks/location/useLocationPermission";
+import { useLocationWatcher } from "@/hooks/location/useLocationWatcher";
 import { useNearbyStops } from "@/hooks/stops/useNearbyStops";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { useLocationStore } from "@/store/location.store";
@@ -24,6 +25,12 @@ import { useGuidanceStore } from "@/store/guidance.store";
 import { getLastKnownPosition } from "@/services/location/location.service";
 import { INITIAL_CENTER, ZOOM } from "@/constants/map";
 import { colors } from "@/constants/colors";
+import {
+  GUIDANCE_PITCH,
+  CAMERA_FOLLOW_DURATION,
+  CAMERA_FOLLOW_DURATION_GUIDANCE,
+  GUIDANCE_LEG_FIT_DURATION,
+} from "@/constants/location";
 import type { NearbyStop } from "@/services/stops/stops.types";
 import { QuickPlaceSheet } from "@/components/quick-places/QuickPlaceSheet";
 import { useQuickPlacesStore } from "@/store/quickPlaces.store";
@@ -58,8 +65,28 @@ export default function HomeScreen() {
     bottomSheetContent === "planner" ||
     bottomSheetContent === "journeyDetail";
 
+  useLocationWatcher({ enabled: isGranted, guidanceMode: guidanceActive });
+
   const [cameraCenter, setCameraCenter] =
     useState<[number, number]>(INITIAL_CENTER);
+  const [followMode, setFollowMode] = useState(false);
+  const [recenterError, setRecenterError] = useState(false);
+  const [locationInitialized, setLocationInitialized] = useState(false);
+  const [isRecenterLoading, setIsRecenterLoading] = useState(false);
+  const [guidanceBoundsPhase, setGuidanceBoundsPhase] = useState<
+    "fitting" | "following"
+  >("fitting");
+  const errorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const guidanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  const userHeading = useLocationStore((s) => s.heading);
+  const userLocation = useLocationStore((s) => s.currentLocation);
+
+  const handleUserInteraction = useCallback(() => {
+    setFollowMode(false);
+  }, []);
 
   const selectedOption = useMemo(() => {
     if (!journeyResult || selectedRouteOptionIndex == null) return null;
@@ -131,11 +158,6 @@ export default function HomeScreen() {
     }
   }, [removePlace]);
 
-  const [recenterError, setRecenterError] = useState(false);
-  const [locationInitialized, setLocationInitialized] = useState(false);
-  const [isRecenterLoading, setIsRecenterLoading] = useState(false);
-  const errorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   useEffect(() => {
     if (status === "undetermined") {
       request();
@@ -195,6 +217,7 @@ export default function HomeScreen() {
         lastKnown.longitude,
         lastKnown.accuracy,
       );
+      setFollowMode(true);
     }
 
     setIsRecenterLoading(true);
@@ -204,6 +227,7 @@ export default function HomeScreen() {
     if (fresh) {
       setRecenterError(false);
       setCameraCenter([fresh.longitude, fresh.latitude]);
+      setFollowMode(true);
     } else if (!lastKnown) {
       Vibration.vibrate(100);
       setRecenterError(true);
@@ -226,6 +250,21 @@ export default function HomeScreen() {
   );
 
   const isRouteActive = selectedOption !== null && routeCoords.length > 0;
+
+  const followUserLocation: [number, number] | null = userLocation
+    ? [userLocation.longitude, userLocation.latitude]
+    : null;
+
+  const followUserHeading = guidanceActive ? userHeading : null;
+
+  const followPitch = guidanceActive ? GUIDANCE_PITCH : 0;
+
+  const followAnimationMs = guidanceActive
+    ? CAMERA_FOLLOW_DURATION_GUIDANCE
+    : CAMERA_FOLLOW_DURATION;
+
+  const effectiveFollowMode =
+    followMode && !selectedStop && (!isRouteActive || guidanceActive);
 
   const isSelectedStopInNearby = useMemo(
     () => nearbyStops?.some((s) => s.id === selectedStop?.id) ?? false,
@@ -254,6 +293,39 @@ export default function HomeScreen() {
     return ZOOM.city;
   }, [selectedStop]);
 
+  useEffect(() => {
+    if (!guidanceActive) {
+      setGuidanceBoundsPhase("fitting");
+      return;
+    }
+
+    setGuidanceBoundsPhase("fitting");
+    setFollowMode(true);
+
+    if (guidanceTimeoutRef.current) {
+      clearTimeout(guidanceTimeoutRef.current);
+    }
+
+    guidanceTimeoutRef.current = setTimeout(() => {
+      setGuidanceBoundsPhase("following");
+    }, GUIDANCE_LEG_FIT_DURATION);
+
+    return () => {
+      if (guidanceTimeoutRef.current) {
+        clearTimeout(guidanceTimeoutRef.current);
+      }
+    };
+  }, [guidanceActive, guidanceLegIndex]);
+
+  const showRouteBounds = isRouteActive && !guidanceActive;
+  const showGuidanceBounds =
+    guidanceActive && guidanceBoundsPhase === "fitting";
+  const effectiveCameraBounds = showRouteBounds
+    ? routeBounds
+    : showGuidanceBounds
+      ? guidanceBounds
+      : undefined;
+
   useNetworkStatus();
 
   return (
@@ -264,10 +336,16 @@ export default function HomeScreen() {
       <PatheoMap
         cameraCenter={cameraCenter}
         cameraZoom={cameraZoom}
-        cameraBounds={guidanceActive ? guidanceBounds : routeBounds}
+        cameraBounds={effectiveCameraBounds}
         cameraBoundsPadding={guidanceActive ? guidancePadding : 80}
         animated={selectedStop !== null || isRouteActive || guidanceActive}
-        animationMs={guidanceActive ? 1500 : undefined}
+        animationMs={guidanceActive ? GUIDANCE_LEG_FIT_DURATION : undefined}
+        onUserInteraction={handleUserInteraction}
+        followMode={effectiveFollowMode}
+        followUserLocation={followUserLocation}
+        followUserHeading={followUserHeading}
+        followPitch={followPitch}
+        followAnimationMs={followAnimationMs}
       >
         {isGranted && <UserLocationMarker />}
         {nearbyStops?.map((stop) => (
@@ -359,6 +437,7 @@ export default function HomeScreen() {
         onPress={handleRecenter}
         isLoading={isRecenterLoading}
         hasError={recenterError}
+        isFollowing={effectiveFollowMode}
       />
 
       <BottomSheetRouter

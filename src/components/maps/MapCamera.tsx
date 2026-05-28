@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Camera, type CameraRef } from "@maplibre/maplibre-react-native";
 import { INITIAL_CENTER, INITIAL_ZOOM } from "@/constants/map";
+import { CAMERA_FOLLOW_DURATION } from "@/constants/location";
 import type { Bounds } from "@/lib/map.helpers";
 
 export type { CameraRef };
@@ -14,6 +15,11 @@ interface MapCameraProps {
   animationMs?: number;
   bounds?: Bounds;
   boundsPadding?: number;
+  followMode?: boolean;
+  followUserLocation?: [number, number] | null;
+  followUserHeading?: number | null;
+  followPitch?: number;
+  followAnimationMs?: number;
 }
 
 export function MapCamera({
@@ -25,11 +31,17 @@ export function MapCamera({
   animationMs = 500,
   bounds,
   boundsPadding = 80,
+  followMode = false,
+  followUserLocation,
+  followUserHeading,
+  followPitch = 0,
+  followAnimationMs = CAMERA_FOLLOW_DURATION,
 }: MapCameraProps) {
   const cameraRef = useRef<CameraRef>(null);
   const isInitialMount = useRef(true);
   const lastCenterKeyRef = useRef<string | null>(null);
   const lastBoundsKeyRef = useRef<string | null>(null);
+  const lastFollowKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (isInitialMount.current) {
@@ -81,6 +93,40 @@ export function MapCamera({
       );
     }
   }, [bounds, boundsPadding, animated, animationMs]);
+
+  useEffect(() => {
+    if (!followMode || bounds || !followUserLocation) return;
+
+    const [lng, lat] = followUserLocation;
+
+    const headingPart =
+      followUserHeading != null ? `${followUserHeading.toFixed(1)}` : "";
+    const key = `${lng},${lat},${headingPart},${followPitch}`;
+    if (lastFollowKeyRef.current === key) return;
+    lastFollowKeyRef.current = key;
+
+    const options: Record<string, unknown> = {
+      center: [lng, lat] as [number, number],
+      duration: followAnimationMs,
+    };
+
+    if (followUserHeading != null) {
+      options.bearing = followUserHeading;
+    }
+
+    if (followPitch !== 0) {
+      options.pitch = followPitch;
+    }
+
+    cameraRef.current?.easeTo(options as never);
+  }, [
+    followMode,
+    bounds,
+    followUserLocation,
+    followUserHeading,
+    followPitch,
+    followAnimationMs,
+  ]);
 
   return (
     <Camera
