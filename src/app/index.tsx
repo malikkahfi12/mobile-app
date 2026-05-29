@@ -1,1 +1,5 @@
-export { default } from "./home";
+import HomeScreen from "./home";
+
+export default function IndexScreen() {
+  return <HomeScreen />;
+}
