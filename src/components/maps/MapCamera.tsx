@@ -21,6 +21,7 @@ interface MapCameraProps {
   followPitch?: number;
   followAnimationMs?: number;
   followZoom?: number;
+  recenterTrigger?: number;
 }
 
 export function MapCamera({
@@ -38,6 +39,7 @@ export function MapCamera({
   followPitch = 0,
   followAnimationMs = CAMERA_FOLLOW_DURATION,
   followZoom,
+  recenterTrigger,
 }: MapCameraProps) {
   const cameraRef = useRef<CameraRef>(null);
   const isInitialMount = useRef(true);
@@ -49,6 +51,11 @@ export function MapCamera({
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
+    }
+
+    if (recenterTrigger !== undefined) {
+      lastCenterKeyRef.current = null;
+      lastFollowKeyRef.current = null;
     }
 
     const key = `${center[0]},${center[1]},${zoom}`;
@@ -67,7 +74,7 @@ export function MapCamera({
     } else {
       cameraRef.current?.jumpTo(options);
     }
-  }, [center, zoom, heading, pitch, animated, animationMs]);
+  }, [center, zoom, heading, pitch, animated, animationMs, recenterTrigger]);
 
   useEffect(() => {
     if (!bounds) return;
