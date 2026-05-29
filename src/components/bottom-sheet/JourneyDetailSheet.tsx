@@ -8,6 +8,11 @@ import { useGuidanceStore } from "@/store/guidance.store";
 import { useRouteStore } from "@/store/route.store";
 import { useUIStore } from "@/store/ui.store";
 import { useLocationStore } from "@/store/location.store";
+import {
+  setupNotifications,
+  requestPermissions,
+  getPermissionStatus,
+} from "@/services/notifications";
 import { colors } from "@/constants/colors";
 import {
   formatDistance,
@@ -169,8 +174,16 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
   const setBottomSheet = useUIStore((s) => s.setBottomSheet);
   const closeBottomSheet = useUIStore((s) => s.closeBottomSheet);
 
-  const handleStart = useCallback(() => {
+  const handleStart = useCallback(async () => {
     if (!option) return;
+
+    setupNotifications();
+
+    const currentStatus = await getPermissionStatus();
+    if (currentStatus !== "granted") {
+      await requestPermissions();
+    }
+
     startGuidance(option);
     setBottomSheet(0, "guidance");
   }, [option, startGuidance, setBottomSheet]);

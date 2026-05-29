@@ -19,6 +19,7 @@ import {
   CAMERA_SAFE_RADIUS_TRANSFER,
   CAMERA_UPDATE_INTERVAL_TRANSFER,
   CAMERA_MIN_HEADING_DELTA_TRANSFER,
+  GUIDANCE_ZOOM_TRANSFER,
   CAMERA_DURATION_TRANSFER,
 } from "@/constants/location";
 import { INITIAL_ZOOM } from "@/constants/map";
@@ -69,7 +70,7 @@ function getMinSpeedBearing(type: GuidanceLegType): number {
 function getGuidanceZoom(type: GuidanceLegType): number {
   if (type === "walk") return GUIDANCE_ZOOM_WALK;
   if (type === "transit") return GUIDANCE_ZOOM_TRANSIT;
-  return GUIDANCE_ZOOM_TRANSIT;
+  return GUIDANCE_ZOOM_TRANSFER;
 }
 
 function getCameraDuration(type: GuidanceLegType): number {

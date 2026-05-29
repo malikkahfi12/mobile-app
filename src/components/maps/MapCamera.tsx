@@ -53,6 +53,8 @@ export function MapCamera({
       return;
     }
 
+    if (followMode && followUserLocation) return;
+
     if (recenterTrigger !== undefined) {
       lastCenterKeyRef.current = null;
       lastFollowKeyRef.current = null;
@@ -74,7 +76,7 @@ export function MapCamera({
     } else {
       cameraRef.current?.jumpTo(options);
     }
-  }, [center, zoom, heading, pitch, animated, animationMs, recenterTrigger]);
+  }, [center, zoom, heading, pitch, animated, animationMs, recenterTrigger, followMode, followUserLocation]);
 
   useEffect(() => {
     if (!bounds) return;

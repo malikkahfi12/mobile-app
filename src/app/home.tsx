@@ -22,6 +22,7 @@ import { useStableCameraFollow } from "@/hooks/guidance/useStableCameraFollow";
 import { useCurrentLocation } from "@/hooks/location/useCurrentLocation";
 import { useLocationPermission } from "@/hooks/location/useLocationPermission";
 import { useLocationWatcher } from "@/hooks/location/useLocationWatcher";
+import { useTripNotification } from "@/hooks/useTripNotification";
 import { useNearbyStops } from "@/hooks/stops/useNearbyStops";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { computeBounds, getLegBounds } from "@/lib/map.helpers";
@@ -67,6 +68,7 @@ export default function HomeScreen() {
 
   useLocationWatcher({ enabled: isGranted, guidanceMode: guidanceActive });
   useGuidanceStepProgression({ enabled: guidanceActive });
+  useTripNotification({ enabled: guidanceActive });
 
   const [cameraCenter, setCameraCenter] =
     useState<[number, number]>(INITIAL_CENTER);
@@ -82,6 +84,7 @@ export default function HomeScreen() {
   const guidanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+  const didInitialFit = useRef(false);
 
   const userHeading = useLocationStore((s) => s.heading);
   const userLocation = useLocationStore((s) => s.currentLocation);
@@ -293,6 +296,8 @@ export default function HomeScreen() {
     ? stableCamera.cameraAnimationMs
     : CAMERA_FOLLOW_DURATION;
 
+  const followZoom = guidanceActive ? stableCamera.cameraZoom : undefined;
+
   const effectiveFollowMode =
     followMode && !selectedStop && (!isRouteActive || guidanceActive);
 
@@ -320,31 +325,39 @@ export default function HomeScreen() {
 
   const cameraZoom = useMemo(() => {
     if (selectedStop) return ZOOM.street;
+    if (guidanceActive) return stableCamera.cameraZoom;
     return ZOOM.city;
-  }, [selectedStop]);
+  }, [selectedStop, guidanceActive, stableCamera.cameraZoom]);
 
   useEffect(() => {
     if (!guidanceActive) {
+      didInitialFit.current = false;
       setGuidanceBoundsPhase("fitting");
       return;
     }
 
-    setGuidanceBoundsPhase("fitting");
-    setFollowMode(true);
+    if (!didInitialFit.current) {
+      didInitialFit.current = true;
+      setGuidanceBoundsPhase("fitting");
+      setFollowMode(true);
 
-    if (guidanceTimeoutRef.current) {
-      clearTimeout(guidanceTimeoutRef.current);
-    }
-
-    guidanceTimeoutRef.current = setTimeout(() => {
-      setGuidanceBoundsPhase("following");
-    }, GUIDANCE_LEG_FIT_DURATION);
-
-    return () => {
       if (guidanceTimeoutRef.current) {
         clearTimeout(guidanceTimeoutRef.current);
       }
-    };
+
+      guidanceTimeoutRef.current = setTimeout(() => {
+        setGuidanceBoundsPhase("following");
+      }, GUIDANCE_LEG_FIT_DURATION);
+
+      return () => {
+        if (guidanceTimeoutRef.current) {
+          clearTimeout(guidanceTimeoutRef.current);
+        }
+      };
+    }
+
+    setGuidanceBoundsPhase("following");
+    setFollowMode(true);
   }, [guidanceActive, guidanceLegIndex]);
 
   const showRouteBounds = isRouteActive && !guidanceActive;
@@ -376,7 +389,7 @@ export default function HomeScreen() {
         followUserHeading={followUserHeading}
         followPitch={followPitch}
         followAnimationMs={followAnimationMs}
-        followZoom={guidanceActive ? stableCamera.cameraZoom : undefined}
+        followZoom={followZoom}
         recenterTrigger={recenterTrigger}
       >
         {isGranted && <UserLocationMarker />}
