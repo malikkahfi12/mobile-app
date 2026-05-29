@@ -7,6 +7,7 @@ import { useGuidanceStore } from "@/store/guidance.store";
 import { useRouteStore } from "@/store/route.store";
 import { useUIStore } from "@/store/ui.store";
 import { useRouteDetail } from "@/hooks/routes/useRouteDetail";
+import { notifyTripEnded } from "@/services/notifications";
 import { colors } from "@/constants/colors";
 import {
   getLegDurationMinutes,
@@ -143,6 +144,7 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
   const nextDurationMin = nextLeg ? getLegDurationMinutes(nextLeg) : null;
 
   const handleEnd = useCallback(() => {
+    notifyTripEnded();
     endGuidance();
     useRouteStore.getState().clearSelection();
     useUIStore.getState().closeBottomSheet();
