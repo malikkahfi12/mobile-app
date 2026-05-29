@@ -6,5 +6,10 @@ module.exports = defineConfig([
   expoConfig,
   {
     ignores: ["dist/*"],
-  }
+  },
+  {
+    settings: {
+      "import/core-modules": ["@expo/vector-icons"],
+    },
+  },
 ]);

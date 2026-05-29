@@ -19,6 +19,7 @@ interface PatheoMapProps {
   followPitch?: number;
   followAnimationMs?: number;
   followZoom?: number;
+  recenterTrigger?: number;
 }
 
 export const PatheoMap = memo(function PatheoMap({
@@ -36,6 +37,7 @@ export const PatheoMap = memo(function PatheoMap({
   followPitch,
   followAnimationMs,
   followZoom,
+  recenterTrigger,
 }: PatheoMapProps) {
   const handleRegionWillChange = useCallback(
     (feature: Record<string, unknown>) => {
@@ -68,6 +70,7 @@ export const PatheoMap = memo(function PatheoMap({
         followPitch={followPitch}
         followAnimationMs={followAnimationMs}
         followZoom={followZoom}
+        recenterTrigger={recenterTrigger}
       />
       {children}
     </Map>

@@ -1,42 +1,42 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Text, TouchableOpacity, View, Vibration } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { PatheoMap } from "@/components/maps/PatheoMap";
-import { UserLocationMarker } from "@/components/maps/UserLocationMarker";
-import { RecenterButton } from "@/components/maps/RecenterButton";
-import { StopMarker } from "@/components/maps/StopMarker";
-import { RoutePolyline } from "@/components/maps/RoutePolyline";
-import { RouteEndpointMarker } from "@/components/maps/RouteEndpointMarker";
-import { TransferStopMarker } from "@/components/maps/TransferStopMarker";
-import { PlaceMarker } from "@/components/maps/PlaceMarker";
 import { BottomSheetRouter } from "@/components/bottom-sheet/BottomSheetRouter";
 import { SearchBarOverlay } from "@/components/home/SearchBarOverlay";
-import { OfflineBanner } from "@/components/ui/OfflineBanner";
+import { PatheoMap } from "@/components/maps/PatheoMap";
+import { PlaceMarker } from "@/components/maps/PlaceMarker";
+import { RecenterButton } from "@/components/maps/RecenterButton";
+import { RouteEndpointMarker } from "@/components/maps/RouteEndpointMarker";
+import { RoutePolyline } from "@/components/maps/RoutePolyline";
+import { StopMarker } from "@/components/maps/StopMarker";
+import { TransferStopMarker } from "@/components/maps/TransferStopMarker";
+import { UserLocationMarker } from "@/components/maps/UserLocationMarker";
+import { QuickPlaceSheet } from "@/components/quick-places/QuickPlaceSheet";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
-import { useCurrentLocation } from "@/hooks/location/useCurrentLocation";
-import { useLocationPermission } from "@/hooks/location/useLocationPermission";
-import { useLocationWatcher } from "@/hooks/location/useLocationWatcher";
-import { useNearbyStops } from "@/hooks/stops/useNearbyStops";
-import { useNetworkStatus } from "@/hooks/useNetworkStatus";
-import { useLocationStore } from "@/store/location.store";
-import { useRouteStore } from "@/store/route.store";
-import { useUIStore } from "@/store/ui.store";
-import { useGuidanceStore } from "@/store/guidance.store";
-import { getLastKnownPosition } from "@/services/location/location.service";
-import { INITIAL_CENTER, ZOOM } from "@/constants/map";
+import { OfflineBanner } from "@/components/ui/OfflineBanner";
 import { colors } from "@/constants/colors";
 import {
   CAMERA_FOLLOW_DURATION,
   GUIDANCE_LEG_FIT_DURATION,
 } from "@/constants/location";
-import type { NearbyStop } from "@/services/stops/stops.types";
-import { QuickPlaceSheet } from "@/components/quick-places/QuickPlaceSheet";
-import { useQuickPlacesStore } from "@/store/quickPlaces.store";
-import type { QuickPlace } from "@/types/quickPlaces.types";
-import { getRouteCoordinates } from "@/lib/routing.helpers";
-import { computeBounds, getLegBounds } from "@/lib/map.helpers";
+import { INITIAL_CENTER, ZOOM } from "@/constants/map";
 import { useGuidanceStepProgression } from "@/hooks/guidance/useGuidanceStepProgression";
 import { useStableCameraFollow } from "@/hooks/guidance/useStableCameraFollow";
+import { useCurrentLocation } from "@/hooks/location/useCurrentLocation";
+import { useLocationPermission } from "@/hooks/location/useLocationPermission";
+import { useLocationWatcher } from "@/hooks/location/useLocationWatcher";
+import { useNearbyStops } from "@/hooks/stops/useNearbyStops";
+import { useNetworkStatus } from "@/hooks/useNetworkStatus";
+import { computeBounds, getLegBounds } from "@/lib/map.helpers";
+import { getRouteCoordinates } from "@/lib/routing.helpers";
+import { getLastKnownPosition } from "@/services/location/location.service";
+import type { NearbyStop } from "@/services/stops/stops.types";
+import { useGuidanceStore } from "@/store/guidance.store";
+import { useLocationStore } from "@/store/location.store";
+import { useQuickPlacesStore } from "@/store/quickPlaces.store";
+import { useRouteStore } from "@/store/route.store";
+import { useUIStore } from "@/store/ui.store";
+import type { QuickPlace } from "@/types/quickPlaces.types";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ActivityIndicator, Text, TouchableOpacity, Vibration, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const { status, isGranted, request } = useLocationPermission();
@@ -74,6 +74,7 @@ export default function HomeScreen() {
   const [recenterError, setRecenterError] = useState(false);
   const [locationInitialized, setLocationInitialized] = useState(false);
   const [isRecenterLoading, setIsRecenterLoading] = useState(false);
+  const [recenterTrigger, setRecenterTrigger] = useState(0);
   const [guidanceBoundsPhase, setGuidanceBoundsPhase] = useState<
     "fitting" | "following"
   >("fitting");
@@ -206,6 +207,7 @@ export default function HomeScreen() {
   }, [selectedStop]);
 
   const handleRecenter = useCallback(async () => {
+    setRecenterTrigger((t) => t + 1);
     if (errorTimeoutRef.current) {
       clearTimeout(errorTimeoutRef.current);
     }
@@ -375,6 +377,7 @@ export default function HomeScreen() {
         followPitch={followPitch}
         followAnimationMs={followAnimationMs}
         followZoom={guidanceActive ? stableCamera.cameraZoom : undefined}
+        recenterTrigger={recenterTrigger}
       >
         {isGranted && <UserLocationMarker />}
         {nearbyStops?.map((stop) => (

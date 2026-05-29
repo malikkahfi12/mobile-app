@@ -55,19 +55,7 @@ export const RecenterButton = memo(function RecenterButton({
     outputRange: [0, -4, 4, -2, 0],
   });
 
-  const buttonBg = hasError
-    ? "#FEF2F2"
-    : isFollowing
-      ? colors.primary
-      : colors.white;
-
   const iconName = isFollowing ? "navigate" : "navigate-outline";
-
-  const iconColor = hasError
-    ? colors.error
-    : isFollowing
-      ? colors.white
-      : "#1A1A1A";
 
   return (
     <Animated.View
@@ -75,13 +63,11 @@ export const RecenterButton = memo(function RecenterButton({
         shadowStyle,
         { transform: [{ translateX: shakeX }] },
       ]}
-      className="absolute bottom-20 right-4"
+      className="absolute bottom-40 right-4"
     >
       <TouchableOpacity
-        className={`h-11 w-11 items-center justify-center rounded-full ${
-          hasError ? "border-2 border-red-400" : ""
-        }`}
-        style={{ backgroundColor: buttonBg }}
+        className="h-11 w-11 items-center justify-center rounded-full"
+        style={{ backgroundColor: colors.white }}
         onPress={onPress}
         disabled={isLoading}
         accessibilityLabel={
@@ -91,9 +77,9 @@ export const RecenterButton = memo(function RecenterButton({
         }
       >
         {isLoading ? (
-          <ActivityIndicator size="small" color={isFollowing ? colors.white : colors.primary} />
+          <ActivityIndicator size="small" color="#1A1A1A" />
         ) : (
-          <Ionicons name={iconName} size={22} color={iconColor} />
+          <Ionicons name={iconName} size={22} color="#1A1A1A" />
         )}
       </TouchableOpacity>
     </Animated.View>
