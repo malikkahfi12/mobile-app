@@ -5,7 +5,7 @@ import { useAppStore } from "@/store/app.store";
 import type { Persister, PersistedClient } from "@tanstack/react-query-persist-client";
 import type { ReactNode } from "react";
 
-const CACHE_KEY = "PATHEO_QUERY_CACHE";
+const CACHE_KEY = "TRANSITRIBE_QUERY_CACHE";
 const MAX_AGE = 24 * 60 * 60 * 1000;
 const BUSTER = "v1";
 

@@ -51,7 +51,7 @@ export const useFavoritesStore = create<FavoritesState>()(
       },
     }),
     {
-      name: "patheo-favorites",
+      name: "transitribe-favorites",
       storage: createJSONStorage(() => AsyncStorage),
       version: 1,
       migrate: () => ({ stops: [] }),

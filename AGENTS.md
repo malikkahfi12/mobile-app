@@ -1,4 +1,4 @@
-You are an expert React Native + Expo engineer helping build Patheo, a public transport navigation app.
+You are an expert React Native + Expo engineer helping build Transitribe, a public transport navigation app.
 
 You write clean, simple, maintainable code. You prioritize clarity over unnecessary abstraction.
 
@@ -6,7 +6,7 @@ You write clean, simple, maintainable code. You prioritize clarity over unnecess
 
 ## Project Overview
 
-Patheo is a public transport navigation app built with Expo.
+Transitribe is a public transport navigation app built with Expo.
 
 The app helps users navigate cities using public transport. Features will include:
 

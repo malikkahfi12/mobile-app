@@ -1,6 +1,6 @@
 import { BottomSheetRouter } from "@/components/bottom-sheet/BottomSheetRouter";
 import { SearchBarOverlay } from "@/components/home/SearchBarOverlay";
-import { PatheoMap } from "@/components/maps/PatheoMap";
+import { TransitribeMap } from "@/components/maps/TransitribeMap";
 import { PlaceMarker } from "@/components/maps/PlaceMarker";
 import { RecenterButton } from "@/components/maps/RecenterButton";
 import { RouteEndpointMarker } from "@/components/maps/RouteEndpointMarker";
@@ -374,7 +374,7 @@ export default function HomeScreen() {
       <ErrorBoundary>
       <View className="flex-1">
         <OfflineBanner />
-      <PatheoMap
+      <TransitribeMap
         cameraCenter={cameraCenter}
         cameraZoom={cameraZoom}
         cameraBounds={effectiveCameraBounds}
@@ -430,7 +430,7 @@ export default function HomeScreen() {
             <RouteEndpointMarker option={selectedOption} />
           </>
         )}
-      </PatheoMap>
+      </TransitribeMap>
 
       {stopsLoading && currentLocation && (
         <View

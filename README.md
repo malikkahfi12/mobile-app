@@ -1,4 +1,4 @@
-# Patheo
+# Transitribe
 
 Move smarter. Public transport navigation, built with Expo.
 

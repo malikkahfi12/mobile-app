@@ -4,7 +4,7 @@ import { MapCamera } from "./MapCamera";
 import { MAP_STYLE, INITIAL_CENTER, INITIAL_ZOOM } from "@/constants/map";
 import type { Bounds } from "@/lib/map.helpers";
 
-interface PatheoMapProps {
+interface TransitribeMapProps {
   children?: ReactNode;
   cameraCenter?: [number, number];
   cameraZoom?: number;
@@ -22,7 +22,7 @@ interface PatheoMapProps {
   recenterTrigger?: number;
 }
 
-export const PatheoMap = memo(function PatheoMap({
+export const TransitribeMap = memo(function TransitribeMap({
   children,
   cameraCenter = INITIAL_CENTER,
   cameraZoom = INITIAL_ZOOM,
@@ -38,7 +38,7 @@ export const PatheoMap = memo(function PatheoMap({
   followAnimationMs,
   followZoom,
   recenterTrigger,
-}: PatheoMapProps) {
+}: TransitribeMapProps) {
   const handleRegionWillChange = useCallback(
     (feature: Record<string, unknown>) => {
       const properties = feature?.properties as

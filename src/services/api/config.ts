@@ -4,7 +4,7 @@ const config = {
     apiKey: process.env.EXPO_PUBLIC_API_KEY || "dev_tly_api_7f3b9c2a8e1d4f6a",
   },
   production: {
-    apiUrl: "https://api.patheo.app/api/v1",
+    apiUrl: "https://api.transitribe.com/api/v1",
     apiKey: process.env.EXPO_PUBLIC_API_KEY || "",
   },
 } as const;

@@ -56,7 +56,7 @@ export const useQuickPlacesStore = create<QuickPlacesState>()(
       },
     }),
     {
-      name: "patheo-quick-places",
+      name: "transitribe-quick-places",
       storage: createJSONStorage(() => AsyncStorage),
       version: 1,
       migrate: () => ({ places: [] }),
