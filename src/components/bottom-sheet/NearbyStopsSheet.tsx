@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, memo } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BottomSheet, {
   BottomSheetFlatList,
 } from "@gorhom/bottom-sheet";
@@ -53,6 +54,10 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
   const setSelectedStop = useRouteStore((s) => s.setSelectedStop);
   const savedStops = useFavoritesStore((s) => s.stops);
   const places = useQuickPlacesStore((s) => s.places);
+  const placesHydrated = useQuickPlacesStore((s) => s._hasHydrated);
+  const stopsHydrated = useFavoritesStore((s) => s._hasHydrated);
+  const isHydrated = placesHydrated && stopsHydrated;
+  const insets = useSafeAreaInsets();
   const { routeToHere, routeFromHere, isRouting } = useQuickRoute(
     selectedStop,
     stops,
@@ -227,7 +232,7 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
         data={stops ?? EMPTY_ARRAY}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
-        contentContainerStyle={{ paddingBottom: 16 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
         ListHeaderComponent={
           <>
             {selectedStop && (
@@ -338,7 +343,16 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
               <Text className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Quick Access
               </Text>
-              {showQuickAccess ? (
+              {!isHydrated ? (
+                <View className="flex-row gap-2">
+                  {[1, 2, 3].map((i) => (
+                    <View
+                      key={i}
+                      className="h-9 w-20 rounded-xl bg-gray-100 animate-pulse"
+                    />
+                  ))}
+                </View>
+              ) : showQuickAccess ? (
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -484,7 +498,10 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
         }
       />
       {showError && hasStaleData && (
-        <View className="absolute bottom-0 left-0 right-0 bg-amber-50 px-4 py-2 border-t border-amber-100">
+        <View
+          className="absolute left-0 right-0 bg-amber-50 px-4 py-2 border-t border-amber-100"
+          style={{ bottom: insets.bottom }}
+        >
           <View className="flex-row items-center justify-center">
             <Ionicons
               name="time-outline"

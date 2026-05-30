@@ -16,13 +16,13 @@ export const PlaceMarker = memo(function PlaceMarker({
   return (
     <Marker id={id} lngLat={coordinate} anchor="center">
       <View style={styles.marker}>
-        <Ionicons name="location" size={20} color={colors.white} />
+        <Ionicons name="location" size={18} color={colors.white} />
       </View>
     </Marker>
   );
 });
 
-const SIZE = 36;
+const SIZE = 32;
 
 const styles = StyleSheet.create({
   marker: {

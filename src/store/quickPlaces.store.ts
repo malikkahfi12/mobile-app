@@ -11,6 +11,7 @@ function generateId(): string {
 }
 
 interface QuickPlacesState {
+  _hasHydrated: boolean;
   places: QuickPlace[];
 
   addPlace: (place: Omit<QuickPlace, "id" | "createdAt" | "updatedAt">) => QuickPlace;
@@ -21,6 +22,7 @@ interface QuickPlacesState {
 export const useQuickPlacesStore = create<QuickPlacesState>()(
   persist(
     (set, get) => ({
+      _hasHydrated: false,
       places: [],
 
       addPlace: (input) => {
@@ -56,13 +58,11 @@ export const useQuickPlacesStore = create<QuickPlacesState>()(
     {
       name: "patheo-quick-places",
       storage: createJSONStorage(() => AsyncStorage),
+      version: 1,
+      migrate: () => ({ places: [] }),
       partialize: (state) => ({ places: state.places }),
-      onRehydrateStorage: () => {
-        return (_state, error) => {
-          if (error) {
-            // silently reset on corruption
-          }
-        };
+      onRehydrateStorage: () => () => {
+        useQuickPlacesStore.setState({ _hasHydrated: true });
       },
     },
   ),

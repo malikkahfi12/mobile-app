@@ -13,6 +13,7 @@ export interface SavedStop {
 }
 
 interface FavoritesState {
+  _hasHydrated: boolean;
   stops: SavedStop[];
   addStop: (stop: SavedStop) => void;
   removeStop: (id: string) => void;
@@ -23,6 +24,7 @@ interface FavoritesState {
 export const useFavoritesStore = create<FavoritesState>()(
   persist(
     (set, get) => ({
+      _hasHydrated: false,
       stops: [],
 
       addStop: (stop) =>
@@ -51,6 +53,12 @@ export const useFavoritesStore = create<FavoritesState>()(
     {
       name: "patheo-favorites",
       storage: createJSONStorage(() => AsyncStorage),
+      version: 1,
+      migrate: () => ({ stops: [] }),
+      partialize: (state) => ({ stops: state.stops }),
+      onRehydrateStorage: () => () => {
+        useFavoritesStore.setState({ _hasHydrated: true });
+      },
     },
   ),
 );

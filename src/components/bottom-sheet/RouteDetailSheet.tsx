@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouteDetail } from "@/hooks/routes/useRouteDetail";
 import { useRouteStore } from "@/store/route.store";
 import { useUIStore } from "@/store/ui.store";
@@ -23,6 +24,7 @@ export const RouteDetailSheet = memo(function RouteDetailSheet() {
   const setRouteId = useRouteStore((s) => s.setSelectedRouteId);
   const setBottomSheet = useUIStore((s) => s.setBottomSheet);
   const closeBottomSheet = useUIStore((s) => s.closeBottomSheet);
+  const insets = useSafeAreaInsets();
 
   const {
     route: routeData,
@@ -252,7 +254,7 @@ export const RouteDetailSheet = memo(function RouteDetailSheet() {
               </View>
             ) : null
           }
-          contentContainerStyle={{ paddingBottom: 32 }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
         />
       </View>
     </BottomSheet>

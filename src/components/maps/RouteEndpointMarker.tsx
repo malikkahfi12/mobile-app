@@ -10,7 +10,7 @@ interface RouteEndpointMarkerProps {
   option: RouteOption;
 }
 
-const SIZE = 36;
+const SIZE = 28;
 const HALF = SIZE / 2;
 
 export const RouteEndpointMarker = memo(function RouteEndpointMarker({
@@ -45,7 +45,7 @@ export const RouteEndpointMarker = memo(function RouteEndpointMarker({
           >
             <Ionicons
               name="location"
-              size={20}
+              size={16}
               color={colors.white}
             />
           </View>
@@ -65,7 +65,7 @@ export const RouteEndpointMarker = memo(function RouteEndpointMarker({
           >
             <Ionicons
               name="flag"
-              size={18}
+              size={14}
               color={colors.white}
             />
           </View>

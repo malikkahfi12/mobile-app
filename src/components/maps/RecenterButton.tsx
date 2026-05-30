@@ -6,6 +6,7 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors } from "@/constants/colors";
 
 interface RecenterButtonProps {
@@ -32,6 +33,7 @@ export const RecenterButton = memo(function RecenterButton({
   isFollowing = false,
 }: RecenterButtonProps) {
   const shakeAnim = useRef(new Animated.Value(0)).current;
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (hasError) {
@@ -61,9 +63,9 @@ export const RecenterButton = memo(function RecenterButton({
     <Animated.View
       style={[
         shadowStyle,
-        { transform: [{ translateX: shakeX }] },
+        { transform: [{ translateX: shakeX }], bottom: insets.bottom + 160 },
       ]}
-      className="absolute bottom-40 right-4"
+      className="absolute right-4"
     >
       <TouchableOpacity
         className="h-11 w-11 items-center justify-center rounded-full"
