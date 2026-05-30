@@ -62,7 +62,10 @@
             "allowBackup": false
           }
         }
-      ]
+      ],
+      "expo-secure-store",
+      "react-native-libsodium",
+      "react-native-libsodium"
     ],
     "experiments": {
       "typedRoutes": true,

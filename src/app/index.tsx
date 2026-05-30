@@ -1,12 +1,12 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { secureStore } from "@/services/auth/secureStore";
 import { router } from "expo-router";
 import { useEffect } from "react";
 import { View } from "react-native";
 
 export default function IndexRoute() {
   useEffect(() => {
-    AsyncStorage.getItem("onboarding-complete").then((done) => {
-      if (done === "true") {
+    secureStore.getOnboardingCompleted().then((done) => {
+      if (done) {
         router.replace("/home");
       } else {
         router.replace("/onboarding");
