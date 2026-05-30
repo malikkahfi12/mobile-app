@@ -8,6 +8,7 @@ interface AuthState {
   user: User | null;
   username: string | null;
   deviceId: string | null;
+  serverDeviceId: string | null;
   publicKey: string | null;
   isAuthenticated: boolean;
   isRegistered: boolean;
@@ -18,6 +19,7 @@ interface AuthState {
   setUser: (user: User | null) => void;
   setUsername: (username: string | null) => void;
   setDeviceId: (id: string | null) => void;
+  setServerDeviceId: (id: string | null) => void;
   setPublicKey: (key: string | null) => void;
   setRegistered: (value: boolean) => void;
   setLoading: (value: boolean) => void;
@@ -31,6 +33,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   username: null,
   deviceId: null,
+  serverDeviceId: null,
   publicKey: null,
   isAuthenticated: false,
   isRegistered: false,
@@ -57,6 +60,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
+  setServerDeviceId: (id) => {
+    set({ serverDeviceId: id });
+    if (id) {
+      secureStore.saveServerDeviceId(id);
+    }
+  },
+
   setPublicKey: (key) => set({ publicKey: key }),
 
   setRegistered: (value) => set({ isRegistered: value }),
@@ -70,7 +80,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({
       accessToken: null,
       user: null,
+      username: null,
+      serverDeviceId: null,
       isAuthenticated: false,
+      isRegistered: false,
       error: null,
     });
   },

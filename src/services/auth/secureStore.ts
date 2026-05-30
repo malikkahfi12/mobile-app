@@ -5,6 +5,8 @@ const KEYS = {
   privateKey: "auth-private-key",
   publicKey: "auth-public-key",
   deviceId: "auth-device-id",
+  serverDeviceId: "auth-server-device-id",
+  username: "auth-username",
   registered: "auth-registered",
   onboardingCompleted: "onboarding-completed",
 } as const;
@@ -56,6 +58,30 @@ export const secureStore = {
 
   async deleteDeviceId(): Promise<void> {
     await SecureStore.deleteItemAsync(KEYS.deviceId);
+  },
+
+  async getServerDeviceId(): Promise<string | null> {
+    return SecureStore.getItemAsync(KEYS.serverDeviceId);
+  },
+
+  async saveServerDeviceId(id: string): Promise<void> {
+    await SecureStore.setItemAsync(KEYS.serverDeviceId, id);
+  },
+
+  async deleteServerDeviceId(): Promise<void> {
+    await SecureStore.deleteItemAsync(KEYS.serverDeviceId);
+  },
+
+  async getUsername(): Promise<string | null> {
+    return SecureStore.getItemAsync(KEYS.username);
+  },
+
+  async saveUsername(username: string): Promise<void> {
+    await SecureStore.setItemAsync(KEYS.username, username);
+  },
+
+  async deleteUsername(): Promise<void> {
+    await SecureStore.deleteItemAsync(KEYS.username);
   },
 
   async isRegistered(): Promise<boolean> {

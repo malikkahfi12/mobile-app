@@ -26,8 +26,16 @@ export interface RegisterParams {
   platform?: string;
 }
 
+export interface DeviceInfo {
+  id: string;
+  deviceName?: string;
+  platform?: string;
+  lastSeenAt?: string;
+}
+
 export interface RegisterResponse {
   user: User;
+  device: DeviceInfo;
   accessToken: string;
   refreshToken: string;
 }
@@ -50,6 +58,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   user: User;
+  device: DeviceInfo;
   accessToken: string;
   refreshToken: string;
 }

@@ -22,12 +22,25 @@ export default function OnboardingScreen() {
     setError(null);
 
     try {
+      console.log("[DEBUG] onboarding: ensureDeviceKeypair start");
       await ensureDeviceKeypair();
+      console.log("[DEBUG] onboarding: ensureDeviceKeypair done");
+
+      console.log("[DEBUG] onboarding: ensureDeviceRegistered start");
       await ensureDeviceRegistered();
+      console.log("[DEBUG] onboarding: ensureDeviceRegistered done");
+
+      console.log("[DEBUG] onboarding: loginWithDeviceChallenge start");
       await loginWithDeviceChallenge();
+      console.log("[DEBUG] onboarding: loginWithDeviceChallenge done, navigating");
+
       await secureStore.setOnboardingCompleted();
       router.replace("/home");
     } catch (err) {
+      console.log(
+        "[DEBUG] onboarding: FAILED",
+        err instanceof Error ? err.message : String(err),
+      );
       const message =
         err instanceof Error
           ? err.message
