@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUnifiedSearch } from "@/hooks/search/useUnifiedSearch";
 import { useSearchCenter } from "@/hooks/search/useSearchCenter";
 import { resolveToStop } from "@/hooks/search/resolveToStop";
@@ -42,6 +43,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
   const swapOriginDestination = useLocationStore((s) => s.swapOriginDestination);
   const setBottomSheet = useUIStore((s) => s.setBottomSheet);
   const closeBottomSheet = useUIStore((s) => s.closeBottomSheet);
+  const insets = useSafeAreaInsets();
 
   const [activeSearch, setActiveSearch] = useState<SearchMode>(null);
   const [searchText, setSearchText] = useState("");
@@ -561,6 +563,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
                 getItemLayout={getItemLayout}
                 className="flex-1"
                 keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
               />
             )}
           </View>

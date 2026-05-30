@@ -4,6 +4,7 @@ import BottomSheet, {
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useGuidanceStore } from "@/store/guidance.store";
 import { useRouteStore } from "@/store/route.store";
 import { useUIStore } from "@/store/ui.store";
@@ -173,6 +174,7 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
   const startGuidance = useGuidanceStore((s) => s.startGuidance);
   const setBottomSheet = useUIStore((s) => s.setBottomSheet);
   const closeBottomSheet = useUIStore((s) => s.closeBottomSheet);
+  const insets = useSafeAreaInsets();
 
   const handleStart = useCallback(async () => {
     if (!option) return;
@@ -204,10 +206,40 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
         width: 40,
       }}
       backgroundStyle={{ backgroundColor: colors.white }}
+      footerComponent={
+        option
+          ? () => (
+              <View
+                className="px-4 pt-4 bg-white border-t border-gray-100/60"
+                style={{ paddingBottom: insets.bottom + 16 }}
+              >
+                <TouchableOpacity
+                  className="items-center justify-center rounded-2xl bg-primary py-4"
+                  activeOpacity={0.7}
+                  onPress={handleStart}
+                >
+                  <View className="flex-row items-center">
+                    <Ionicons
+                      name="navigate-outline"
+                      size={20}
+                      color={colors.white}
+                    />
+                    <Text className="ml-2 text-base font-semibold text-white">
+                      Start Navigation
+                    </Text>
+                  </View>
+                  <Text className="mt-1 text-[11px] text-white/70">
+                    Begin step-by-step guidance
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )
+          : undefined
+      }
     >
       <BottomSheetScrollView
         ref={scrollRef}
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerStyle={{ paddingBottom: 8 }}
       >
         <View className="flex-row items-center justify-between px-4 pt-2 pb-2 border-b border-gray-100">
           <TouchableOpacity
@@ -278,28 +310,6 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
                   isLast={li === option.legs.length - 1}
                 />
               ))}
-            </View>
-
-            <View className="px-4 pt-6">
-              <TouchableOpacity
-                className="items-center justify-center rounded-2xl bg-primary py-4"
-                activeOpacity={0.7}
-                onPress={handleStart}
-              >
-                <View className="flex-row items-center">
-                  <Ionicons
-                    name="navigate-outline"
-                    size={20}
-                    color={colors.white}
-                  />
-                  <Text className="ml-2 text-base font-semibold text-white">
-                    Start Navigation
-                  </Text>
-                </View>
-                <Text className="mt-1 text-[11px] text-white/70">
-                  Begin step-by-step guidance
-                </Text>
-              </TouchableOpacity>
             </View>
           </>
         )}

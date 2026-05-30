@@ -6,6 +6,7 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BottomSheet, {
   BottomSheetScrollView,
   BottomSheetScrollViewMethods,
@@ -155,6 +156,7 @@ export const RouteOptionsSheet = memo(function RouteOptionsSheet({
   const scrollViewRef = useRef<BottomSheetScrollViewMethods>(null);
   const prevContentHeight = useRef(0);
   const snapPoints = useMemo(() => ["25%", "65%"], []);
+  const insets = useSafeAreaInsets();
 
   const options = useMemo(() => result?.options ?? [], [result?.options]);
   const showResults = !isLoading && !isError && options.length > 0;
@@ -204,7 +206,7 @@ export const RouteOptionsSheet = memo(function RouteOptionsSheet({
           }
           prevContentHeight.current = h;
         }}
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
       >
         <View className="px-4 pt-2 pb-3 border-b border-gray-100">
           <View className="flex-row items-center justify-between">

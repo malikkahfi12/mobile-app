@@ -15,6 +15,7 @@ import { colors } from "@/constants/colors";
 import {
   CAMERA_FOLLOW_DURATION,
   GUIDANCE_LEG_FIT_DURATION,
+  GUIDANCE_HOLD_DURATION,
 } from "@/constants/location";
 import { INITIAL_CENTER, ZOOM } from "@/constants/map";
 import { useGuidanceStepProgression } from "@/hooks/guidance/useGuidanceStepProgression";
@@ -78,13 +79,11 @@ export default function HomeScreen() {
   const [isRecenterLoading, setIsRecenterLoading] = useState(false);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
   const [guidanceBoundsPhase, setGuidanceBoundsPhase] = useState<
-    "fitting" | "following"
+    "fitting" | "holding" | "following"
   >("fitting");
   const errorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const guidanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
-  const didInitialFit = useRef(false);
+  const fitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const userHeading = useLocationStore((s) => s.heading);
   const userLocation = useLocationStore((s) => s.currentLocation);
@@ -331,38 +330,37 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (!guidanceActive) {
-      didInitialFit.current = false;
       setGuidanceBoundsPhase("fitting");
       return;
     }
 
-    if (!didInitialFit.current) {
-      didInitialFit.current = true;
-      setGuidanceBoundsPhase("fitting");
-      setFollowMode(true);
-
-      if (guidanceTimeoutRef.current) {
-        clearTimeout(guidanceTimeoutRef.current);
-      }
-
-      guidanceTimeoutRef.current = setTimeout(() => {
-        setGuidanceBoundsPhase("following");
-      }, GUIDANCE_LEG_FIT_DURATION);
-
-      return () => {
-        if (guidanceTimeoutRef.current) {
-          clearTimeout(guidanceTimeoutRef.current);
-        }
-      };
-    }
-
-    setGuidanceBoundsPhase("following");
+    setGuidanceBoundsPhase("fitting");
     setFollowMode(true);
+
+    if (fitTimeoutRef.current) clearTimeout(fitTimeoutRef.current);
+    if (holdTimeoutRef.current) clearTimeout(holdTimeoutRef.current);
+
+    const fitId = setTimeout(() => {
+      setGuidanceBoundsPhase("holding");
+    }, GUIDANCE_LEG_FIT_DURATION);
+
+    const holdId = setTimeout(() => {
+      setGuidanceBoundsPhase("following");
+    }, GUIDANCE_LEG_FIT_DURATION + GUIDANCE_HOLD_DURATION);
+
+    fitTimeoutRef.current = fitId;
+    holdTimeoutRef.current = holdId;
+
+    return () => {
+      clearTimeout(fitId);
+      clearTimeout(holdId);
+    };
   }, [guidanceActive, guidanceLegIndex]);
 
   const showRouteBounds = isRouteActive && !guidanceActive;
   const showGuidanceBounds =
-    guidanceActive && guidanceBoundsPhase === "fitting";
+    guidanceActive &&
+    (guidanceBoundsPhase === "fitting" || guidanceBoundsPhase === "holding");
   const effectiveCameraBounds = showRouteBounds
     ? routeBounds
     : showGuidanceBounds
@@ -451,7 +449,7 @@ export default function HomeScreen() {
       {stopsError && !stopsLoading && (
         <TouchableOpacity
           className="absolute bottom-28 left-4 right-4 rounded-lg bg-red-50 px-4 py-3"
-          style={{ bottom: insets.top > 0 ? insets.top + 96 : 96 }}
+          style={{ bottom: insets.bottom + 96 }}
           onPress={() => refetchStops()}
           activeOpacity={0.7}
         >
@@ -473,7 +471,10 @@ export default function HomeScreen() {
       )}
 
       {storeError && !showPermissionBanner && (
-        <View className="absolute bottom-28 left-4 right-4 rounded-lg bg-red-50 px-4 py-3">
+        <View
+          className="absolute left-4 right-4 rounded-lg bg-red-50 px-4 py-3"
+          style={{ bottom: insets.bottom + 112 }}
+        >
           <Text className="text-sm text-red-600">{storeError}</Text>
         </View>
       )}

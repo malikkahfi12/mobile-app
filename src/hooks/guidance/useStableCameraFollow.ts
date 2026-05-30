@@ -33,7 +33,7 @@ interface UseStableCameraFollowOptions {
   isActive: boolean;
   currentLegType: GuidanceLegType | null;
   currentLegIndex: number;
-  guidancePhase: "fitting" | "following";
+  guidancePhase: "fitting" | "holding" | "following";
 }
 
 interface StableCameraResult {
@@ -100,7 +100,7 @@ export function useStableCameraFollow({
   } | null>(null);
   const lastAppliedHeading = useRef<number | null>(null);
   const prevActive = useRef(false);
-  const prevPhase = useRef<"fitting" | "following">("fitting");
+  const prevPhase = useRef<"fitting" | "holding" | "following">("fitting");
   const prevLegIndex = useRef(currentLegIndex);
 
   const legType = currentLegType ?? "walk";

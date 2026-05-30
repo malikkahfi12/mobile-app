@@ -6,6 +6,7 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BottomSheet, {
   BottomSheetFlatList,
 } from "@gorhom/bottom-sheet";
@@ -26,6 +27,7 @@ export const StopDetailSheet = memo(function StopDetailSheet() {
   const setSelectedStop = useRouteStore((s) => s.setSelectedStop);
   const closeBottomSheet = useUIStore((s) => s.closeBottomSheet);
   const setBottomSheet = useUIStore((s) => s.setBottomSheet);
+  const insets = useSafeAreaInsets();
 
   const stopId = selectedStop?.id ?? "";
   const { data, isLoading, isError, dataUpdatedAt, refetch } = useStopDetail(stopId);
@@ -123,7 +125,7 @@ export const StopDetailSheet = memo(function StopDetailSheet() {
         data={departures}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
         ListHeaderComponent={
           <>
             {data && (

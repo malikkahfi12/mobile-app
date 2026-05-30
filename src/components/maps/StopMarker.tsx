@@ -16,7 +16,7 @@ export const StopMarker = memo(function StopMarker({
   isSelected,
   onPress,
 }: StopMarkerProps) {
-  const size = isSelected ? 40 : 36;
+  const size = isSelected ? 28 : 20;
   const bg = stop.isStation
     ? isSelected
       ? colors.primary
