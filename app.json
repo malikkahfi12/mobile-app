@@ -1,29 +1,27 @@
 {
   "expo": {
-    "name": "Patheo",
-    "slug": "patheo-mobile",
+    "name": "TransiTribe",
+    "slug": "transitribe-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "patheo",
+    "scheme": "transitribe",
     "userInterfaceStyle": "automatic",
     "platforms": [
       "ios",
       "android"
     ],
     "ios": {
-      "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.anonymous.patheomobile"
+      "icon": "./assets/images/icon.png",
+      "bundleIdentifier": "com.transitribe.app"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/images/icon.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.patheomobile",
+      "package": "com.transitribe.app",
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
@@ -41,17 +39,17 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Patheo needs your location to show nearby transit stops."
+          "locationWhenInUsePermission": "Transitribe needs your location to show nearby transit stops."
         }
       ],
       [
         "expo-splash-screen",
         {
           "backgroundColor": "#FFFFFF",
-          "image": "./assets/patheo/logo.png",
+          "image": "./assets/images/logo.png",
           "imageWidth": 200,
           "android": {
-            "image": "./assets/patheo/logo.png",
+            "image": "./assets/images/logo.png",
             "imageWidth": 200
           }
         }
