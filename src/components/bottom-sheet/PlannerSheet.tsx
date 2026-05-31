@@ -463,9 +463,9 @@ export const PlannerSheet = memo(function PlannerSheet() {
     <BottomSheet
       ref={sheetRef}
       snapPoints={SNAP_POINTS}
-      index={isSearchMode ? 1 : 1}
+      index={1}
       enableDynamicSizing={false}
-      enablePanDownToClose={!isSearchMode}
+      enablePanDownToClose={false}
       handleIndicatorStyle={{
         backgroundColor: colors.textTertiary,
         width: 40,

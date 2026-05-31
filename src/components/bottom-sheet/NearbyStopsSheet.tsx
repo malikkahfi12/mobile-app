@@ -29,7 +29,7 @@ interface NearbyStopsSheetProps {
   onClearPlaces?: () => void;
 }
 
-const EMPTY_ARRAY: never[] = [];
+const EMPTY_ARRAY: NearbyStop[] = [];
 
 function formatDistance(meters: number): string {
   if (meters < 100) return `${Math.round(meters)}m`;
