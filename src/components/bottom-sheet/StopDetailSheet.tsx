@@ -113,7 +113,7 @@ export const StopDetailSheet = memo(function StopDetailSheet() {
       ref={bottomSheetRef}
       snapPoints={snapPoints}
       index={0}
-      enablePanDownToClose
+      enablePanDownToClose={false}
       onChange={handleSheetChange}
       handleIndicatorStyle={{
         backgroundColor: colors.textTertiary,

@@ -157,7 +157,7 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
           index={0}
           enableDynamicSizing={false}
           enablePanDownToClose={false}
-          handleIndicatorStyle={{ backgroundColor: colors.textTertiary }}
+          handleIndicatorStyle={{ backgroundColor: colors.textTertiary, width: 40 }}
           backgroundStyle={{ backgroundColor: colors.white }}
         >
           <View
@@ -200,7 +200,7 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
       index={0}
       enableDynamicSizing={false}
       enablePanDownToClose={false}
-      handleIndicatorStyle={{ backgroundColor: colors.textTertiary }}
+      handleIndicatorStyle={{ backgroundColor: colors.textTertiary, width: 40 }}
       backgroundStyle={{ backgroundColor: colors.white }}
     >
       <View

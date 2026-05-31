@@ -88,7 +88,7 @@ export const BottomSheetRouter = memo(function BottomSheetRouter({
   }, [selectedStop, isStopDetailActive, closeBottomSheet]);
 
   const handleViewDetails = useCallback(() => {
-    setBottomSheet(-1, "stopDetail");
+    setBottomSheet(0, "stopDetail");
   }, [setBottomSheet]);
 
   if (isRoutingActive) {
