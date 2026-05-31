@@ -39,8 +39,6 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
   const routeOption = useGuidanceStore((s) => s.routeOption);
   const currentLegIndex = useGuidanceStore((s) => s.currentLegIndex);
   const contextualMessage = useGuidanceStore((s) => s.contextualMessage);
-  const nextStep = useGuidanceStore((s) => s.nextStep);
-  const previousStep = useGuidanceStore((s) => s.previousStep);
   const endGuidance = useGuidanceStore((s) => s.endGuidance);
 
   const currentLeg = useMemo(
@@ -55,8 +53,6 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
   }, [routeOption, currentLegIndex]);
 
   const isLastLeg = currentLegIndex >= (routeOption?.legs.length ?? 0) - 1;
-  const hasPrevLeg = currentLegIndex > 0;
-  const hasNextLeg = currentLegIndex < (routeOption?.legs.length ?? 0) - 1;
   const isTransfer =
     currentLeg?.type === "TRANSIT" && nextLeg?.type === "TRANSIT";
 
@@ -149,14 +145,6 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
     useRouteStore.getState().clearSelection();
     useUIStore.getState().closeBottomSheet();
   }, [endGuidance]);
-
-  const handleNext = useCallback(() => {
-    nextStep();
-  }, [nextStep]);
-
-  const handlePrev = useCallback(() => {
-    previousStep();
-  }, [previousStep]);
 
   const guardState = !isActive || !currentLeg || !routeOption;
 
@@ -369,22 +357,10 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
           </View>
         )}
 
-        <View className="flex-row items-center justify-between mt-3">
-          <TouchableOpacity
-            onPress={handlePrev}
-            disabled={!hasPrevLeg}
-            className={`h-10 w-10 items-center justify-center rounded-full ${
-              hasPrevLeg ? "bg-gray-100" : "opacity-30"
-            }`}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="chevron-back" size={20} color={colors.textSecondary} />
-          </TouchableOpacity>
-
+        <View className="flex-row items-center justify-center mt-3">
           <TouchableOpacity
             onPress={handleEnd}
-            className="mx-2 flex-row items-center rounded-xl bg-red-50 px-4 py-2.5"
+            className="flex-row items-center rounded-xl bg-red-50 px-4 py-2.5"
             hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
             activeOpacity={0.7}
           >
@@ -393,27 +369,6 @@ export const GuidanceSheet = memo(function GuidanceSheet() {
               End
             </Text>
           </TouchableOpacity>
-
-          {hasNextLeg ? (
-            <TouchableOpacity
-              onPress={handleNext}
-              className="flex-1 ml-2 items-center justify-center rounded-xl bg-primary py-2.5"
-              activeOpacity={0.7}
-            >
-              <Text className="text-[14px] font-semibold text-white">
-                Next
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <View className="flex-1 ml-2 items-center justify-center rounded-xl bg-primary/10 py-2.5">
-              <View className="flex-row items-center">
-                <Ionicons name="flag" size={16} color={colors.primary} />
-                <Text className="ml-1.5 text-[14px] font-semibold text-primary">
-                  Finish
-                </Text>
-              </View>
-            </View>
-          )}
         </View>
 
         <View className="flex-row items-center justify-center gap-4 mt-2">

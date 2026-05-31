@@ -53,12 +53,12 @@ export function MapCamera({
       return;
     }
 
-    if (followMode && followUserLocation) return;
-
     if (recenterTrigger !== undefined) {
       lastCenterKeyRef.current = null;
       lastFollowKeyRef.current = null;
     }
+
+    if (followMode && followUserLocation) return;
 
     const key = `${center[0]},${center[1]},${zoom}`;
     if (lastCenterKeyRef.current === key) return;

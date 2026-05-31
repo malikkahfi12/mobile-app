@@ -208,11 +208,13 @@ export default function HomeScreen() {
     }
   }, [selectedStop]);
 
-  const handleRecenter = useCallback(async () => {
+    const handleRecenter = useCallback(async () => {
     setRecenterTrigger((t) => t + 1);
     if (errorTimeoutRef.current) {
       clearTimeout(errorTimeoutRef.current);
     }
+
+    setIsRecenterLoading(true);
 
     const lastKnown = await getLastKnownPosition();
     if (lastKnown) {
@@ -224,17 +226,20 @@ export default function HomeScreen() {
         lastKnown.accuracy,
       );
       setFollowMode(true);
+      setIsRecenterLoading(false);
     }
 
-    setIsRecenterLoading(true);
     const fresh = await fetchLocation();
-    setIsRecenterLoading(false);
 
     if (fresh) {
       setRecenterError(false);
       setCameraCenter([fresh.longitude, fresh.latitude]);
       setFollowMode(true);
+      if (!lastKnown) {
+        setIsRecenterLoading(false);
+      }
     } else if (!lastKnown) {
+      setIsRecenterLoading(false);
       Vibration.vibrate(100);
       setRecenterError(true);
       errorTimeoutRef.current = setTimeout(() => {

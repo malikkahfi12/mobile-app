@@ -16,5 +16,4 @@ export {
   TRIP_NOTIFICATION_ID,
   CATEGORY_TRIP,
   ACTION_END_TRIP,
-  ACTION_NEXT_STEP,
 } from "./notifications.types";

@@ -30,8 +30,6 @@ export function useTripNotification({ enabled }: { enabled: boolean }) {
       if (action === "end_trip") {
         useGuidanceStore.getState().endGuidance();
         notifyTripEnded();
-      } else if (action === "next_step") {
-        useGuidanceStore.getState().nextStep();
       }
     });
     return () => subscription.remove();
