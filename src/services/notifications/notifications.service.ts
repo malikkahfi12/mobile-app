@@ -4,7 +4,6 @@ import type { NotificationPermissionStatus } from "./notifications.types";
 import {
   CATEGORY_TRIP,
   ACTION_END_TRIP,
-  ACTION_NEXT_STEP,
 } from "./notifications.types";
 
 const CHANNEL_ID = "trip-channel";
@@ -51,29 +50,17 @@ export async function registerTripCategory(): Promise<void> {
         isAuthenticationRequired: false,
       },
     },
-    {
-      identifier: ACTION_NEXT_STEP,
-      buttonTitle: "Next",
-      options: {
-        opensAppToForeground: true,
-        isDestructive: false,
-        isAuthenticationRequired: false,
-      },
-    },
   ]);
 }
 
-export type TripAction = typeof ACTION_END_TRIP | typeof ACTION_NEXT_STEP;
+export type TripAction = typeof ACTION_END_TRIP;
 
 export function onTripAction(
   callback: (action: TripAction) => void,
 ): Notifications.Subscription {
   return Notifications.addNotificationResponseReceivedListener((response) => {
     const actionId = response.actionIdentifier;
-    if (
-      actionId === ACTION_END_TRIP ||
-      actionId === ACTION_NEXT_STEP
-    ) {
+    if (actionId === ACTION_END_TRIP) {
       callback(actionId);
     }
   });

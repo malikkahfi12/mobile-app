@@ -10,15 +10,14 @@ interface RoutePolylineProps {
 }
 
 const WALK_COLOR = "#9CA3AF";
+const PAST_COLOR = "#9CA3AF";
 const TRANSIT_COLOR = colors.primary;
 const WALK_WIDTH = 2;
 const TRANSIT_WIDTH = 4;
 const ACTIVE_TRANSIT_WIDTH = 5;
 const WALK_DASH = [4, 4];
 const WALK_OPACITY = 0.6;
-
-const PAST_OPACITY = 0.1;
-const FUTURE_OPACITY = 0.35;
+const PAST_TRANSIT_OPACITY = 0.7;
 
 const LINE_LAYOUT = {
   "line-cap": "round" as const,
@@ -27,18 +26,6 @@ const LINE_LAYOUT = {
 
 function isFiniteCoord(c: [number, number]): boolean {
   return Number.isFinite(c[0]) && Number.isFinite(c[1]);
-}
-
-function getOpacity(
-  isWalk: boolean,
-  legIndex: number,
-  activeLegIndex?: number,
-): number {
-  if (activeLegIndex == null) return isWalk ? WALK_OPACITY : 1;
-
-  if (legIndex < activeLegIndex) return PAST_OPACITY;
-  if (legIndex > activeLegIndex) return FUTURE_OPACITY;
-  return isWalk ? WALK_OPACITY : 1;
 }
 
 function getLineCoordinates(leg: Leg): [number, number][] | null {
@@ -59,6 +46,8 @@ interface LegSourceData {
   layerId: string;
   coords: [number, number][];
   isWalk: boolean;
+  isPast: boolean;
+  color: string;
   opacity: number;
   width: number;
 }
@@ -72,13 +61,17 @@ function buildLegSources(
       const coords = getLineCoordinates(leg);
       if (!coords) return null;
       const isWalk = leg.type === "WALK";
-      const opacity = getOpacity(isWalk, li, activeLegIndex);
+      const isPast = activeLegIndex != null && li < activeLegIndex;
       const isActive = activeLegIndex != null && li === activeLegIndex && !isWalk;
+      const color = isPast ? PAST_COLOR : isWalk ? WALK_COLOR : TRANSIT_COLOR;
+      const opacity = isWalk ? WALK_OPACITY : isPast ? PAST_TRANSIT_OPACITY : 1;
       return {
         sourceId: `route-leg-${li}`,
         layerId: `route-leg-layer-${li}`,
         coords,
         isWalk,
+        isPast,
+        color,
         opacity,
         width: isActive
           ? ACTIVE_TRANSIT_WIDTH
@@ -117,20 +110,12 @@ export const RoutePolyline = memo(function RoutePolyline({
           <Layer
             id={leg.layerId}
             type="line"
-            paint={
-              leg.isWalk
-                ? {
-                    "line-color": WALK_COLOR,
-                    "line-width": leg.width,
-                    "line-dasharray": WALK_DASH,
-                    "line-opacity": leg.opacity,
-                  }
-                : {
-                    "line-color": TRANSIT_COLOR,
-                    "line-width": leg.width,
-                    "line-opacity": leg.opacity,
-                  }
-            }
+            paint={{
+              "line-color": leg.color,
+              "line-width": leg.width,
+              ...(leg.isWalk ? { "line-dasharray": WALK_DASH } : {}),
+              "line-opacity": leg.opacity,
+            }}
             layout={LINE_LAYOUT}
           />
         </GeoJSONSource>
