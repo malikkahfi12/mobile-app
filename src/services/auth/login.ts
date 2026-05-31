@@ -42,7 +42,6 @@ export async function loginWithDeviceChallenge(): Promise<void> {
   let username = useAuthStore.getState().username;
   if (!username) {
     username = await secureStore.getUsername();
-    console.log("[DEBUG] login: username from SecureStore fallback =", username);
     if (username) {
       useAuthStore.getState().setUsername(username);
     }
@@ -61,27 +60,13 @@ export async function loginWithDeviceChallenge(): Promise<void> {
 
   const privateKey = await secureStore.getPrivateKey();
 
-  console.log(
-    "[DEBUG] login: identity check",
-    "username=", username,
-    "deviceId=", deviceId,
-    "privateKey=", !!privateKey,
-  );
-
   if (!username || !deviceId || !privateKey) {
     throw new Error("Device identity not initialized. Register first.");
   }
 
-  console.log("[DEBUG] login: POST /auth/challenge");
   const challenge = await requestChallenge(username, deviceId);
-  console.log("[DEBUG] login: challenge received challengeId=", challenge.challengeId);
 
   const signature = signChallenge(challenge.challenge, privateKey);
-  console.log("[DEBUG] login: signed signatureLen=", signature.length);
-
-  console.log("[DEBUG] login: POST /auth/login");
-  console.log("[DEBUG] login: challengeId=", challenge.challengeId);
-  console.log("[DEBUG] login: signature=", signature);
 
   let loginBody;
   try {
@@ -90,22 +75,7 @@ export async function loginWithDeviceChallenge(): Promise<void> {
       signature,
     });
     loginBody = loginResponse.data;
-    console.log(
-      "[DEBUG] login: POST /auth/login response",
-      "status=", loginResponse.status,
-      "success=", loginBody?.success,
-      "data=", JSON.stringify(loginBody?.data),
-      "message=", loginBody?.message,
-      "full=", JSON.stringify(loginBody),
-    );
   } catch (err: unknown) {
-    const axiosErr = err as { response?: { status: number; data: unknown }; message?: string };
-    console.log(
-      "[DEBUG] login: POST /auth/login FAILED",
-      "status=", axiosErr?.response?.status ?? "N/A",
-      "body=", JSON.stringify(axiosErr?.response?.data ?? {}),
-      "message=", axiosErr?.message ?? "unknown",
-    );
     throw err;
   }
 
@@ -116,8 +86,6 @@ export async function loginWithDeviceChallenge(): Promise<void> {
   }
 
   const loginData = loginBody.data as LoginResponse;
-
-  console.log("[DEBUG] login: SUCCESS user=", loginData.user.username);
 
   tokenManager.setAccessToken(loginData.accessToken);
   await tokenManager.setRefreshToken(loginData.refreshToken);
