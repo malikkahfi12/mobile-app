@@ -12,6 +12,9 @@ import {
 import { router } from "expo-router";
 import { logoutUser } from "@/services/auth/logout";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useUIStore } from "@/store/ui.store";
+import { useRouteStore } from "@/store/route.store";
+import { useGuidanceStore } from "@/store/guidance.store";
 
 interface ProfileCardProps {
   icon: React.ComponentProps<typeof Ionicons>["name"];
@@ -71,6 +74,9 @@ export default function ProfileScreen() {
         style: "destructive",
         onPress: async () => {
           setIsLoggingOut(true);
+          useUIStore.getState().closeBottomSheet();
+          useRouteStore.getState().clearSelection();
+          useGuidanceStore.getState().endGuidance();
           await logoutUser();
           router.replace("/onboarding");
         },

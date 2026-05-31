@@ -447,7 +447,7 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {!stopsLoading && isGranted && !storeError && !isRoutingActive && (
+      {!isRoutingActive && (
         <SearchBarOverlay />
       )}
 
