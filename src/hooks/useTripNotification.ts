@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import { useGuidanceStore } from "@/store/guidance.store";
 import { useLocationStore } from "@/store/location.store";
+import { useUIStore } from "@/store/ui.store";
+import { useRouteStore } from "@/store/route.store";
 import {
   registerTripCategory,
   onTripAction,
@@ -28,6 +30,8 @@ export function useTripNotification({ enabled }: { enabled: boolean }) {
         return;
       }
       if (action === "end_trip") {
+        useUIStore.getState().closeBottomSheet();
+        useRouteStore.getState().clearSelection();
         useGuidanceStore.getState().endGuidance();
         notifyTripEnded();
       }
