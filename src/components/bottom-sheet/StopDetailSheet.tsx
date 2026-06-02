@@ -1,25 +1,25 @@
-import { useCallback, useEffect, useMemo, useRef, memo } from "react";
+import { DepartureRow } from "@/components/stop/DepartureRow";
+import { StopHeader } from "@/components/stop/StopHeader";
+import { colors } from "@/constants/colors";
+import { useNearbyStops } from "@/hooks/stops/useNearbyStops";
+import { useStopDetail } from "@/hooks/stops/useStopDetail";
+import { useQuickRoute } from "@/hooks/useQuickRoute";
+import type { Departure } from "@/services/departures/departures.types";
+import { useFavoritesStore } from "@/store/favorites.store";
+import { useRouteStore } from "@/store/route.store";
+import { useUIStore } from "@/store/ui.store";
+import { Ionicons } from "@expo/vector-icons";
+import BottomSheet, {
+  BottomSheetFlatList,
+} from "@gorhom/bottom-sheet";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import {
   ActivityIndicator,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import BottomSheet, {
-  BottomSheetFlatList,
-} from "@gorhom/bottom-sheet";
-import { StopHeader } from "@/components/stop/StopHeader";
-import { DepartureRow } from "@/components/stop/DepartureRow";
-import { useStopDetail } from "@/hooks/stops/useStopDetail";
-import { useNearbyStops } from "@/hooks/stops/useNearbyStops";
-import { useQuickRoute } from "@/hooks/useQuickRoute";
-import { useRouteStore } from "@/store/route.store";
-import { useUIStore } from "@/store/ui.store";
-import { useFavoritesStore } from "@/store/favorites.store";
-import { colors } from "@/constants/colors";
-import type { Departure } from "@/services/departures/departures.types";
 
 export const StopDetailSheet = memo(function StopDetailSheet() {
   const bottomSheetRef = useRef<BottomSheet>(null);
