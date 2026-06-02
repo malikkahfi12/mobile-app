@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, memo } from "react";
 import { useRouting } from "@/hooks/api/useRouting";
+import { useGuidanceStore } from "@/store/guidance.store";
 import { useLocationStore } from "@/store/location.store";
 import { useRouteStore } from "@/store/route.store";
 import { useUIStore } from "@/store/ui.store";
 import { RouteOptionsSheet } from "./RouteOptionsSheet";
 import { StopDetailSheet } from "./StopDetailSheet";
 import { NearbyStopsSheet } from "./NearbyStopsSheet";
-import { GuidanceSheet } from "./GuidanceSheet";
 import { PlannerSheet } from "./PlannerSheet";
 import { JourneyDetailSheet } from "./JourneyDetailSheet";
 import { RouteDetailSheet } from "./RouteDetailSheet";
@@ -49,7 +49,7 @@ export const BottomSheetRouter = memo(function BottomSheetRouter({
 
   const isRoutingActive = bottomSheetContent === "routingResult";
   const isStopDetailActive = bottomSheetContent === "stopDetail";
-  const isGuidanceActive = bottomSheetContent === "guidance";
+  const isGuidanceActive = useGuidanceStore((s) => s.isActive);
   const isPlannerActive = bottomSheetContent === "planner";
   const isJourneyDetailActive = bottomSheetContent === "journeyDetail";
   const isRouteDetailActive = bottomSheetContent === "routeDetail";
@@ -111,10 +111,6 @@ export const BottomSheetRouter = memo(function BottomSheetRouter({
 
   if (isStopDetailActive) {
     return <StopDetailSheet />;
-  }
-
-  if (isGuidanceActive) {
-    return <GuidanceSheet />;
   }
 
   if (isPlannerActive) {
