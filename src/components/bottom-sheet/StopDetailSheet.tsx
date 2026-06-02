@@ -5,7 +5,6 @@ import { useNearbyStops } from "@/hooks/stops/useNearbyStops";
 import { useStopDetail } from "@/hooks/stops/useStopDetail";
 import { useQuickRoute } from "@/hooks/useQuickRoute";
 import type { Departure } from "@/services/departures/departures.types";
-import { useFavoritesStore } from "@/store/favorites.store";
 import { useRouteStore } from "@/store/route.store";
 import { useUIStore } from "@/store/ui.store";
 import { Ionicons } from "@expo/vector-icons";
@@ -37,11 +36,6 @@ export const StopDetailSheet = memo(function StopDetailSheet() {
     nearbyStops,
   );
 
-  const isSaved = useFavoritesStore(
-    (s) => (data ? s.stops.some((f) => f.id === data.id) : false),
-  );
-  const toggleFavorite = useFavoritesStore((s) => s.toggle);
-
   const snapPoints = useMemo(() => ["45%", "85%"], []);
 
   useEffect(() => {
@@ -63,19 +57,6 @@ export const StopDetailSheet = memo(function StopDetailSheet() {
     },
     [handleClose],
   );
-
-  const handleToggleFavorite = useCallback(() => {
-    if (!data) return;
-    toggleFavorite({
-      id: data.id,
-      name: data.name,
-      code: data.code ?? null,
-      latitude: data.latitude,
-      longitude: data.longitude,
-      isStation: data.isStation,
-      savedAt: 0,
-    });
-  }, [data, toggleFavorite]);
 
   const departures = data?.departures ?? [];
   const distanceMeters =
@@ -147,26 +128,6 @@ export const StopDetailSheet = memo(function StopDetailSheet() {
                 <StopHeader stop={data} distanceMeters={distanceMeters} />
 
                 <View className="mx-4 mt-3">
-                  <TouchableOpacity
-                    onPress={handleToggleFavorite}
-                    className={`flex-row items-center self-start rounded-full px-4 py-2 ${
-                      isSaved ? "bg-primary/15" : "bg-gray-100"
-                    }`}
-                  >
-                    <Ionicons
-                      name={isSaved ? "bookmark" : "bookmark-outline"}
-                      size={16}
-                      color={isSaved ? colors.primary : colors.textTertiary}
-                    />
-                    <Text
-                      className={`ml-2 text-sm font-medium ${
-                        isSaved ? "text-primary" : "text-gray-500"
-                      }`}
-                    >
-                      {isSaved ? "Saved" : "Save Stop"}
-                    </Text>
-                  </TouchableOpacity>
-
                   <View className="mt-3 flex-row gap-2">
                     <TouchableOpacity
                       onPress={routeToHere}
