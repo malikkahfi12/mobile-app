@@ -187,8 +187,8 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
     }
 
     startGuidance(option);
-    setBottomSheet(0, "guidance");
-  }, [option, startGuidance, setBottomSheet]);
+    closeBottomSheet();
+  }, [option, startGuidance, closeBottomSheet]);
 
   const handleBack = useCallback(() => {
     setBottomSheet(1, "routingResult");

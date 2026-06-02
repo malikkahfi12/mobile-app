@@ -1,4 +1,5 @@
 import { BottomSheetRouter } from "@/components/bottom-sheet/BottomSheetRouter";
+import { GuidanceCard } from "@/components/guidance/GuidanceCard";
 import { SearchBarOverlay } from "@/components/home/SearchBarOverlay";
 import { TransitribeMap } from "@/components/maps/TransitribeMap";
 import { PlaceMarker } from "@/components/maps/PlaceMarker";
@@ -63,7 +64,7 @@ export default function HomeScreen() {
   const guidanceLegIndex = useGuidanceStore((s) => s.currentLegIndex);
   const isRoutingActive =
     bottomSheetContent === "routingResult" ||
-    bottomSheetContent === "guidance" ||
+    guidanceActive ||
     bottomSheetContent === "planner" ||
     bottomSheetContent === "journeyDetail";
 
@@ -490,6 +491,8 @@ export default function HomeScreen() {
         hasError={recenterError}
         isFollowing={effectiveFollowMode}
       />
+
+      <GuidanceCard />
 
       <BottomSheetRouter
         nearbyStops={nearbyStops}
