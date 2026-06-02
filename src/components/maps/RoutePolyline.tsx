@@ -2,7 +2,6 @@ import { memo, useMemo } from "react";
 import { GeoJSONSource, Layer } from "@maplibre/maplibre-react-native";
 import type { Leg } from "@/services/routing/routing.types";
 import { parseCoordinatePair } from "@/lib/map.helpers";
-import { colors } from "@/constants/colors";
 
 interface RoutePolylineProps {
   legs: Leg[];
@@ -11,7 +10,7 @@ interface RoutePolylineProps {
 
 const WALK_COLOR = "#9CA3AF";
 const PAST_COLOR = "#9CA3AF";
-const TRANSIT_COLOR = colors.primary;
+const TRANSIT_COLOR = "#0000FF";
 const WALK_WIDTH = 2;
 const TRANSIT_WIDTH = 4;
 const ACTIVE_TRANSIT_WIDTH = 5;
@@ -118,6 +117,23 @@ export const RoutePolyline = memo(function RoutePolyline({
             }}
             layout={LINE_LAYOUT}
           />
+          {!leg.isWalk && (
+            <Layer
+              id={`${leg.layerId}-arrows`}
+              type="symbol"
+              paint={{
+                "text-color": leg.color,
+                "text-opacity": leg.opacity,
+              }}
+              layout={{
+                "symbol-placement": "line",
+                "text-field": "►",
+                "text-size": 10,
+                "text-allow-overlap": true,
+                "symbol-spacing": 80,
+              }}
+            />
+          )}
         </GeoJSONSource>
       ))}
     </>
