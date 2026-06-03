@@ -25,6 +25,7 @@ export const StopMarker = memo(function StopMarker({
       ? colors.primary
       : colors.white;
   const iconColor = stop.isStation || isSelected ? colors.white : colors.primary;
+  const iconSize = size * (stop.isStation ? 0.5 : 0.42);
   const borderColor = isSelected ? colors.white : colors.borderLight;
 
   return (
@@ -43,14 +44,14 @@ export const StopMarker = memo(function StopMarker({
             borderRadius: size / 2,
             backgroundColor: bg,
             borderColor,
-            borderWidth: isSelected ? 2 : 1.5,
+            borderWidth: 1.5,
             transform: [{ scale: isSelected ? 1.1 : 1 }],
           },
         ]}
       >
         <Ionicons
-          name={stop.isStation ? "train-outline" : "bus-outline"}
-          size={size * 0.5}
+          name={stop.isStation ? "train-outline" : "bus"}
+          size={iconSize}
           color={iconColor}
         />
       </View>

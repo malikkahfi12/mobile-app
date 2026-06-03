@@ -31,6 +31,8 @@ export interface DeviceInfo {
   deviceName?: string;
   platform?: string;
   lastSeenAt?: string;
+  createdAt?: string;
+  isCurrent?: boolean;
 }
 
 export interface RegisterResponse {

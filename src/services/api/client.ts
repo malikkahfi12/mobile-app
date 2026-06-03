@@ -143,7 +143,18 @@ async function post<T>(path: string, data?: unknown): Promise<T> {
   throw new ApiError(body?.message || "Request failed", response.status);
 }
 
-export { get, post };
+async function del<T>(path: string): Promise<T> {
+  const response = await client.delete(path);
+  const body = response.data;
+
+  if (body?.success) {
+    return body.data as T;
+  }
+
+  throw new ApiError(body?.message || "Request failed", response.status);
+}
+
+export { get, post, del };
 
 export function setAuthToken(token: string): void {
   tokenManager.setAccessToken(token);
