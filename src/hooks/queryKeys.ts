@@ -49,6 +49,10 @@ export const queryKeys = {
     shape: (tripId: string) =>
       [...queryKeys.trips.all, "shape", tripId] as const,
   },
+
+  devices: {
+    all: ["devices"] as const,
+  },
 };
 
 export function invalidateStops() {
