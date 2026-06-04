@@ -1,6 +1,7 @@
 import type { Leg, RouteOption } from "@/services/routing/routing.types";
 import type { RouteStop } from "@/services/routes/routes.types";
 import { parseCoordinatePair } from "./map.helpers";
+import i18n from "@/lib/i18n";
 
 export function getTotalDuration(legs: Leg[]): number {
   return Math.round(
@@ -71,20 +72,20 @@ export function getLegLabel(leg: Leg): string {
   if (leg.type === "WALK") {
     const d = leg.distanceMeters;
     if (d != null) {
-      if (d >= 1000) return `Walk ${(d / 1000).toFixed(1)}km`;
-      return `Walk ${Math.round(d)}m`;
+      const dist = d >= 1000 ? `${(d / 1000).toFixed(1)}km` : `${Math.round(d)}m`;
+      return `${i18n.t("common.walk")} ${dist}`;
     }
-    return "Walk";
+    return i18n.t("common.walk");
   }
-  return leg.routeName || "Transit";
+  return leg.routeName || i18n.t("common.transit");
 }
 
 export function getLegDetail(leg: Leg): string {
   if (leg.type === "TRANSIT") {
     const parts: string[] = [];
     const min = Math.round(leg.durationSeconds / 60);
-    if (min > 0) parts.push(`${min} min ride`);
-    if (leg.routeName) parts.push(`Line ${leg.routeName}`);
+    if (min > 0) parts.push(`${min}${i18n.t("guidance.minRide")}`);
+    if (leg.routeName) parts.push(`${i18n.t("journey.linePrefix")}${leg.routeName}`);
     return parts.join(" · ");
   }
   return "";
@@ -112,35 +113,31 @@ export function formatETATime(seconds: number): string {
 }
 
 export function getBoardingInstruction(leg: Leg): string {
-  const routeName = leg.routeName || "transit";
+  const routeName = leg.routeName || i18n.t("common.transit");
   const headsign = leg.headsign;
-  if (headsign) return `Board ${routeName} toward ${headsign}`;
-  return `Take ${routeName}`;
+  if (headsign) return i18n.t("guidance.boardToward", { routeName, headsign });
+  return i18n.t("guidance.takeRoute", { routeName });
 }
 
 export function getWalkingInstruction(leg: Leg): string {
   const distance = leg.distanceMeters;
   const durationMin = Math.round(leg.durationSeconds / 60);
   if (distance != null && durationMin > 0) {
-    if (distance >= 1000) {
-      return `Walk ${(distance / 1000).toFixed(1)}km to ${leg.toStopName}`;
-    }
-    return `Walk ${Math.round(distance)}m to ${leg.toStopName} (${durationMin} min)`;
+    const dist = distance >= 1000 ? `${(distance / 1000).toFixed(1)}km` : `${Math.round(distance)}m`;
+    return `${i18n.t("common.walk")} ${dist} to ${leg.toStopName} (${durationMin} min)`;
   }
   if (distance != null) {
-    if (distance >= 1000) {
-      return `Walk ${(distance / 1000).toFixed(1)}km to ${leg.toStopName}`;
-    }
-    return `Walk ${Math.round(distance)}m to ${leg.toStopName}`;
+    const dist = distance >= 1000 ? `${(distance / 1000).toFixed(1)}km` : `${Math.round(distance)}m`;
+    return `${i18n.t("common.walk")} ${dist} to ${leg.toStopName}`;
   }
-  return `Walk to ${leg.toStopName}`;
+  return i18n.t("guidance.walkTo", { stopName: leg.toStopName });
 }
 
 export function getTransferText(leg: Leg, nextLeg?: Leg): string | null {
   if (leg.type !== "TRANSIT" || !nextLeg || nextLeg.type !== "TRANSIT")
     return null;
-  const routeName = nextLeg.routeName || "next route";
-  return `Transfer to ${routeName} at ${leg.toStopName}`;
+  const routeName = nextLeg.routeName || i18n.t("guidance.nextRoute");
+  return i18n.t("guidance.transferAt", { routeName, stopName: leg.toStopName });
 }
 
 export function getInstructionTitle(
@@ -149,12 +146,12 @@ export function getInstructionTitle(
   destinationName?: string | null,
 ): string {
   if (isLastLeg) {
-    if (leg.type === "WALK") return destinationName ? `Arrive at ${destinationName}` : "Arrive at destination";
-    return leg.toStopName ? `Get off at ${leg.toStopName}` : "Get off";
+    if (leg.type === "WALK") return destinationName ? i18n.t("guidance.arriveAt", { destination: destinationName }) : i18n.t("guidance.arriveDestination");
+    return leg.toStopName ? i18n.t("guidance.getOffAt", { stopName: leg.toStopName }) : i18n.t("guidance.getOff");
   }
-  if (leg.type === "WALK") return `Walk to ${leg.toStopName}`;
-  const routeName = leg.routeName || "transit";
-  return `Take ${routeName}`;
+  if (leg.type === "WALK") return i18n.t("guidance.walkTo", { stopName: leg.toStopName });
+  const routeName = leg.routeName || i18n.t("common.transit");
+  return i18n.t("guidance.takeRoute", { routeName });
 }
 
 export function getInstructionSubtitle(leg: Leg, isLastLeg: boolean): string {
@@ -175,7 +172,7 @@ export function getInstructionSubtitle(leg: Leg, isLastLeg: boolean): string {
   if (isLastLeg) return parts.join(" · ");
 
   if (leg.type === "TRANSIT" && leg.headsign) {
-    parts.push(`toward ${leg.headsign}`);
+    parts.push(i18n.t("guidance.toward", { headsign: leg.headsign }));
   }
 
   return parts.join(" · ");

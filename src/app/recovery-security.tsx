@@ -1,6 +1,7 @@
 import { colors } from "@/constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Text,
@@ -17,6 +18,7 @@ import {
 } from "@/lib/googleSignIn";
 
 export default function RecoverySecurityScreen() {
+  const { t } = useTranslation();
   const googleEmail = useGoogleRecoveryStore((s) => s.googleEmail);
   const isConnected = useGoogleRecoveryStore((s) => s.isConnected);
 
@@ -67,7 +69,7 @@ export default function RecoverySecurityScreen() {
     <View className="flex-1 bg-gray-50">
       <View className="mx-4 mt-6 overflow-hidden rounded-xl bg-white">
         <Text className="px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
-          Recovery
+          {t("recovery.sectionHeader")}
         </Text>
 
         <View className="px-4 py-3.5">
@@ -88,12 +90,12 @@ export default function RecoverySecurityScreen() {
 
             <View className="ml-3 flex-1">
               <Text className="text-[15px] font-semibold text-gray-900">
-                Google Recovery
+                {t("recovery.googleRecovery")}
               </Text>
               <Text className="mt-0.5 text-xs text-gray-400">
                 {isConnected
                   ? googleEmail
-                  : "Google Recovery not connected"}
+                  : t("recovery.googleNotConnected")}
               </Text>
             </View>
 
@@ -105,7 +107,7 @@ export default function RecoverySecurityScreen() {
                 className="rounded-xl border border-gray-200 px-3 py-1.5"
               >
                 <Text className="text-[13px] font-semibold text-gray-700">
-                  Change
+                  {t("recovery.change")}
                 </Text>
               </TouchableOpacity>
             ) : (
@@ -116,7 +118,7 @@ export default function RecoverySecurityScreen() {
                 className="rounded-xl bg-primary px-4 py-2"
               >
                 <Text className="text-[13px] font-semibold text-white">
-                  Connect
+                  {t("recovery.connect")}
                 </Text>
               </TouchableOpacity>
             )}
@@ -132,7 +134,7 @@ export default function RecoverySecurityScreen() {
 
       <View className="mx-4 mt-6 overflow-hidden rounded-xl bg-white">
         <Text className="px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
-          How it works
+          {t("recovery.howItWorks")}
         </Text>
 
         <View className="flex-row px-4 py-3.5">
@@ -144,9 +146,7 @@ export default function RecoverySecurityScreen() {
             />
           </View>
           <Text className="ml-3 flex-1 text-[13px] leading-5 text-gray-500">
-            Google Recovery lets you regain access to your account even if you
-            lose your device. Link a Google account to securely recover your
-            Transitribe profile anytime.
+            {t("recovery.howItWorksDesc")}
           </Text>
         </View>
       </View>

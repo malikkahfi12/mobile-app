@@ -1,6 +1,7 @@
 import { colors } from "@/constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Animated,
@@ -24,6 +25,7 @@ export function LogoutDialog({
   onCancel,
   onConfirm,
 }: LogoutDialogProps) {
+  const { t } = useTranslation();
   const [overlayOpacity] = useState(() => new Animated.Value(0));
   const [cardOpacity] = useState(() => new Animated.Value(0));
   const [cardScale] = useState(() => new Animated.Value(0.95));
@@ -114,10 +116,10 @@ export function LogoutDialog({
               </View>
 
               <Text className="mt-4 text-center text-lg font-bold text-gray-900">
-                Log Out
+                {t("logout.title")}
               </Text>
               <Text className="mt-2 text-center text-sm text-gray-500">
-                Are you sure you want to log out?
+                {t("logout.message")}
               </Text>
 
               <View className="mt-6 flex-row gap-4">
@@ -128,7 +130,7 @@ export function LogoutDialog({
                   className="flex-1 items-center rounded-xl border border-gray-200 px-4 py-3"
                 >
                   <Text className="text-base font-semibold text-gray-700">
-                    Cancel
+                    {t("logout.cancel")}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -141,7 +143,7 @@ export function LogoutDialog({
                     <ActivityIndicator color={colors.white} />
                   ) : (
                     <Text className="text-base font-semibold text-white">
-                      Log Out
+                      {t("logout.confirm")}
                     </Text>
                   )}
                 </TouchableOpacity>

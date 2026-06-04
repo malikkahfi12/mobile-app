@@ -1,6 +1,7 @@
 import { memo, useCallback, useMemo } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import i18n from "@/lib/i18n";
 import type { Departure } from "@/services/departures/departures.types";
 import { colors } from "@/constants/colors";
 
@@ -16,7 +17,7 @@ function formatRelativeTime(seconds: number): string {
   let diff = seconds - nowSeconds;
 
   if (diff < 0) diff += 24 * 3600;
-  if (diff < 60) return "now";
+  if (diff < 60) return i18n.t("time.now");
   if (diff < 3600) return `in ${Math.floor(diff / 60)}m`;
   if (diff < 86400) return `in ${Math.floor(diff / 3600)}h`;
   return "";

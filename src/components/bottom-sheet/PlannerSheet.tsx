@@ -11,6 +11,7 @@ import {
 import BottomSheet from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { useUnifiedSearch } from "@/hooks/search/useUnifiedSearch";
 import { useSearchCenter } from "@/hooks/search/useSearchCenter";
 import { resolveToStop } from "@/hooks/search/resolveToStop";
@@ -33,6 +34,7 @@ const SNAP_POINTS = ["70%", "92%"];
 const DEBOUNCE_MS = 300;
 
 export const PlannerSheet = memo(function PlannerSheet() {
+  const { t } = useTranslation();
   const sheetRef = useRef<BottomSheet>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -87,12 +89,10 @@ export const PlannerSheet = memo(function PlannerSheet() {
           resolvedStopName: nearest.name,
         });
       } else {
-        setOriginResolveError(
-          "No nearby transit stop found near your current location.",
-        );
+        setOriginResolveError(t("planner.noNearbyStopCurrent"));
       }
     });
-  }, [origin, setOrigin]);
+  }, [origin, setOrigin, t]);
 
   useEffect(() => {
     if (searchText.length === 0) {
@@ -200,7 +200,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
         if (nearest) {
           setOrigin({ ...loc, stopId: nearest.id, resolvedStopName: nearest.name });
         } else {
-          setOriginResolveError("No nearby transit stop found for this location.");
+          setOriginResolveError(t("planner.noNearbyStopLocation"));
         }
       } else if (activeSearch === "destination") {
         setDestination(loc);
@@ -216,11 +216,11 @@ export const PlannerSheet = memo(function PlannerSheet() {
         if (nearest) {
           setDestination({ ...loc, stopId: nearest.id, resolvedStopName: nearest.name });
         } else {
-          setDestinationResolveError("No nearby transit stop found for this location.");
+          setDestinationResolveError(t("planner.noNearbyStopLocation"));
         }
       }
     },
-    [activeSearch, setOrigin, setDestination, closeSearch],
+    [activeSearch, setOrigin, setDestination, closeSearch, t],
   );
 
   const handleClearOrigin = useCallback(() => {
@@ -252,11 +252,11 @@ export const PlannerSheet = memo(function PlannerSheet() {
     } else {
       setOriginResolveError(
         current.type === "currentLocation"
-          ? "No nearby transit stop found near your current location."
-          : "No nearby transit stop found for this location.",
+          ? t("planner.noNearbyStopCurrent")
+          : t("planner.noNearbyStopLocation"),
       );
     }
-  }, [setOrigin]);
+  }, [setOrigin, t]);
 
   const handleRetryDestinationResolve = useCallback(async () => {
     const current = useLocationStore.getState().destination;
@@ -273,30 +273,30 @@ export const PlannerSheet = memo(function PlannerSheet() {
     if (nearest) {
       setDestination({ ...current, stopId: nearest.id, resolvedStopName: nearest.name });
     } else {
-      setDestinationResolveError("No nearby transit stop found for this location.");
+      setDestinationResolveError(t("planner.noNearbyStopLocation"));
     }
-  }, [setDestination]);
+  }, [setDestination, t]);
 
   const listData = useMemo(() => {
     if (!searchData) return [];
     const items: FlatListItem[] = [];
 
     if (searchData.stops.length > 0) {
-      items.push({ type: "section-header", title: "Stops", key: "section-stops" });
+      items.push({ type: "section-header", title: t("planner.stops"), key: "section-stops" });
       for (const stop of searchData.stops) {
         items.push({ ...stop, type: "stop" as const });
       }
     }
 
     if (searchData.places.length > 0) {
-      items.push({ type: "section-header", title: "Places", key: "section-places" });
+      items.push({ type: "section-header", title: t("planner.places"), key: "section-places" });
       for (const place of searchData.places) {
         items.push({ ...place, type: "place" as const });
       }
     }
 
     return items;
-  }, [searchData]);
+  }, [searchData, t]);
 
   const showResults = debouncedQuery.length >= 2;
   const showEmpty =
@@ -371,7 +371,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
       return (
         <View className="mt-0.5 flex-row items-center">
           <ActivityIndicator size={10} color={colors.textTertiary} />
-          <Text className="ml-1.5 text-xs text-gray-400">Finding nearest stop...</Text>
+          <Text className="ml-1.5 text-xs text-gray-400">{t("planner.findingNearestStop")}</Text>
         </View>
       );
     }
@@ -381,7 +381,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
         <TouchableOpacity
           onPress={isOrigin ? handleRetryOriginResolve : handleRetryDestinationResolve}
         >
-          <Text className="mt-0.5 text-xs text-red-500">{resolveError} Tap to retry.</Text>
+          <Text className="mt-0.5 text-xs text-red-500">{resolveError}{t("planner.tapToRetrySuffix")}</Text>
         </TouchableOpacity>
       );
     }
@@ -391,17 +391,17 @@ export const PlannerSheet = memo(function PlannerSheet() {
         return (
           <View className="mt-0.5">
             <Text className="text-xs text-gray-400" numberOfLines={1}>
-              Using your current location
+              {t("planner.usingCurrentLocation")}
             </Text>
             <Text className="text-xs text-gray-400" numberOfLines={1}>
-              Nearest stop: {resolvedStopName}
+              {t("planner.nearestStop")}{resolvedStopName}
             </Text>
           </View>
         );
       }
       return (
         <Text className="mt-0.5 text-xs text-gray-400" numberOfLines={1}>
-          Nearest stop: {resolvedStopName}
+          {t("planner.nearestStop")}{resolvedStopName}
         </Text>
       );
     }
@@ -409,7 +409,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
     if (loc.type === "currentLocation") {
       return (
         <Text className="mt-0.5 text-xs text-gray-400" numberOfLines={1}>
-          Using your current location
+          {t("planner.usingCurrentLocation")}
         </Text>
       );
     }
@@ -483,7 +483,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
               <Ionicons name="arrow-back" size={22} color={colors.textPrimary} />
             </TouchableOpacity>
             <Text className="ml-1 text-lg font-semibold text-gray-900">
-              {activeSearch === "origin" ? "Select Origin" : "Select Destination"}
+              {activeSearch === "origin" ? t("planner.selectOrigin") : t("planner.selectDestination")}
             </Text>
           </View>
 
@@ -491,7 +491,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
             <Ionicons name="search-outline" size={18} color={colors.textTertiary} />
             <TextInput
               className="ml-2 flex-1 h-12 text-base text-gray-900"
-              placeholder="Search stops and places..."
+              placeholder={t("planner.searchPlaceholder")}
               placeholderTextColor={colors.textTertiary}
               value={searchText}
               onChangeText={setSearchText}
@@ -515,7 +515,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
               <View className="flex-1 items-center justify-center">
                 <Ionicons name="search-outline" size={44} color={colors.textTertiary} />
                 <Text className="mt-3 text-sm text-gray-400 text-center px-4">
-                  Type at least 2 characters to search for stops and places
+                  {t("planner.searchHint")}
                 </Text>
               </View>
             )}
@@ -523,7 +523,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
             {showLoading && (
               <View className="flex-1 items-center justify-center">
                 <ActivityIndicator size="large" color={colors.primary} />
-                <Text className="mt-3 text-sm text-gray-400">Searching...</Text>
+                <Text className="mt-3 text-sm text-gray-400">{t("common.searching")}</Text>
               </View>
             )}
 
@@ -535,13 +535,13 @@ export const PlannerSheet = memo(function PlannerSheet() {
                   color={colors.error}
                 />
                 <Text className="mt-3 text-sm text-gray-500 text-center">
-                  Failed to search. Check your connection and try again.
+                  {t("planner.searchFailed")}
                 </Text>
                 <TouchableOpacity
                   onPress={() => retrySearch()}
                   className="mt-4 rounded-full bg-primary px-6 py-2"
                 >
-                  <Text className="text-sm font-semibold text-white">Tap to Retry</Text>
+                  <Text className="text-sm font-semibold text-white">{t("common.retryTap")}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -550,7 +550,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
               <View className="flex-1 items-center justify-center px-4">
                 <Ionicons name="search-outline" size={44} color={colors.textTertiary} />
                 <Text className="mt-3 text-sm text-gray-400 text-center">
-                  No results found for &apos;{debouncedQuery}&apos;
+                  {t("planner.noResults", { query: debouncedQuery })}
                 </Text>
               </View>
             )}
@@ -572,9 +572,9 @@ export const PlannerSheet = memo(function PlannerSheet() {
         <View className="flex-1 px-4 pt-2">
           <View className="flex-row items-center justify-between mb-6">
             <View>
-              <Text className="text-xl font-bold text-gray-900">Plan Route</Text>
+              <Text className="text-xl font-bold text-gray-900">{t("planner.planRoute")}</Text>
               <Text className="mt-0.5 text-sm text-gray-400">
-                Where do you want to go?
+                {t("planner.planRouteSubtitle")}
               </Text>
             </View>
             <TouchableOpacity
@@ -589,7 +589,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
             </TouchableOpacity>
           </View>
 
-          {renderDefaultRow(origin, "origin", "ellipse-outline", "Tap to select origin stop")}
+          {renderDefaultRow(origin, "origin", "ellipse-outline", t("planner.tapToSelectOrigin"))}
 
           <View className="flex-row justify-center my-3">
             <TouchableOpacity
@@ -607,7 +607,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
             </TouchableOpacity>
           </View>
 
-          {renderDefaultRow(destination, "destination", "location-outline", "Tap to select destination stop")}
+          {renderDefaultRow(destination, "destination", "location-outline", t("planner.tapToSelectDestination"))}
 
           <View className="mt-6">
             <TouchableOpacity
@@ -623,7 +623,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
                   canFindRoute ? "text-white" : "text-gray-400"
                 }`}
               >
-                Find Route
+                {t("planner.findRoute")}
               </Text>
             </TouchableOpacity>
           </View>

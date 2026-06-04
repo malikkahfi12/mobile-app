@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BackHandler, Platform } from "react-native";
+import i18n from "@/lib/i18n";
 
 const EXIT_TIMEOUT_MS = 2000;
-const TOAST_MESSAGE = "Press again to exit";
 
 export function useExitBackHandler(enabled = true) {
   const lastPressRef = useRef<number>(0);
@@ -35,5 +35,5 @@ export function useExitBackHandler(enabled = true) {
     setToastVisible(false);
   }, []);
 
-  return { toastVisible, toastMessage: TOAST_MESSAGE, dismissToast };
+  return { toastVisible, toastMessage: i18n.t("navigation.pressAgainToExit"), dismissToast };
 }

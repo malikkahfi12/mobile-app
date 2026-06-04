@@ -7,6 +7,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import BottomSheet, {
   BottomSheetScrollView,
   BottomSheetScrollViewMethods,
@@ -47,6 +48,7 @@ const RouteOptionCard = memo(function RouteOptionCard({
   isRecommended: boolean;
   onSelect: () => void;
 }) {
+  const { t } = useTranslation();
   const totalDuration = Math.round(option.totalDurationSeconds / 60);
   const walkingDuration = option.walkingDurationSeconds > 0
     ? Math.round(option.walkingDurationSeconds / 60)
@@ -66,7 +68,7 @@ const RouteOptionCard = memo(function RouteOptionCard({
           <View className="flex-row items-center">
             <Ionicons name="star" size={12} color={colors.white} />
             <Text className="ml-1.5 text-[11px] font-semibold text-white uppercase tracking-wider">
-              Recommended
+              {t("common.recommended")}
             </Text>
           </View>
         </View>
@@ -94,7 +96,7 @@ const RouteOptionCard = memo(function RouteOptionCard({
                   color={colors.textSecondary}
                 />
                 <Text className="ml-1 text-[11px] font-medium text-gray-500">
-                  {walkingDuration} min walk
+                  {walkingDuration}{t("routes.minWalk")}
                 </Text>
               </View>
             )}
@@ -106,8 +108,8 @@ const RouteOptionCard = memo(function RouteOptionCard({
               />
               <Text className="ml-1 text-[11px] font-medium text-gray-500">
                 {transfers === 0
-                  ? "Direct"
-                  : `${transfers} transfer${transfers > 1 ? "s" : ""}`}
+                  ? t("common.direct")
+                  : `${transfers} ${transfers > 1 ? t("routes.transfers") : t("routes.transfer")}`}
               </Text>
             </View>
           </View>
@@ -126,7 +128,7 @@ const RouteOptionCard = memo(function RouteOptionCard({
                   color={colors.primary}
                 />
                 <Text className="ml-1 text-[11px] font-medium text-primary">
-                  {leg.routeName || "Transit"}
+                  {leg.routeName || t("common.transit")}
                 </Text>
               </View>
             ))}
@@ -152,6 +154,7 @@ export const RouteOptionsSheet = memo(function RouteOptionsSheet({
   onRetry,
   onClose,
 }: RouteOptionsSheetProps) {
+  const { t } = useTranslation();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const scrollViewRef = useRef<BottomSheetScrollViewMethods>(null);
   const prevContentHeight = useRef(0);
@@ -247,7 +250,7 @@ export const RouteOptionsSheet = memo(function RouteOptionsSheet({
           <View className="items-center px-4 py-12">
             <ActivityIndicator size="large" color={colors.primary} />
             <Text className="mt-3 text-sm text-gray-400">
-              Finding routes...
+              {t("routes.findingRoutes")}
             </Text>
           </View>
         )}
@@ -260,14 +263,14 @@ export const RouteOptionsSheet = memo(function RouteOptionsSheet({
               color={colors.error}
             />
             <Text className="mt-3 text-sm text-gray-500 text-center">
-              {errorMessage || "Failed to find routes. Please try again."}
+              {errorMessage || t("routes.findFailed")}
             </Text>
             <TouchableOpacity
               onPress={onRetry}
               className="mt-4 rounded-full bg-primary px-6 py-2"
             >
               <Text className="text-sm font-semibold text-white">
-                Tap to Retry
+                {t("common.retryTap")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -281,7 +284,7 @@ export const RouteOptionsSheet = memo(function RouteOptionsSheet({
               color={colors.textTertiary}
             />
             <Text className="mt-3 text-sm text-gray-400 text-center">
-              No routes found between these stops.
+              {t("routes.noRoutesFound")}
             </Text>
           </View>
         )}
@@ -295,15 +298,14 @@ export const RouteOptionsSheet = memo(function RouteOptionsSheet({
                 color="#B45309"
               />
               <Text className="ml-2 text-base font-semibold text-amber-900">
-                Walk-Only Route
+                {t("routes.walkOnlyTitle")}
               </Text>
             </View>
             <Text className="text-sm text-amber-700 mb-2">
-              No transit service is available between these stops.
+              {t("routes.walkOnlyBody")}
             </Text>
             <Text className="text-xs text-amber-600">
-              Transit may be available at nearby stops. Try searching for
-              alternative stops in the Planner.
+              {t("routes.walkOnlyHint")}
             </Text>
           </View>
         )}
@@ -319,12 +321,12 @@ export const RouteOptionsSheet = memo(function RouteOptionsSheet({
                     color="#B45309"
                   />
                   <Text className="ml-1 text-[11px] text-amber-700">
-                    Showing cached results — may be outdated
+                    {t("routes.cachedWarning")}
                   </Text>
                 </View>
               )}
             <Text className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-              Route Options
+              {t("routes.options")}
             </Text>
             {options.map((option, index) => (
               <RouteOptionCard

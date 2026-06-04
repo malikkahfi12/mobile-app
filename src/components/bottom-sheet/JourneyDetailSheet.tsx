@@ -5,6 +5,7 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { useGuidanceStore } from "@/store/guidance.store";
 import { useRouteStore } from "@/store/route.store";
 import { useUIStore } from "@/store/ui.store";
@@ -32,6 +33,7 @@ const LegTimelineRow = memo(function LegTimelineRow({
   leg: Leg;
   isLast: boolean;
 }) {
+  const { t } = useTranslation();
   const isWalk = leg.type === "WALK";
   const durationMin = Math.round(leg.durationSeconds / 60);
   const iconName = getLegIcon(leg);
@@ -74,19 +76,19 @@ const LegTimelineRow = memo(function LegTimelineRow({
 
         {!isWalk && leg.routeName && (
           <Text className="text-xs text-primary mt-0.5">
-            Line {leg.routeName}
+            {t("journey.linePrefix")}{leg.routeName}
           </Text>
         )}
 
         <View className="mt-2 bg-gray-50 rounded-lg px-3 py-2">
           <View className="flex-row items-center">
-            <Text className="text-xs font-medium text-gray-500 w-12">From</Text>
+            <Text className="text-xs font-medium text-gray-500 w-12">{t("journey.from")}</Text>
             <Text className="text-xs text-gray-700 flex-1" numberOfLines={1}>
               {leg.fromStopName}
             </Text>
           </View>
           <View className="flex-row items-center mt-1">
-            <Text className="text-xs font-medium text-gray-500 w-12">To</Text>
+            <Text className="text-xs font-medium text-gray-500 w-12">{t("journey.to")}</Text>
             <Text className="text-xs text-gray-700 flex-1" numberOfLines={1}>
               {leg.toStopName}
             </Text>
@@ -106,24 +108,25 @@ function JourneySummaryBar({
   transfers: number;
   walkingDurationMin: number | null;
 }) {
+  const { t } = useTranslation();
   const items: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string }[] = [];
 
   items.push({
     icon: "time-outline",
-    label: "Duration",
+    label: t("journey.duration"),
     value: `${totalDurationMin} min`,
   });
 
   items.push({
     icon: "swap-horizontal-outline",
-    label: "Transfers",
-    value: transfers === 0 ? "Direct" : `${transfers}`,
+    label: t("journey.transfers"),
+    value: transfers === 0 ? t("common.direct") : `${transfers}`,
   });
 
   if (walkingDurationMin != null) {
     items.push({
       icon: "walk-outline",
-      label: "Walking",
+      label: t("journey.walking"),
       value: `${walkingDurationMin} min`,
     });
   }
@@ -145,6 +148,7 @@ function JourneySummaryBar({
 }
 
 export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
+  const { t } = useTranslation();
   const sheetRef = useRef<BottomSheet>(null);
   const scrollRef = useRef<any>(null);
 
@@ -227,11 +231,11 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
                       color={colors.white}
                     />
                     <Text className="ml-2 text-base font-semibold text-white">
-                      Start Navigation
+                      {t("journey.startNavigation")}
                     </Text>
                   </View>
                   <Text className="mt-1 text-[11px] text-white/70">
-                    Begin step-by-step guidance
+                    {t("journey.startNavigationSub")}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -251,7 +255,7 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
           >
             <Ionicons name="chevron-back" size={22} color={colors.textPrimary} />
             <Text className="ml-1 text-base font-semibold text-gray-900">
-              Route Options
+              {t("journey.routeOptions")}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -302,7 +306,7 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
 
             <View className="px-4 pt-4">
               <Text className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-                Step-by-Step
+                {t("journey.stepByStep")}
               </Text>
 
               {option.legs.map((leg, li) => (

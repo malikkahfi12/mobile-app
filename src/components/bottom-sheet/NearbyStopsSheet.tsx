@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, memo } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import BottomSheet, {
   BottomSheetFlatList,
 } from "@gorhom/bottom-sheet";
@@ -40,6 +41,7 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
   onDeletePlace,
   onClearPlaces,
 }: NearbyStopsSheetProps) {
+  const { t } = useTranslation();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const selectedStop = useRouteStore((s) => s.selectedStop);
   const setSelectedStop = useRouteStore((s) => s.setSelectedStop);
@@ -69,12 +71,12 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
   const handleSavedStopLongPress = useCallback(
     (saved: SavedStop) => {
       Alert.alert(
-        "Remove saved stop?",
-        `Remove "${saved.name}" from favorites?`,
+        t("stops.removeSavedStopTitle"),
+        t("stops.removeSavedStopMessage", { name: saved.name }),
         [
-          { text: "Cancel", style: "cancel" },
+          { text: t("common.cancel"), style: "cancel" },
           {
-            text: "Remove",
+            text: t("common.remove"),
             style: "destructive",
             onPress: () => {
               useFavoritesStore.getState().removeStop(saved.id);
@@ -83,7 +85,7 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
         ],
       );
     },
-    [],
+    [t],
   );
 
   const handleSavedStopPress = useCallback(
@@ -124,32 +126,40 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
 
   const handleQuickPlaceLongPress = useCallback(
     (place: QuickPlace) => {
-      Alert.alert("Delete place?", `Remove "${place.name}" from Quick Access?`, [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => {
-            if (onDeletePlace) onDeletePlace(place.id);
+      Alert.alert(
+        t("stops.deletePlaceTitle"),
+        t("stops.deletePlaceMessage", { name: place.name }),
+        [
+          { text: t("common.cancel"), style: "cancel" },
+          {
+            text: t("common.delete"),
+            style: "destructive",
+            onPress: () => {
+              if (onDeletePlace) onDeletePlace(place.id);
+            },
           },
-        },
-      ]);
+        ],
+      );
     },
-    [onDeletePlace],
+    [onDeletePlace, t],
   );
 
   const handleClearPlaces = useCallback(() => {
-    Alert.alert("Clear all places?", "Remove all Quick Access places?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete All",
-        style: "destructive",
-        onPress: () => {
-          if (onClearPlaces) onClearPlaces();
+    Alert.alert(
+      t("stops.clearAllPlacesTitle"),
+      t("stops.clearAllPlacesMessage"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("common.deleteAll"),
+          style: "destructive",
+          onPress: () => {
+            if (onClearPlaces) onClearPlaces();
+          },
         },
-      },
-    ]);
-  }, [onClearPlaces]);
+      ],
+    );
+  }, [onClearPlaces, t]);
 
   const isEmpty = !isLoading && !isError && (!stops || stops.length === 0);
   const hasStaleData = stops && stops.length > 0;
@@ -189,7 +199,7 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
           <>
             <View className="px-4 pt-3 pb-2 border-b border-gray-100">
               <Text className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                Quick Access
+                {t("stops.quickAccess")}
               </Text>
               {!isHydrated ? (
                 <View className="flex-row gap-2">
@@ -263,7 +273,7 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
                         color={colors.error}
                       />
                       <Text className="ml-1 text-xs font-medium text-red-500">
-                        Clear
+                        {t("common.clear")}
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -279,7 +289,7 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
                       color={colors.textSecondary}
                     />
                     <Text className="ml-1 text-xs font-medium text-gray-500">
-                      Add
+                      {t("common.add")}
                     </Text>
                   </TouchableOpacity>
                 </ScrollView>
@@ -296,7 +306,7 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
                       color={colors.textSecondary}
                     />
                     <Text className="ml-1.5 text-xs font-medium text-gray-500">
-                      Add a place or saved stop
+                      {t("stops.addPlaceOrStop")}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -305,10 +315,10 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
 
             <View className="px-4 pb-2 pt-3">
               <Text className="text-base font-bold text-gray-900">
-                Nearby Stops
+                {t("stops.nearbyStops")}
               </Text>
               {isLoading && (
-                <Text className="mt-1 text-xs text-gray-400">Loading...</Text>
+                <Text className="mt-1 text-xs text-gray-400">{t("common.loading")}</Text>
               )}
             </View>
           </>
@@ -323,7 +333,7 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
                   color={colors.textTertiary}
                 />
                 <Text className="mt-2 text-sm text-gray-500 text-center">
-                  Failed to load nearby stops
+                  {t("stops.cachedWarning")}
                 </Text>
                 {onRetry && (
                   <TouchableOpacity
@@ -332,7 +342,7 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
                     activeOpacity={0.7}
                   >
                     <Text className="text-sm font-semibold text-white">
-                      Tap to Retry
+                      {t("common.retryTap")}
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -341,7 +351,7 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
             {isEmpty && !showError && (
               <View className="items-center px-4 py-8">
                 <Text className="text-sm text-gray-400">
-                  No stops found nearby
+                  {t("stops.noStopsNearby")}
                 </Text>
               </View>
             )}
@@ -360,7 +370,7 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
               color="#B45309"
             />
             <Text className="ml-1.5 text-[11px] text-amber-700">
-              Showing cached results — data may be outdated
+              {t("stops.cachedWarning")}
             </Text>
             {onRetry && (
               <TouchableOpacity
@@ -369,7 +379,7 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
                 activeOpacity={0.7}
               >
                 <Text className="text-[11px] font-semibold text-amber-800">
-                  Retry
+                  {t("stops.staleRetry")}
                 </Text>
               </TouchableOpacity>
             )}

@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import type { StopWithDepartures } from "@/services/stops/stops.types";
 import { colors } from "@/constants/colors";
 
@@ -19,6 +20,8 @@ export const StopHeader = memo(function StopHeader({
   stop,
   distanceMeters,
 }: StopHeaderProps) {
+  const { t } = useTranslation();
+
   return (
     <View className="px-4 pt-6 pb-4 border-b border-gray-100">
       <View className="flex-row items-center">
@@ -58,7 +61,7 @@ export const StopHeader = memo(function StopHeader({
               stop.isStation ? "text-primary" : "text-gray-500"
             }`}
           >
-            {stop.isStation ? "Station" : "Stop"}
+            {stop.isStation ? t("common.station") : t("common.stop")}
           </Text>
         </View>
 

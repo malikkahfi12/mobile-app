@@ -2,6 +2,7 @@ import { useCallback, useMemo, memo } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { useGuidanceStore } from "@/store/guidance.store";
 import { useRouteStore } from "@/store/route.store";
 import { useUIStore } from "@/store/ui.store";
@@ -29,6 +30,7 @@ function getRemainingMinutes(legs: Leg[], startIndex: number): number {
 }
 
 export const GuidanceCard = memo(function GuidanceCard() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
   const isActive = useGuidanceStore((s) => s.isActive);
@@ -101,11 +103,11 @@ export const GuidanceCard = memo(function GuidanceCard() {
   const defaultMessage = useMemo(() => {
     if (!currentLeg) return null;
     if (isLastLeg) return null;
-    if (currentLeg.type === "WALK") return "Walk to stop";
-    if (currentLeg.type === "TRANSIT" && !isTransfer) return "Stay on board";
-    if (isTransfer) return "Transfer here";
+    if (currentLeg.type === "WALK") return t("guidance.walkToStop");
+    if (currentLeg.type === "TRANSIT" && !isTransfer) return t("guidance.stayOnBoard");
+    if (isTransfer) return t("guidance.transferHere");
     return null;
-  }, [currentLeg, isLastLeg, isTransfer]);
+  }, [currentLeg, isLastLeg, isTransfer, t]);
 
   const displayMessage = contextualMessage || defaultMessage;
 
@@ -159,10 +161,10 @@ export const GuidanceCard = memo(function GuidanceCard() {
             />
           </View>
           <Text className="mt-3 text-base font-semibold text-gray-500">
-            On the way
+            {t("guidance.onTheWay")}
           </Text>
           <Text className="mt-1 text-[13px] text-gray-400">
-            Waiting for step details
+            {t("guidance.waitingForDetails")}
           </Text>
           <TouchableOpacity
             onPress={handleEnd}
@@ -170,7 +172,7 @@ export const GuidanceCard = memo(function GuidanceCard() {
             activeOpacity={0.7}
           >
             <Text className="text-sm font-semibold text-red-500">
-              End Trip
+              {t("guidance.endTrip")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -324,7 +326,7 @@ export const GuidanceCard = memo(function GuidanceCard() {
               className="ml-2 text-xs text-gray-500 flex-1"
               numberOfLines={1}
             >
-              Then {nextTitle}
+              {t("guidance.then")}{nextTitle}
             </Text>
             {nextDurationMin != null && nextDurationMin > 0 && (
               <Text className="text-xs text-gray-400">
@@ -349,14 +351,14 @@ export const GuidanceCard = memo(function GuidanceCard() {
                 color={colors.textSecondary}
               />
               <Text className="ml-1 text-[11px] text-gray-500">
-                {transferCount === 0 ? "Direct" : `${transferCount} transfers`}
+                {transferCount === 0 ? t("common.direct") : `${transferCount} ${t("routes.transfers")}`}
               </Text>
             </View>
             {remainingMin > 0 && (
               <View className="flex-row items-center">
                 <Ionicons name="trending-down" size={11} color={colors.textSecondary} />
                 <Text className="ml-1 text-[11px] text-gray-500">
-                  {remainingMin}m left
+                  {remainingMin}{t("guidance.mLeft")}
                 </Text>
               </View>
             )}
@@ -370,7 +372,7 @@ export const GuidanceCard = memo(function GuidanceCard() {
           >
             <Ionicons name="stop" size={12} color={colors.error} />
             <Text className="ml-1 text-xs font-semibold text-red-500">
-              End
+              {t("guidance.end")}
             </Text>
           </TouchableOpacity>
         </View>

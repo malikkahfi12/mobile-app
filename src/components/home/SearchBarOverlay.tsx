@@ -1,11 +1,13 @@
 import { memo } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { useUIStore } from "@/store/ui.store";
 import { useRouteStore } from "@/store/route.store";
 
 export const SearchBarOverlay = memo(function SearchBarOverlay() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const setBottomSheet = useUIStore((s) => s.setBottomSheet);
 
@@ -21,7 +23,7 @@ export const SearchBarOverlay = memo(function SearchBarOverlay() {
     >
       <View className="flex-row items-center">
         <Ionicons name="search-outline" size={18} color="#9CA3AF" />
-        <Text className="ml-2 flex-1 text-base text-gray-400">Plan a route...</Text>
+        <Text className="ml-2 flex-1 text-base text-gray-400">{t("planner.searchPlaceholder")}</Text>
       </View>
     </TouchableOpacity>
   );

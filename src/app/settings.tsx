@@ -1,6 +1,9 @@
 import { colors } from "@/constants/colors";
+import { LOCALE_LABELS } from "@/lib/i18n";
+import { useLocaleStore } from "@/store/locale.store";
 import { Ionicons } from "@expo/vector-icons";
 import { Href, router } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
 
 interface SettingsRowProps {
@@ -49,18 +52,21 @@ function SettingsRow({
 }
 
 export default function SettingsScreen() {
+  const { t } = useTranslation();
+  const locale = useLocaleStore((s) => s.locale);
+
   return (
     <View className="flex-1 bg-gray-50">
       <View className="mx-4 mt-6 overflow-hidden rounded-xl bg-white">
         <Text className="px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
-          Account
+          {t("settings.account")}
         </Text>
         <SettingsRow
           icon="shield-checkmark-outline"
           iconColor={colors.success}
           iconBg="bg-green-100"
-          label="Recovery & Security"
-          subtitle="Password, recovery codes, and 2FA"
+          label={t("settings.recoverySecurity")}
+          subtitle={t("settings.recoverySecurityDesc")}
           onPress={() => router.push("/recovery-security")}
         />
         <View className="mx-4 border-b border-gray-100" />
@@ -68,9 +74,23 @@ export default function SettingsScreen() {
           icon="phone-portrait-outline"
           iconColor={colors.primary}
           iconBg="bg-primary/10"
-          label="Devices"
-          subtitle="Manage connected devices and sessions"
+          label={t("settings.devices")}
+          subtitle={t("settings.devicesDesc")}
           onPress={() => router.push("/devices" as Href)}
+        />
+      </View>
+
+      <View className="mx-4 mt-6 overflow-hidden rounded-xl bg-white">
+        <Text className="px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
+          {t("settings.preferences")}
+        </Text>
+        <SettingsRow
+          icon="globe-outline"
+          iconColor={colors.blue}
+          iconBg="bg-blue-100"
+          label={t("settings.language")}
+          subtitle={LOCALE_LABELS[locale]}
+          onPress={() => router.push("/language")}
         />
       </View>
     </View>

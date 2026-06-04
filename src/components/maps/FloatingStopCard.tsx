@@ -1,6 +1,7 @@
 import { useCallback, useMemo, memo } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { useRouteStore } from "@/store/route.store";
 import { useUIStore } from "@/store/ui.store";
 import { useGuidanceStore } from "@/store/guidance.store";
@@ -16,6 +17,7 @@ function formatDistance(meters: number): string {
 }
 
 export const FloatingStopCard = memo(function FloatingStopCard() {
+  const { t } = useTranslation();
   const selectedStop = useRouteStore((s) => s.selectedStop);
   const setSelectedStop = useRouteStore((s) => s.setSelectedStop);
   const bottomSheetContent = useUIStore((s) => s.bottomSheetContent);
@@ -89,7 +91,7 @@ export const FloatingStopCard = memo(function FloatingStopCard() {
                 selectedStop.isStation ? "text-primary" : "text-gray-500"
               }`}
             >
-              {selectedStop.isStation ? "Station" : "Stop"}
+              {selectedStop.isStation ? t("common.station") : t("common.stop")}
             </Text>
           </View>
           <Text className="ml-2 text-xs text-gray-400">
@@ -112,7 +114,7 @@ export const FloatingStopCard = memo(function FloatingStopCard() {
               color={colors.primary}
             />
             <Text className="ml-1 text-xs font-semibold text-primary">
-              Route Here
+              {t("common.routeHere")}
             </Text>
           </TouchableOpacity>
           {!isQuickPlace && (
@@ -127,7 +129,7 @@ export const FloatingStopCard = memo(function FloatingStopCard() {
                 color={colors.primary}
               />
               <Text className="ml-1 text-xs font-semibold text-primary">
-                View Details
+                {t("common.viewDetails")}
               </Text>
             </TouchableOpacity>
           )}

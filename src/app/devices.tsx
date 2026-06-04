@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@/constants/colors";
 import type { DeviceInfo } from "@/types/auth.types";
@@ -64,6 +65,7 @@ function DeviceRow({
   device: DeviceInfo;
   onPress: (device: DeviceInfo) => void;
 }) {
+  const { t } = useTranslation();
   const isCurrent = device.isCurrent;
 
   return (
@@ -82,17 +84,17 @@ function DeviceRow({
       </View>
       <View className="ml-3 flex-1">
         <Text className="text-[15px] font-semibold text-gray-900">
-          {device.deviceName || "Unknown Device"}
+          {device.deviceName || t("common.unknownDevice")}
         </Text>
         <Text className="mt-0.5 text-xs text-gray-400">
           {getPlatformLabel(device.platform)} ·{" "}
-          {isCurrent ? "Current device" : `Last seen ${formatLastSeen(device.lastSeenAt)}`}
+          {isCurrent ? t("common.currentDevice") : `Last seen ${formatLastSeen(device.lastSeenAt)}`}
         </Text>
       </View>
       {isCurrent && (
         <View className="rounded-full bg-green-100 px-2.5 py-1">
           <Text className="text-[11px] font-semibold text-green-700">
-            Current
+            {t("common.current")}
           </Text>
         </View>
       )}
@@ -108,6 +110,7 @@ function DeviceRow({
 }
 
 export default function DevicesScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { data: devices, isLoading, isError, refetch, isFetching } = useDevices();
 
@@ -153,8 +156,8 @@ export default function DevicesScreen() {
 
   const handleRevoked = useCallback(() => {
     setSelectedDevice(null);
-    showToast("Device revoked successfully");
-  }, [showToast]);
+    showToast(t("devices.revoked"));
+  }, [showToast, t]);
 
   const renderContent = () => {
     if (isLoading) {
@@ -182,10 +185,10 @@ export default function DevicesScreen() {
               />
             </View>
             <Text className="mt-4 text-center text-[15px] font-semibold text-gray-900">
-              Something went wrong
+              {t("devices.loadFailedTitle")}
             </Text>
             <Text className="mt-1 text-center text-sm text-gray-500">
-              Could not load your devices. Please try again.
+              {t("devices.loadFailedDesc")}
             </Text>
             <TouchableOpacity
               onPress={() => refetch()}
@@ -193,7 +196,7 @@ export default function DevicesScreen() {
               className="mt-5 items-center rounded-xl bg-primary px-6 py-3"
             >
               <Text className="text-sm font-semibold text-white">
-                Retry
+                {t("common.retry")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -213,10 +216,10 @@ export default function DevicesScreen() {
               />
             </View>
             <Text className="mt-4 text-center text-[15px] font-semibold text-gray-900">
-              No devices found
+              {t("devices.noDevices")}
             </Text>
             <Text className="mt-1 text-center text-sm text-gray-500">
-              Your connected devices will appear here.
+              {t("devices.noDevicesDesc")}
             </Text>
           </View>
         </View>
@@ -226,7 +229,7 @@ export default function DevicesScreen() {
     return (
       <View className="mx-4 mt-6 overflow-hidden rounded-xl bg-white">
         <Text className="px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
-          Devices
+          {t("devices.sectionHeader")}
         </Text>
         {devices.map((device, index) => (
           <View key={device.id}>
