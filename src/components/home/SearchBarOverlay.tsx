@@ -3,6 +3,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useUIStore } from "@/store/ui.store";
+import { useRouteStore } from "@/store/route.store";
 
 export const SearchBarOverlay = memo(function SearchBarOverlay() {
   const insets = useSafeAreaInsets();
@@ -12,7 +13,10 @@ export const SearchBarOverlay = memo(function SearchBarOverlay() {
     <TouchableOpacity
       className="absolute left-4 right-4 rounded-xl bg-white/90 px-4 py-3 shadow-sm"
       style={{ top: insets.top + 12 }}
-      onPress={() => setBottomSheet(1, "planner")}
+      onPress={() => {
+        useRouteStore.getState().setSelectedStop(null);
+        setBottomSheet("planner");
+      }}
       activeOpacity={0.9}
     >
       <View className="flex-row items-center">

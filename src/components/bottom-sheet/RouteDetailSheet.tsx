@@ -39,7 +39,7 @@ export const RouteDetailSheet = memo(function RouteDetailSheet() {
   const displayHeadsign = routeData?.shortName;
 
   const handleBack = useCallback(() => {
-    setBottomSheet(0, "stopDetail");
+    setBottomSheet("stopDetail");
   }, [setBottomSheet]);
 
   const handleClose = useCallback(() => {

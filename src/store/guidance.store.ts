@@ -6,12 +6,14 @@ interface GuidanceState {
   routeOption: RouteOption | null;
   currentLegIndex: number;
   contextualMessage: string | null;
+  followMode: boolean;
 
   startGuidance: (option: RouteOption) => void;
   nextStep: () => void;
   previousStep: () => void;
   endGuidance: () => void;
   setContextualMessage: (message: string | null) => void;
+  setFollowMode: (value: boolean) => void;
 }
 
 export const useGuidanceStore = create<GuidanceState>((set, get) => ({
@@ -19,6 +21,7 @@ export const useGuidanceStore = create<GuidanceState>((set, get) => ({
   routeOption: null,
   currentLegIndex: 0,
   contextualMessage: null,
+  followMode: false,
 
   startGuidance: (option) =>
     set({
@@ -26,6 +29,7 @@ export const useGuidanceStore = create<GuidanceState>((set, get) => ({
       routeOption: option,
       currentLegIndex: 0,
       contextualMessage: null,
+      followMode: true,
     }),
 
   nextStep: () => {
@@ -49,7 +53,9 @@ export const useGuidanceStore = create<GuidanceState>((set, get) => ({
       routeOption: null,
       currentLegIndex: 0,
       contextualMessage: null,
+      followMode: false,
     }),
 
   setContextualMessage: (message) => set({ contextualMessage: message }),
+  setFollowMode: (value) => set({ followMode: value }),
 }));

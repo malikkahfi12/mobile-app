@@ -181,7 +181,7 @@ export const RouteOptionsSheet = memo(function RouteOptionsSheet({
       if (!result) return;
       useRouteStore.getState().setJourneyResult(result);
       useRouteStore.getState().setSelectedRouteOptionIndex(index);
-      useUIStore.getState().setBottomSheet(1, "journeyDetail");
+      useUIStore.getState().setBottomSheet("journeyDetail");
     },
     [result],
   );

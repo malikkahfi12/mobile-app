@@ -2,6 +2,7 @@ import { BottomSheetRouter } from "@/components/bottom-sheet/BottomSheetRouter";
 import { GuidanceCard } from "@/components/guidance/GuidanceCard";
 import { SearchBarOverlay } from "@/components/home/SearchBarOverlay";
 import { TransitribeMap } from "@/components/maps/TransitribeMap";
+import { FloatingStopCard } from "@/components/maps/FloatingStopCard";
 import { PlaceMarker } from "@/components/maps/PlaceMarker";
 import { RecenterButton } from "@/components/maps/RecenterButton";
 import { RouteEndpointMarker } from "@/components/maps/RouteEndpointMarker";
@@ -74,7 +75,7 @@ export default function HomeScreen() {
 
   const [cameraCenter, setCameraCenter] =
     useState<[number, number]>(INITIAL_CENTER);
-  const [followMode, setFollowMode] = useState(false);
+  const followMode = useGuidanceStore((s) => s.followMode);
   const [recenterError, setRecenterError] = useState(false);
   const [locationInitialized, setLocationInitialized] = useState(false);
   const [isRecenterLoading, setIsRecenterLoading] = useState(false);
@@ -91,7 +92,7 @@ export default function HomeScreen() {
   const userSpeed = useLocationStore((s) => s.speed);
 
   const handleUserInteraction = useCallback(() => {
-    setFollowMode(false);
+    useGuidanceStore.getState().setFollowMode(false);
   }, []);
 
   const selectedOption = useMemo(() => {
@@ -226,7 +227,7 @@ export default function HomeScreen() {
         lastKnown.longitude,
         lastKnown.accuracy,
       );
-      setFollowMode(true);
+      useGuidanceStore.getState().setFollowMode(true);
       setIsRecenterLoading(false);
     }
 
@@ -235,7 +236,7 @@ export default function HomeScreen() {
     if (fresh) {
       setRecenterError(false);
       setCameraCenter([fresh.longitude, fresh.latitude]);
-      setFollowMode(true);
+      useGuidanceStore.getState().setFollowMode(true);
       if (!lastKnown) {
         setIsRecenterLoading(false);
       }
@@ -341,7 +342,7 @@ export default function HomeScreen() {
     }
 
     setGuidanceBoundsPhase("fitting");
-    setFollowMode(true);
+    useGuidanceStore.getState().setFollowMode(true);
 
     if (fitTimeoutRef.current) clearTimeout(fitTimeoutRef.current);
     if (holdTimeoutRef.current) clearTimeout(holdTimeoutRef.current);
@@ -493,6 +494,8 @@ export default function HomeScreen() {
       />
 
       <GuidanceCard />
+
+      <FloatingStopCard />
 
       <BottomSheetRouter
         nearbyStops={nearbyStops}

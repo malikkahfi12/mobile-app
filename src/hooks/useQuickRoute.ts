@@ -58,13 +58,13 @@ export function useQuickRoute(
     if (!originStop) {
       setDestination(toTripLocation(targetStop));
       setOrigin(null);
-      setBottomSheet(1, "planner");
+      setBottomSheet("planner");
       return;
     }
 
     setOrigin(toTripLocation(originStop));
     setDestination(toTripLocation(targetStop));
-    setBottomSheet(0, "routingResult");
+    setBottomSheet("routingResult");
   }, [
     targetStop,
     nearbyStops,
@@ -80,7 +80,7 @@ export function useQuickRoute(
 
     setOrigin(toTripLocation(targetStop));
     setDestination(null);
-    setBottomSheet(1, "planner");
+    setBottomSheet("planner");
   }, [targetStop, setOrigin, setDestination, setBottomSheet]);
 
   return useMemo(
