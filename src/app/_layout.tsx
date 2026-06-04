@@ -3,7 +3,7 @@ import "../../global.css";
 import { ensureDeviceRegistered } from "@/services/auth/register";
 import { restoreSession } from "@/services/auth/session";
 import { configureGoogleSignIn } from "@/lib/googleSignIn";
-import { detectDeviceLocale, initI18n } from "@/lib/i18n";
+import "@/lib/i18n";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { Stack, usePathname } from "expo-router";
 import { useEffect } from "react";
@@ -19,9 +19,6 @@ export default function RootLayout() {
   const { toastVisible, toastMessage, dismissToast } = useExitBackHandler(isTabRoute);
 
   useEffect(() => {
-    const deviceLocale = detectDeviceLocale();
-    initI18n(deviceLocale);
-
     configureGoogleSignIn();
 
     async function boot() {

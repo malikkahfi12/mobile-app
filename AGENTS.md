@@ -28,6 +28,8 @@ The app helps users navigate cities using public transport. Features will includ
 - Zustand
 - AsyncStorage
 - react-native-maps or @rnmapbox/maps (for map integration)
+- i18next (v26) + react-i18next (v17) — localization
+- expo-localization — device locale detection
 
 Do not introduce new major libraries unless there is a strong reason.
 
@@ -210,6 +212,7 @@ Never call `getState()` inside a component render — use a selector instead.
 | `search.store.ts` | Search bar state | `query`, `isOpen` |
 | `route.store.ts` | Selected stop/route | `selectedStop`, `selectedRouteId` |
 | `ui.store.ts` | Bottom sheet + map camera | `bottomSheetIndex`, `mapCamera` |
+| `locale.store.ts` | Language preference | `locale`, `setLocale` |
 
 ### When to Create a New Store
 
@@ -239,7 +242,147 @@ export const useAppStore = create(
 );
 ```
 
-Currently **no store uses persistence** — all state is in-memory.
+Stores using persistence via AsyncStorage: `locale.store.ts`, `googleRecovery.store.ts`, `favorites.store.ts`, `quickPlaces.store.ts`.
+
+---
+
+## Internationalization (i18n)
+
+### Tech Stack
+
+- **i18next** (v26) — framework-agnostic i18n engine
+- **react-i18next** (v17) — React bindings, `useTranslation()` hook
+- **expo-localization** — device locale detection
+
+### Architecture
+
+```
+src/
+  lib/
+    i18n.ts                        # initI18n(), setLocale(), isSupportedLocale(), helpers
+    i18n/
+      resources/
+        en.json                     # English strings (~227 keys, 20 namespaces)
+        id.json                     # Indonesian translations
+  store/
+    locale.store.ts                 # Persisted locale preference (AsyncStorage)
+  types/
+    i18n.d.ts                       # TypeScript augmentation for t() autocomplete
+```
+
+### Initialization
+
+i18next is initialized **explicitly** in `_layout.tsx`'s boot sequence — no module-level side effects:
+
+```ts
+import { detectDeviceLocale, initI18n } from "@/lib/i18n";
+
+useEffect(() => {
+  initI18n(detectDeviceLocale());
+  // ... configureGoogleSignIn, boot, etc
+}, []);
+```
+
+The persisted locale (from AsyncStorage) syncs to i18next via `persist.onRehydrateStorage` in the locale store. This handles the case where the user previously selected a language different from their device locale.
+
+### Translation Key Structure
+
+All keys live under the `common` namespace, organized by domain:
+
+| Namespace | Purpose |
+|---|---|
+| `common` | Shared buttons, labels, badges, generic errors |
+| `navigation` | Tab/screen titles |
+| `onboarding` | Onboarding flow |
+| `settings` | Settings screen rows |
+| `language` | Language picker strings |
+| `recovery` | Recovery & Security screen |
+| `devices` | Device management |
+| `logout` | Logout dialog |
+| `explorer` | Explorer placeholder |
+| `home` | Home screen messages |
+| `planner` | Route planning UI |
+| `routes` | Route options, details |
+| `stops` | Stop detail, nearby stops |
+| `journey` | Journey detail sheet |
+| `guidance` | Navigation guidance, instruction templates |
+| `quickPlaces` | Quick places, icon picker |
+| `location` | GPS / permission error messages |
+| `time` | Relative time formatting |
+| `errors` | Error boundary, fallbacks |
+| `accessibility` | Accessibility labels |
+
+### Adding a New String
+
+Follow this 3-step rule in order:
+
+1. Add the key to `src/lib/i18n/resources/en.json` under the appropriate namespace
+2. Add the translation to `src/lib/i18n/resources/id.json` (same key, Indonesian text)
+3. Use it in code:
+
+```tsx
+// React components — useTranslation() hook
+import { useTranslation } from "react-i18next";
+
+function MyScreen() {
+  const { t } = useTranslation();
+  return <Text>{t("common.cancel")}</Text>;
+}
+```
+
+```ts
+// Non-React code (hooks, libs, services) — i18n singleton
+import i18n from "@/lib/i18n";
+
+export function someHelper() {
+  return i18n.t("time.justNow");
+}
+```
+
+### Template Interpolation
+
+Use `{{variableName}}` syntax for dynamic values:
+
+```json
+{ "boardToward": "Board {{routeName}} toward {{headsign}}" }
+{ "minutesAgo": "{{count}} minutes ago" }
+```
+
+```ts
+i18n.t("time.minutesAgo", { count: 5 });              // "5 minutes ago"
+i18n.t("guidance.boardToward", { routeName: "B12", headsign: "Central" });
+// "Board B12 toward Central"
+```
+
+### TypeScript Autocomplete
+
+`src/types/i18n.d.ts` augments react-i18next's types by reading all keys from `en.json`. After adding a new key, TypeScript automatically provides autocompletion for `t("...")` across the entire codebase.
+
+### Changing Language
+
+```tsx
+// From the language picker
+const setLocale = useLocaleStore((s) => s.setLocale);
+setLocale("id"); // switches to Indonesian, persists to AsyncStorage via Zustand persist
+```
+
+The locale store's `setLocale` calls `i18n.changeLanguage()` internally. On app restart, `persist.onRehydrateStorage` re-syncs the stored locale to i18next.
+
+### Adding a New Language
+
+1. Create `src/lib/i18n/resources/<code>.json` — mirror `en.json` structure
+2. Add to `SUPPORTED_LOCALES` in `src/lib/i18n.ts`
+3. Add to `LOCALE_LABELS` in `src/lib/i18n.ts`
+4. Add to `resources` in `initI18n()` in `src/lib/i18n.ts`
+5. Add to `LANGUAGES` array in `src/app/language.tsx`
+
+### Rules
+
+- Always add keys to **both** `en.json` and `id.json` simultaneously — never add to just one
+- Use `useTranslation()` in React components; `i18n.t()` (singleton import) in non-React code
+- Add `t` to dependency arrays of `useCallback`/`useMemo`/`useEffect` when used inside them
+- Do NOT translate API error messages shown directly to the user (they're already user-facing from the server)
+- Do NOT translate developer-facing strings (log messages, console output, storybook labels)
 
 ---
 
