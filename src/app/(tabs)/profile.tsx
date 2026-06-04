@@ -9,6 +9,7 @@ import { useUIStore } from "@/store/ui.store";
 import { useRouteStore } from "@/store/route.store";
 import { useGuidanceStore } from "@/store/guidance.store";
 import { LogoutDialog } from "@/components/ui/LogoutDialog";
+import { useGoogleRecoveryStore } from "@/store/googleRecovery.store";
 
 export default function ProfileScreen() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -23,6 +24,7 @@ export default function ProfileScreen() {
     useUIStore.getState().closeBottomSheet();
     useRouteStore.getState().clearSelection();
     useGuidanceStore.getState().endGuidance();
+    useGoogleRecoveryStore.getState().clearGoogleEmail();
     await logoutUser();
     router.replace("/onboarding");
   }, []);

@@ -2,6 +2,7 @@ import "../../global.css";
 
 import { ensureDeviceRegistered } from "@/services/auth/register";
 import { restoreSession } from "@/services/auth/session";
+import { configureGoogleSignIn } from "@/lib/googleSignIn";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { Stack, usePathname } from "expo-router";
 import { useEffect } from "react";
@@ -15,6 +16,8 @@ export default function RootLayout() {
   const { toastVisible, toastMessage, dismissToast } = useExitBackHandler(isTabRoute);
 
   useEffect(() => {
+    configureGoogleSignIn();
+
     async function boot() {
       await ensureDeviceRegistered();
       await restoreSession();

@@ -69,3 +69,20 @@ export interface RefreshResponse {
   accessToken: string;
   refreshToken: string;
 }
+
+export interface RecoveryGoogleResponse {
+  recoveryToken: string;
+}
+
+export interface RecoveryRegisterDeviceRequest {
+  publicKey: string;
+  deviceName?: string;
+  platform?: string;
+}
+
+export interface RecoveryRegisterDeviceResponse {
+  deviceId: string;
+  challengeId: string;
+  challenge: string;
+  expiresAt: string;
+}
