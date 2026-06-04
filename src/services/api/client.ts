@@ -53,6 +53,21 @@ async function refreshAccessToken(): Promise<string | null> {
   }
 }
 
+const PUBLIC_PREFIXES = [
+  "/auth/register",
+  "/auth/challenge",
+  "/auth/login",
+  "/auth/refresh",
+  "/auth/logout",
+  "/auth/recovery/",
+  "/health",
+];
+
+function isPublicEndpoint(url?: string): boolean {
+  if (!url) return false;
+  return PUBLIC_PREFIXES.some((p) => url.startsWith(p));
+}
+
 // eslint-disable-next-line import/no-named-as-default-member
 const client = axios.create({
   baseURL: apiConfig.apiUrl,
@@ -64,9 +79,11 @@ const client = axios.create({
 });
 
 client.interceptors.request.use((config) => {
-  const token = tokenManager.getAccessToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  if (!isPublicEndpoint(config.url)) {
+    const token = tokenManager.getAccessToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
   return config;
 });
@@ -82,7 +99,7 @@ client.interceptors.response.use(
       status === 401 &&
       originalRequest &&
       !originalRequest._retry &&
-      !url?.startsWith("/auth/")
+      !isPublicEndpoint(url)
     ) {
       originalRequest._retry = true;
 
