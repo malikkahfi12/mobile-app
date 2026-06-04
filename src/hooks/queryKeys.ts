@@ -53,6 +53,10 @@ export const queryKeys = {
   devices: {
     all: ["devices"] as const,
   },
+
+  googleConnect: {
+    all: ["google-connect"] as const,
+  },
 };
 
 export function invalidateStops() {

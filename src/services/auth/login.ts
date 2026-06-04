@@ -21,14 +21,14 @@ async function requestChallenge(
   return post<ChallengeResponse>("/auth/challenge", { username, deviceId });
 }
 
-async function submitChallenge(
+export async function submitChallenge(
   challengeId: string,
   signature: string,
 ): Promise<LoginResponse> {
   return post<LoginResponse>("/auth/login", { challengeId, signature });
 }
 
-function signChallenge(
+export function signChallenge(
   challengeBase64: string,
   privateKeyBase64: string,
 ): string {
