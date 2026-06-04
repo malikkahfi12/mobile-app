@@ -23,7 +23,7 @@ export class NotFoundError extends ApiError {
 }
 
 export class AuthenticationError extends ApiError {
-  constructor(message = "Invalid API key") {
+  constructor(message = "Authentication required") {
     super(message, 401);
     this.name = "AuthenticationError";
   }
