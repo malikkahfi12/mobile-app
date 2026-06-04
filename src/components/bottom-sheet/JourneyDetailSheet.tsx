@@ -179,6 +179,8 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
   const handleStart = useCallback(async () => {
     if (!option) return;
 
+    useRouteStore.getState().setSelectedStop(null);
+
     setupNotifications();
 
     const currentStatus = await getPermissionStatus();
@@ -191,7 +193,7 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
   }, [option, startGuidance, closeBottomSheet]);
 
   const handleBack = useCallback(() => {
-    setBottomSheet(1, "routingResult");
+    setBottomSheet("routingResult");
   }, [setBottomSheet]);
 
   return (

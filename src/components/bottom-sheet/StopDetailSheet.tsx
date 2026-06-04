@@ -67,7 +67,7 @@ export const StopDetailSheet = memo(function StopDetailSheet() {
   const handlePressDeparture = useCallback(
     (routeId: string) => {
       useRouteStore.getState().setSelectedRouteId(routeId);
-      setBottomSheet(1, "routeDetail");
+      setBottomSheet("routeDetail");
     },
     [setBottomSheet],
   );

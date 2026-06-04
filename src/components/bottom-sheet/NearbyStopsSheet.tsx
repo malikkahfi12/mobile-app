@@ -10,7 +10,6 @@ import { useRouteStore } from "@/store/route.store";
 import { useFavoritesStore } from "@/store/favorites.store";
 import { useQuickPlacesStore } from "@/store/quickPlaces.store";
 import { QuickPlaceChip } from "@/components/quick-places/QuickPlaceChip";
-import { useQuickRoute } from "@/hooks/useQuickRoute";
 import { colors } from "@/constants/colors";
 import type { NearbyStop } from "@/services/stops/stops.types";
 import type { SavedStop } from "@/store/favorites.store";
@@ -21,7 +20,6 @@ interface NearbyStopsSheetProps {
   isLoading: boolean;
   isError?: boolean;
   onRetry?: () => void;
-  onViewDetails?: () => void;
   onAddPlace?: () => void;
   onEditPlace?: (place: QuickPlace) => void;
   onFocusCoordinate?: (lng: number, lat: number) => void;
@@ -31,18 +29,11 @@ interface NearbyStopsSheetProps {
 
 const EMPTY_ARRAY: NearbyStop[] = [];
 
-function formatDistance(meters: number): string {
-  if (meters < 100) return `${Math.round(meters)}m`;
-  if (meters < 1000) return `${Math.round(meters)}m`;
-  return `${(meters / 1000).toFixed(1)}km`;
-}
-
 export const NearbyStopsSheet = memo(function NearbyStopsSheet({
   stops,
   isLoading,
   isError,
   onRetry,
-  onViewDetails,
   onAddPlace,
   onEditPlace,
   onFocusCoordinate,
@@ -58,26 +49,13 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
   const stopsHydrated = useFavoritesStore((s) => s._hasHydrated);
   const isHydrated = placesHydrated && stopsHydrated;
   const insets = useSafeAreaInsets();
-  const { routeToHere, routeFromHere, isRouting } = useQuickRoute(
-    selectedStop,
-    stops,
-  );
 
   const showQuickAccess = places.length > 0 || savedStops.length > 0;
-  const selectedPlaceId = useMemo(() => {
-    if (!selectedStop) return null;
-    const place = places.find(
-      (p) => p.nearbyStopId === selectedStop.id,
-    );
-    return place?.id ?? null;
-  }, [places, selectedStop]);
 
   const snapPoints = useMemo(() => ["8%", "45%"], []);
 
   useEffect(() => {
     if (selectedStop) {
-      bottomSheetRef.current?.snapToIndex(1);
-    } else {
       bottomSheetRef.current?.snapToIndex(0);
     }
   }, [selectedStop]);
@@ -87,10 +65,6 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
       useRouteStore.getState();
     set(curr?.id === stop.id ? null : stop);
   }, []);
-
-  const handleClosePreview = useCallback(() => {
-    setSelectedStop(null);
-  }, [setSelectedStop]);
 
   const handleSavedStopLongPress = useCallback(
     (saved: SavedStop) => {
@@ -111,12 +85,6 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
     },
     [],
   );
-
-  const handleViewDetails = useCallback(() => {
-    if (selectedStop && onViewDetails) {
-      onViewDetails();
-    }
-  }, [onViewDetails, selectedStop]);
 
   const handleSavedStopPress = useCallback(
     (saved: SavedStop) => {
@@ -170,22 +138,6 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
     [onDeletePlace],
   );
 
-  const handleDeletePlacePress = useCallback(() => {
-    if (!selectedPlaceId) return;
-    const place = places.find((p) => p.id === selectedPlaceId);
-    Alert.alert("Delete place?", `Remove "${place?.name ?? "this place"}" from Quick Access?`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => {
-          if (onDeletePlace) onDeletePlace(selectedPlaceId);
-          setSelectedStop(null);
-        },
-      },
-    ]);
-  }, [selectedPlaceId, places, onDeletePlace, setSelectedStop]);
-
   const handleClearPlaces = useCallback(() => {
     Alert.alert("Clear all places?", "Remove all Quick Access places?", [
       { text: "Cancel", style: "cancel" },
@@ -235,110 +187,6 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
         contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
         ListHeaderComponent={
           <>
-            {selectedStop && (
-              <View className="px-4 pt-2 pb-3 border-b border-gray-100">
-                <View className="flex-row items-center justify-between">
-                  <View className="h-8 w-8 items-center justify-center rounded-full bg-primary/20">
-                    <Ionicons
-                      name={selectedStop.isStation ? "train-outline" : "bus-outline"}
-                      size={16}
-                      color={colors.primary}
-                    />
-                  </View>
-                  <Text
-                    className="ml-2 flex-1 text-base font-bold text-gray-900"
-                    numberOfLines={1}
-                  >
-                    {selectedStop.name}
-                  </Text>
-                  {selectedPlaceId && onDeletePlace && (
-                    <TouchableOpacity
-                      onPress={handleDeletePlacePress}
-                      className="h-6 w-6 items-center justify-center"
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    >
-                      <Ionicons name="trash-outline" size={16} color={colors.error} />
-                    </TouchableOpacity>
-                  )}
-                  <TouchableOpacity
-                    onPress={handleClosePreview}
-                    className="h-6 w-6 items-center justify-center"
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  >
-                    <Ionicons name="close" size={18} color={colors.textTertiary} />
-                  </TouchableOpacity>
-                </View>
-
-                <View className="ml-10 mt-1 flex-row items-center">
-                  <View
-                    className={`rounded-full px-2 py-0.5 ${
-                      selectedStop.isStation ? "bg-primary/15" : "bg-gray-100"
-                    }`}
-                  >
-                    <Text
-                      className={`text-[10px] font-semibold ${
-                        selectedStop.isStation ? "text-primary" : "text-gray-500"
-                      }`}
-                    >
-                      {selectedStop.isStation ? "Station" : "Stop"}
-                    </Text>
-                  </View>
-                  <Text className="ml-2 text-xs text-gray-400">
-                    · {formatDistance(selectedStop.distance_meters)}
-                  </Text>
-                </View>
-
-                <View className="ml-10 mt-2.5 flex-row gap-2">
-                  <TouchableOpacity
-                    onPress={routeToHere}
-                    disabled={isRouting}
-                    activeOpacity={0.7}
-                    className={`flex-1 flex-row items-center justify-center rounded-lg bg-primary/15 py-2 ${
-                      isRouting ? "opacity-50" : ""
-                    }`}
-                  >
-                    <Ionicons
-                      name="navigate-outline"
-                      size={14}
-                      color={colors.primary}
-                    />
-                    <Text className="ml-1 text-xs font-semibold text-primary">
-                      Route Here
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={routeFromHere}
-                    disabled={isRouting}
-                    activeOpacity={0.7}
-                    className={`flex-1 flex-row items-center justify-center rounded-lg border border-primary/30 py-2 ${
-                      isRouting ? "opacity-50" : ""
-                    }`}
-                  >
-                    <Ionicons
-                      name="location-outline"
-                      size={14}
-                      color={colors.primary}
-                    />
-                    <Text className="ml-1 text-xs font-semibold text-primary">
-                      From Here
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                {!selectedPlaceId && (
-                <TouchableOpacity
-                  className="mt-2.5 items-center border-t border-gray-100 pt-2"
-                  activeOpacity={0.7}
-                  onPress={handleViewDetails}
-                >
-                  <Text className="text-sm font-semibold text-primary">
-                    View Details
-                  </Text>
-                </TouchableOpacity>
-                )}
-              </View>
-            )}
-
             <View className="px-4 pt-3 pb-2 border-b border-gray-100">
               <Text className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Quick Access
@@ -362,7 +210,10 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
                     <QuickPlaceChip
                       key={place.id}
                       place={place}
-                      isSelected={selectedPlaceId === place.id}
+                      isSelected={
+                        selectedStop != null &&
+                        place.nearbyStopId === selectedStop.id
+                      }
                       onPress={() => handleQuickPlacePress(place)}
                       onLongPress={() => handleQuickPlaceLongPress(place)}
                     />

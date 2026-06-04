@@ -131,7 +131,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
 
   const handleFindRoute = useCallback(() => {
     Keyboard.dismiss();
-    setBottomSheet(0, "routingResult");
+    setBottomSheet("routingResult");
   }, [setBottomSheet]);
 
   const openSearch = useCallback((mode: "origin" | "destination") => {

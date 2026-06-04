@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, memo } from "react";
+import { useEffect, useMemo, useRef, memo } from "react";
 import { useRouting } from "@/hooks/api/useRouting";
 import { useGuidanceStore } from "@/store/guidance.store";
 import { useLocationStore } from "@/store/location.store";
@@ -40,7 +40,6 @@ export const BottomSheetRouter = memo(function BottomSheetRouter({
   const destination = useLocationStore((s) => s.destination);
   const bottomSheetContent = useUIStore((s) => s.bottomSheetContent);
   const closeBottomSheet = useUIStore((s) => s.closeBottomSheet);
-  const setBottomSheet = useUIStore((s) => s.setBottomSheet);
   const selectedStop = useRouteStore((s) => s.selectedStop);
   const setJourneyResult = useRouteStore((s) => s.setJourneyResult);
   const setSelectedRouteOptionIndex = useRouteStore(
@@ -87,10 +86,6 @@ export const BottomSheetRouter = memo(function BottomSheetRouter({
     }
   }, [selectedStop, isStopDetailActive, closeBottomSheet]);
 
-  const handleViewDetails = useCallback(() => {
-    setBottomSheet(0, "stopDetail");
-  }, [setBottomSheet]);
-
   if (isRoutingActive) {
     return (
       <RouteOptionsSheet
@@ -131,7 +126,6 @@ export const BottomSheetRouter = memo(function BottomSheetRouter({
       isLoading={stopsLoading}
       isError={stopsError}
       onRetry={onRetryStops}
-      onViewDetails={handleViewDetails}
       onAddPlace={onAddPlace}
       onEditPlace={onEditPlace}
       onFocusCoordinate={onFocusCoordinate}
