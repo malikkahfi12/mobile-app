@@ -23,21 +23,19 @@ export function detectDeviceLocale(): SupportedLocale {
   return isSupportedLocale(code) ? code : "en";
 }
 
-export async function initI18n(locale: SupportedLocale): Promise<void> {
-  await i18n.use(initReactI18next).init({
-    resources: {
-      en: { common: en },
-      id: { common: id },
-    },
-    lng: locale,
-    fallbackLng: "en",
-    ns: ["common"],
-    defaultNS: "common",
-    interpolation: {
-      escapeValue: false,
-    },
-  });
-}
+i18n.use(initReactI18next).init({
+  resources: {
+    en: { common: en },
+    id: { common: id },
+  },
+  lng: detectDeviceLocale(),
+  fallbackLng: "en",
+  ns: ["common"],
+  defaultNS: "common",
+  interpolation: {
+    escapeValue: false,
+  },
+});
 
 export function setLocale(locale: SupportedLocale): void {
   i18n.changeLanguage(locale);

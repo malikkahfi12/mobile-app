@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { setLocale, type SupportedLocale } from "@/lib/i18n";
+import { detectDeviceLocale, setLocale, type SupportedLocale } from "@/lib/i18n";
 
 interface LocaleState {
   locale: SupportedLocale;
@@ -11,7 +11,7 @@ interface LocaleState {
 export const useLocaleStore = create<LocaleState>()(
   persist(
     (set) => ({
-      locale: "en",
+      locale: detectDeviceLocale(),
       setLocale: (locale) => {
         set({ locale });
         setLocale(locale);
