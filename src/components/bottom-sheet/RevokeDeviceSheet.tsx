@@ -3,6 +3,7 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { colors } from "@/constants/colors";
 import type { DeviceInfo } from "@/types/auth.types";
 import { useRevokeDevice } from "@/hooks/useDevices";
@@ -21,6 +22,7 @@ export function RevokeDeviceSheet({
   onClose,
   onRevoked,
 }: RevokeDeviceSheetProps) {
+  const { t } = useTranslation();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const insets = useSafeAreaInsets();
   const snapPoints = useMemo(() => ["42%"], []);
@@ -84,7 +86,7 @@ export function RevokeDeviceSheet({
         </View>
 
         <Text className="mt-4 text-center text-[17px] font-semibold text-gray-900">
-          {device.deviceName || "Unknown Device"}
+          {device.deviceName || t("common.unknownDevice")}
         </Text>
         <Text className="mt-1 text-center text-sm text-gray-500">
           {getPlatformLabel(device.platform)} · {formatLastSeen(device.lastSeenAt)}
@@ -99,8 +101,7 @@ export function RevokeDeviceSheet({
               style={{ marginTop: 1 }}
             />
             <Text className="ml-2.5 flex-1 text-[13px] leading-5 text-red-600">
-              This will sign out {device.deviceName || "this device"}. They will
-              need to sign in again to access your account.
+              {t("devices.revokeWarning", { name: device.deviceName || t("devices.thisDevice") })}
             </Text>
           </View>
         </View>
@@ -108,7 +109,7 @@ export function RevokeDeviceSheet({
         {revokeMutation.isError && (
           <Text className="mt-3 text-center text-sm text-red-500">
             {(revokeMutation.error as Error)?.message ||
-              "Failed to revoke device. Please try again."}
+              t("common.errorGeneric")}
           </Text>
         )}
 
@@ -123,7 +124,7 @@ export function RevokeDeviceSheet({
               <ActivityIndicator color={colors.white} size="small" />
             ) : (
               <Text className="text-base font-semibold text-white">
-                Revoke Device
+                {t("devices.revokeDevice")}
               </Text>
             )}
           </TouchableOpacity>
@@ -134,7 +135,7 @@ export function RevokeDeviceSheet({
             className="items-center rounded-xl border border-gray-200 px-4 py-3.5"
           >
             <Text className="text-base font-semibold text-gray-700">
-              Cancel
+              {t("common.cancel")}
             </Text>
           </TouchableOpacity>
         </View>

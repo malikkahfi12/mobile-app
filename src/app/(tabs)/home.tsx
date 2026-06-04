@@ -41,8 +41,10 @@ import type { QuickPlace } from "@/types/quickPlaces.types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, Vibration, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 
 export default function HomeScreen() {
+  const { t } = useTranslation();
   const { status, isGranted, request } = useLocationPermission();
   const { fetchLocation } = useCurrentLocation();
   const currentLocation = useLocationStore((s) => s.currentLocation);
@@ -445,7 +447,7 @@ export default function HomeScreen() {
           style={{ top: insets.top + 12 }}
         >
           <ActivityIndicator size="small" color={colors.primary} />
-          <Text className="ml-2 text-xs text-gray-500">Finding stops...</Text>
+          <Text className="ml-2 text-xs text-gray-500">{t("home.findingStops")}</Text>
         </View>
       )}
 
@@ -461,7 +463,7 @@ export default function HomeScreen() {
           activeOpacity={0.7}
         >
           <Text className="text-sm text-red-600">
-            Failed to load nearby stops. Tap to retry.
+            {t("home.loadFailed")}
           </Text>
         </TouchableOpacity>
       )}
@@ -472,7 +474,7 @@ export default function HomeScreen() {
           style={{ top: insets.top + 12 }}
         >
           <Text className="text-sm text-gray-700">
-            Location permission needed to find nearby stops. Enable in Settings.
+            {t("home.locationPermission")}
           </Text>
         </View>
       )}

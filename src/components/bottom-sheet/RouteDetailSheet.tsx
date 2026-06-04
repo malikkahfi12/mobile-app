@@ -10,6 +10,7 @@ import {
 import BottomSheet from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { useRouteDetail } from "@/hooks/routes/useRouteDetail";
 import { useRouteStore } from "@/store/route.store";
 import { useUIStore } from "@/store/ui.store";
@@ -19,6 +20,7 @@ import type { RouteStop } from "@/services/routes/routes.types";
 const SNAP_POINTS = ["50%", "85%"];
 
 export const RouteDetailSheet = memo(function RouteDetailSheet() {
+  const { t } = useTranslation();
   const sheetRef = useRef<BottomSheet>(null);
   const routeId = useRouteStore((s) => s.selectedRouteId);
   const setRouteId = useRouteStore((s) => s.setSelectedRouteId);
@@ -35,7 +37,7 @@ export const RouteDetailSheet = memo(function RouteDetailSheet() {
   } = useRouteDetail(routeId ?? "");
 
   const displayName =
-    routeData?.longName || routeData?.shortName || "Route";
+    routeData?.longName || routeData?.shortName || t("common.route");
   const displayHeadsign = routeData?.shortName;
 
   const handleBack = useCallback(() => {
@@ -107,7 +109,7 @@ export const RouteDetailSheet = memo(function RouteDetailSheet() {
       >
         <View className="flex-1 items-center justify-center px-4">
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text className="mt-3 text-sm text-gray-400">Loading...</Text>
+          <Text className="mt-3 text-sm text-gray-400">{t("common.loading")}</Text>
         </View>
       </BottomSheet>
     );
@@ -135,7 +137,7 @@ export const RouteDetailSheet = memo(function RouteDetailSheet() {
           >
             <Ionicons name="chevron-back" size={22} color={colors.textPrimary} />
             <Text className="ml-1 text-base font-semibold text-gray-900">
-              Back
+              {t("common.back")}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -173,7 +175,7 @@ export const RouteDetailSheet = memo(function RouteDetailSheet() {
                       className="text-2xl font-bold text-gray-900"
                       numberOfLines={2}
                     >
-                      {routeData?.shortName || "Route"}
+                      {routeData?.shortName || t("common.route")}
                     </Text>
                     <Text
                       className="text-base text-gray-500 mt-0.5"
@@ -206,7 +208,7 @@ export const RouteDetailSheet = memo(function RouteDetailSheet() {
                             : "text-red-500"
                         }`}
                       >
-                        {routeData.isActive ? "Active" : "Inactive"}
+                        {routeData.isActive ? t("common.active") : t("common.inactive")}
                       </Text>
                     </View>
                   )}
@@ -215,7 +217,7 @@ export const RouteDetailSheet = memo(function RouteDetailSheet() {
 
               <View className="px-4 pt-4 pb-2">
                 <Text className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Stops on this Route
+                  {t("routes.stopsOnRoute")}
                 </Text>
               </View>
             </View>
@@ -230,14 +232,14 @@ export const RouteDetailSheet = memo(function RouteDetailSheet() {
                   color={colors.error}
                 />
                 <Text className="mt-3 text-sm text-gray-500 text-center">
-                  Failed to load route details.
+                  {t("routes.detailsFailed")}
                 </Text>
                 <TouchableOpacity
                   onPress={() => refetch()}
                   className="mt-4 rounded-full bg-primary px-6 py-2"
                 >
                   <Text className="text-sm font-semibold text-white">
-                    Tap to Retry
+                    {t("common.retryTap")}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -249,7 +251,7 @@ export const RouteDetailSheet = memo(function RouteDetailSheet() {
                   color={colors.textTertiary}
                 />
                 <Text className="mt-3 text-sm text-gray-400 text-center">
-                  Stops list not available for this route.
+                  {t("routes.stopsNotAvailable")}
                 </Text>
               </View>
             ) : null

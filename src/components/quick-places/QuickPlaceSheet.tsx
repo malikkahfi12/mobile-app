@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { IconPicker } from "./IconPicker";
 import { useSearchStops } from "@/hooks/stops/useSearchStops";
 import { getCurrentPosition } from "@/services/location/location.service";
@@ -64,6 +65,7 @@ export function QuickPlaceSheet({
   onSave,
   onClose,
 }: QuickPlaceSheetProps) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const isEdit = place != null;
 
@@ -142,8 +144,8 @@ export function QuickPlaceSheet({
       setLocationMode("none");
     } catch {
       Alert.alert(
-        "Location Error",
-        "Could not get your location. Check your GPS settings and try again.",
+        t("quickPlaces.locationErrorTitle"),
+        t("quickPlaces.locationErrorMessage"),
       );
     } finally {
       setGpsLoading(false);
@@ -193,12 +195,12 @@ export function QuickPlaceSheet({
 
   const handleDelete = useCallback(() => {
     Alert.alert(
-      "Delete Place",
-      `Remove "${place?.name}" from Quick Access?`,
+      t("quickPlaces.deletePlace"),
+      t("quickPlaces.deletePlaceConfirm", { name: place?.name ?? "" }),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
         {
-          text: "Delete",
+          text: t("common.delete"),
           style: "destructive",
           onPress: () => {
             if (place) {
@@ -269,10 +271,10 @@ export function QuickPlaceSheet({
             className="h-10 items-center justify-center"
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Text className="text-base text-gray-500">Cancel</Text>
+            <Text className="text-base text-gray-500">{t("common.cancel")}</Text>
           </TouchableOpacity>
           <Text className="text-lg font-semibold text-gray-900">
-            {isEdit ? "Edit Place" : "Add Place"}
+            {isEdit ? t("quickPlaces.editPlace") : t("quickPlaces.addPlace")}
           </Text>
           <TouchableOpacity
             onPress={handleSavePress}
@@ -285,7 +287,7 @@ export function QuickPlaceSheet({
                 canSave ? "text-primary" : "text-gray-300"
               }`}
             >
-              Save
+              {t("common.save")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -298,7 +300,7 @@ export function QuickPlaceSheet({
             >
               <Ionicons name="arrow-back" size={22} color={colors.textPrimary} />
               <Text className="ml-1 text-base font-semibold text-gray-900">
-                Pick a Stop
+                {t("quickPlaces.pickStop")}
               </Text>
             </TouchableOpacity>
 
@@ -306,7 +308,7 @@ export function QuickPlaceSheet({
               <Ionicons name="search-outline" size={18} color={colors.textTertiary} />
               <TextInput
                 className="ml-2 flex-1 h-11 text-base text-gray-900"
-                placeholder="Search stops..."
+                placeholder={t("quickPlaces.searchStops")}
                 placeholderTextColor={colors.textTertiary}
                 value={searchText}
                 onChangeText={setSearchText}
@@ -326,7 +328,7 @@ export function QuickPlaceSheet({
               <View className="flex-1 items-center justify-center">
                 <Ionicons name="search-outline" size={40} color={colors.textTertiary} />
                 <Text className="mt-3 text-sm text-gray-400 text-center px-4">
-                  Type at least 2 characters to search
+                  {t("quickPlaces.searchHint")}
                 </Text>
               </View>
             )}
@@ -340,7 +342,7 @@ export function QuickPlaceSheet({
             {showSearchEmpty && (
               <View className="flex-1 items-center justify-center">
                 <Text className="text-sm text-gray-400">
-                  No stops found for &apos;{debouncedQuery}&apos;
+                  {t("quickPlaces.noStopsFound", { query: debouncedQuery })}
                 </Text>
               </View>
             )}
@@ -359,11 +361,11 @@ export function QuickPlaceSheet({
           <View className="flex-1 px-4 pt-4">
             <View className="mb-5">
               <Text className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                Name
+                {t("quickPlaces.name")}
               </Text>
               <TextInput
                 className="rounded-xl bg-gray-100 px-4 h-12 text-base text-gray-900"
-                placeholder="e.g. Home, Work, Campus"
+                placeholder={t("quickPlaces.namePlaceholder")}
                 placeholderTextColor={colors.textTertiary}
                 value={name}
                 onChangeText={setName}
@@ -376,14 +378,14 @@ export function QuickPlaceSheet({
 
             <View className="mb-5">
               <Text className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                Icon
+                {t("quickPlaces.icon")}
               </Text>
               <IconPicker selected={icon} onSelect={setIcon} />
             </View>
 
             <View className="mb-5">
               <Text className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                Location
+                {t("quickPlaces.location")}
               </Text>
 
               <View className="flex-row gap-2 mb-3">
@@ -401,7 +403,7 @@ export function QuickPlaceSheet({
                     <Ionicons name="navigate-outline" size={16} color={colors.primary} />
                   )}
                   <Text className="ml-1.5 text-xs font-semibold text-primary">
-                    Use My Location
+                    {t("quickPlaces.useMyLocation")}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -411,7 +413,7 @@ export function QuickPlaceSheet({
                 >
                   <Ionicons name="search-outline" size={16} color={colors.primary} />
                   <Text className="ml-1.5 text-xs font-semibold text-primary">
-                    Pick a Stop
+                    {t("quickPlaces.pickStop")}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -432,7 +434,7 @@ export function QuickPlaceSheet({
                     <View className="flex-row items-center mt-1.5">
                       <Ionicons name="bus-outline" size={12} color={colors.textTertiary} />
                       <Text className="ml-1 text-[11px] text-gray-400">
-                        Nearest stop: {nearbyStopName}
+                        {t("quickPlaces.nearestStop")}{nearbyStopName}
                       </Text>
                     </View>
                   )}
@@ -440,7 +442,7 @@ export function QuickPlaceSheet({
               ) : (
                 <View className="rounded-lg bg-gray-50 px-3 py-2.5">
                   <Text className="text-xs text-gray-400 text-center">
-                    Select a location to continue
+                    {t("quickPlaces.selectLocation")}
                   </Text>
                 </View>
               )}
@@ -452,7 +454,7 @@ export function QuickPlaceSheet({
                 className="mt-auto mb-6 items-center justify-center rounded-xl bg-red-50 py-3"
                 activeOpacity={0.7}
               >
-                <Text className="text-sm font-semibold text-red-500">Delete Place</Text>
+                <Text className="text-sm font-semibold text-red-500">{t("quickPlaces.deletePlace")}</Text>
               </TouchableOpacity>
             )}
           </View>

@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { Alert } from "react-native";
+import i18n from "@/lib/i18n";
 import { useLocationStore } from "@/store/location.store";
 import { useUIStore } from "@/store/ui.store";
 import type { NearbyStop } from "@/services/stops/stops.types";
@@ -33,16 +34,16 @@ export function useQuickRoute(
 
     if (!hasPermission) {
       Alert.alert(
-        "Location Required",
-        "Enable location access in Settings to route from your current position.",
+        i18n.t("location.requiredTitle"),
+        i18n.t("location.requiredMessage"),
       );
       return;
     }
 
     if (!currentLocation) {
       Alert.alert(
-        "Location Unavailable",
-        "Waiting for your current position. Try again in a moment.",
+        i18n.t("location.unavailableTitle"),
+        i18n.t("location.unavailableMessage"),
       );
       return;
     }

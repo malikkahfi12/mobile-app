@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import type { Stop } from "@/services/stops/stops.types";
 import type { SearchStopResult } from "@/services/search/search.types";
 import { colors } from "@/constants/colors";
@@ -14,6 +15,7 @@ export const SearchResultCard = memo(function SearchResultCard({
   stop,
   onPress,
 }: SearchResultCardProps) {
+  const { t } = useTranslation();
   const isStation = "isStation" in stop ? stop.isStation : false;
   const code = "code" in stop ? stop.code : undefined;
   return (
@@ -59,7 +61,7 @@ export const SearchResultCard = memo(function SearchResultCard({
               isStation ? "text-primary" : "text-gray-500"
             }`}
           >
-            {isStation ? "Station" : "Stop"}
+            {isStation ? t("common.station") : t("common.stop")}
           </Text>
         </View>
         <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />

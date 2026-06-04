@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import type { SearchPlaceResult } from "@/services/search/search.types";
 import { colors } from "@/constants/colors";
 
@@ -13,6 +14,8 @@ export const PlaceResultCard = memo(function PlaceResultCard({
   place,
   onPress,
 }: PlaceResultCardProps) {
+  const { t } = useTranslation();
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -40,7 +43,7 @@ export const PlaceResultCard = memo(function PlaceResultCard({
       <View className="flex-row items-center">
         <View className="mr-2 rounded-full bg-amber-50 px-2 py-0.5">
           <Text className="text-[10px] font-semibold text-amber-600">
-            Place
+            {t("common.place")}
           </Text>
         </View>
         <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />

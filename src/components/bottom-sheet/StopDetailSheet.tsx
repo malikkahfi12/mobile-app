@@ -12,6 +12,7 @@ import BottomSheet, {
   BottomSheetFlatList,
 } from "@gorhom/bottom-sheet";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Text,
@@ -21,6 +22,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export const StopDetailSheet = memo(function StopDetailSheet() {
+  const { t } = useTranslation();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const selectedStop = useRouteStore((s) => s.selectedStop);
   const setSelectedStop = useRouteStore((s) => s.setSelectedStop);
@@ -143,7 +145,7 @@ export const StopDetailSheet = memo(function StopDetailSheet() {
                         color={colors.primary}
                       />
                       <Text className="ml-1 text-xs font-semibold text-primary">
-                        Route Here
+                        {t("common.routeHere")}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -160,7 +162,7 @@ export const StopDetailSheet = memo(function StopDetailSheet() {
                         color={colors.primary}
                       />
                       <Text className="ml-1 text-xs font-semibold text-primary">
-                        From Here
+                        {t("common.fromHere")}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -175,14 +177,14 @@ export const StopDetailSheet = memo(function StopDetailSheet() {
                         color="#B45309"
                       />
                       <Text className="ml-1 text-[11px] text-amber-700">
-                        Cached data — may be outdated
+                        {t("stops.cachedData")}
                       </Text>
                     </View>
                   )}
 
                 <View className="px-4 pt-6 pb-2">
                   <Text className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Upcoming Departures
+                    {t("stops.upcomingDepartures")}
                   </Text>
                 </View>
               </View>
@@ -194,7 +196,7 @@ export const StopDetailSheet = memo(function StopDetailSheet() {
             <View className="items-center px-4 py-12">
               <ActivityIndicator size="large" color={colors.primary} />
               <Text className="mt-3 text-sm text-gray-400">
-                Loading stop details...
+                {t("stops.loadingDetails")}
               </Text>
             </View>
           ) : isError && !isLoading ? (
@@ -205,14 +207,14 @@ export const StopDetailSheet = memo(function StopDetailSheet() {
                 color={colors.error}
               />
               <Text className="mt-3 text-sm text-gray-500 text-center">
-                Failed to load stop details.
+                {t("stops.detailsFailed")}
               </Text>
               <TouchableOpacity
                 onPress={() => refetch()}
                 className="mt-4 rounded-full bg-primary px-6 py-2"
               >
                 <Text className="text-sm font-semibold text-white">
-                  Tap to Retry
+                  {t("common.retryTap")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -224,7 +226,7 @@ export const StopDetailSheet = memo(function StopDetailSheet() {
                 color={colors.textTertiary}
               />
               <Text className="mt-3 text-sm text-gray-400 text-center">
-                No upcoming departures at this stop.
+                {t("stops.noDepartures")}
               </Text>
             </View>
           ) : null

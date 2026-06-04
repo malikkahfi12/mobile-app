@@ -7,6 +7,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { colors } from "@/constants/colors";
 
 interface RecenterButtonProps {
@@ -32,6 +33,7 @@ export const RecenterButton = memo(function RecenterButton({
   hasError = false,
   isFollowing = false,
 }: RecenterButtonProps) {
+  const { t } = useTranslation();
   const shakeAnim = useRef(new Animated.Value(0)).current;
   const insets = useSafeAreaInsets();
 
@@ -74,8 +76,8 @@ export const RecenterButton = memo(function RecenterButton({
         disabled={isLoading}
         accessibilityLabel={
           isFollowing
-            ? "Map is following your location"
-            : "Recenter map on your location"
+            ? t("accessibility.mapFollowing")
+            : t("accessibility.recenterMap")
         }
       >
         {isLoading ? (

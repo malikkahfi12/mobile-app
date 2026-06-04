@@ -1,6 +1,7 @@
 import { memo, useCallback } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import type { NearbyStop } from "@/services/stops/stops.types";
 import { colors } from "@/constants/colors";
 
@@ -21,6 +22,7 @@ export const StopCard = memo(function StopCard({
   isSelected,
   onPress,
 }: StopCardProps) {
+  const { t } = useTranslation();
   const handlePress = useCallback(() => {
     onPress(stop);
   }, [onPress, stop]);
@@ -67,7 +69,7 @@ export const StopCard = memo(function StopCard({
               stop.isStation ? "text-primary" : "text-gray-500"
             }`}
           >
-            {stop.isStation ? "Station" : "Stop"}
+            {stop.isStation ? t("common.station") : t("common.stop")}
           </Text>
         </View>
       </View>

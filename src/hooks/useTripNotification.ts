@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import i18n from "@/lib/i18n";
 import { useGuidanceStore } from "@/store/guidance.store";
 import { useLocationStore } from "@/store/location.store";
 import { useUIStore } from "@/store/ui.store";
@@ -52,8 +53,8 @@ export function useTripNotification({ enabled }: { enabled: boolean }) {
     const destinationName =
       useLocationStore.getState().destination?.resolvedStopName ??
       useLocationStore.getState().destination?.name ??
-      routeOption.legs[routeOption.legs.length - 1]?.toStopName ??
-      "Destination";
+      routeOption.legs[routeOption.legs.length - 1]      ?.toStopName ??
+      i18n.t("guidance.destination");
 
     const isLastLeg = currentLegIndex >= routeOption.legs.length - 1;
     const currentLeg = routeOption.legs[currentLegIndex];

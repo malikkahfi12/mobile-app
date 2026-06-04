@@ -7,6 +7,7 @@ import {
   AuthenticationError,
   ApiError,
 } from "@/services/api/errors";
+import i18n from "@/lib/i18n";
 
 export function configureGoogleSignIn() {
   const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
@@ -44,7 +45,7 @@ export async function signInWithGoogle(): Promise<string> {
   const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
   if (!webClientId) {
     throw new GoogleSignInError(
-      "Google sign-in is not configured yet.",
+      i18n.t("common.errorGoogleNotConfigured"),
       "NOT_CONFIGURED",
     );
   }
@@ -53,7 +54,7 @@ export async function signInWithGoogle(): Promise<string> {
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
   } catch {
     throw new GoogleSignInError(
-      "Google Play Services is required.",
+      i18n.t("common.errorGooglePlayServices"),
       "PLAY_SERVICES",
     );
   }
@@ -62,7 +63,7 @@ export async function signInWithGoogle(): Promise<string> {
     const { data } = await GoogleSignin.signIn();
     if (!data?.idToken) {
       throw new GoogleSignInError(
-        "Google sign-in did not return a token.",
+        i18n.t("common.errorGoogleNoToken"),
         "NO_TOKEN",
       );
     }
@@ -73,14 +74,14 @@ export async function signInWithGoogle(): Promise<string> {
         error.code === statusCodes.SIGN_IN_CANCELLED ||
         error.code === statusCodes.IN_PROGRESS
       ) {
-        throw new GoogleSignInError("Cancelled", "CANCELLED");
+        throw new GoogleSignInError(i18n.t("common.errorGoogleCancelled"), "CANCELLED");
       }
     }
 
     if (error instanceof GoogleSignInError) throw error;
 
     throw new GoogleSignInError(
-      "Google sign-in failed. Please try again.",
+      i18n.t("common.errorGoogleSignInFailed"),
       "SIGN_IN_FAILED",
     );
   }
@@ -102,21 +103,21 @@ export function getGoogleConnectErrorMessage(error: unknown): string {
   }
 
   if (error instanceof NetworkError) {
-    return "Network error. Please check your connection.";
+    return i18n.t("common.errorNetwork");
   }
 
   if (error instanceof AuthenticationError) {
-    return "Authentication failed. Please try again.";
+    return i18n.t("common.errorAuthFailed");
   }
 
   if (error instanceof ApiError) {
     if (error.statusCode === 409)
-      return "This Google account is already linked to another user.";
+      return i18n.t("common.errorGoogleAlreadyLinked");
     if (error.statusCode === 403)
-      return "Your Google account email must be verified first.";
+      return i18n.t("common.errorGoogleEmailUnverified");
   }
 
   if (error instanceof Error) return error.message;
 
-  return "Something went wrong. Please try again.";
+  return i18n.t("common.errorGeneric");
 }

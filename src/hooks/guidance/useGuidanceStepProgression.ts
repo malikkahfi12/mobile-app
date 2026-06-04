@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import i18n from "@/lib/i18n";
 import { useLocationStore } from "@/store/location.store";
 import { useGuidanceStore } from "@/store/guidance.store";
 import { haversineDistance } from "@/lib/location.helpers";
@@ -53,14 +54,14 @@ function getContextualMessage(
   if (!isApproaching && !isArrived) return null;
 
   if (isArrived) {
-    if (isLastLeg) return "Destination Reached";
+    if (isLastLeg) return i18n.t("guidance.destinationReached");
     if (leg.type === "TRANSIT" && nextLeg?.type === "TRANSIT")
-      return "Transfer Here";
-    if (leg.type === "WALK") return "Board Now";
+      return i18n.t("guidance.transferHereCaps");
+    if (leg.type === "WALK") return i18n.t("guidance.boardNow");
     return null;
   }
 
-  if (leg.type === "TRANSIT") return "Get Off Soon";
+  if (leg.type === "TRANSIT") return i18n.t("guidance.getOffSoon");
 
   return null;
 }
