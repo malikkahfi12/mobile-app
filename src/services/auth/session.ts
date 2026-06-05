@@ -8,8 +8,6 @@ export async function restoreSession(): Promise<void> {
   const refreshToken = await secureStore.getRefreshToken();
   if (!refreshToken) return;
 
-  useAuthStore.getState().setLoading(true);
-
   try {
     const tokens = await post<RefreshResponse>("/auth/refresh", {
       refreshToken,
@@ -24,8 +22,8 @@ export async function restoreSession(): Promise<void> {
     store.setAccessToken(tokens.accessToken);
     store.setUser(user);
   } catch {
-    await useAuthStore.getState().clearAuth();
-  } finally {
-    useAuthStore.getState().setLoading(false);
+    if (!tokenManager.getAccessToken()) {
+      await useAuthStore.getState().clearAuth();
+    }
   }
 }

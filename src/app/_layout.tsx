@@ -5,12 +5,13 @@ import { restoreSession } from "@/services/auth/session";
 import { configureGoogleSignIn } from "@/lib/googleSignIn";
 import "@/lib/i18n";
 import { QueryProvider } from "@/providers/QueryProvider";
-import { Stack, usePathname } from "expo-router";
+import { Stack, usePathname, router } from "expo-router";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Toast } from "@/components/Toast";
 import { useExitBackHandler } from "@/hooks/useExitBackHandler";
+import { useAuthStore } from "@/store/auth.store";
 
 export default function RootLayout() {
   const pathname = usePathname();
@@ -24,6 +25,13 @@ export default function RootLayout() {
     async function boot() {
       await ensureDeviceRegistered();
       await restoreSession();
+
+      const state = useAuthStore.getState();
+      state.setLoading(false);
+
+      if (!state.isAuthenticated) {
+        router.replace("/onboarding");
+      }
     }
     boot();
   }, []);

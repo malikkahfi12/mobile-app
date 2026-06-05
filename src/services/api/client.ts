@@ -171,7 +171,18 @@ async function del<T>(path: string): Promise<T> {
   throw new ApiError(body?.message || "Request failed", response.status);
 }
 
-export { get, post, del };
+async function patch<T>(path: string, data?: unknown): Promise<T> {
+  const response = await client.patch(path, data);
+  const body = response.data;
+
+  if (body?.success) {
+    return body.data as T;
+  }
+
+  throw new ApiError(body?.message || "Request failed", response.status);
+}
+
+export { get, post, patch, del };
 
 export function setAuthToken(token: string): void {
   tokenManager.setAccessToken(token);

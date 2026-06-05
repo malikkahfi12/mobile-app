@@ -62,6 +62,15 @@ export default function SettingsScreen() {
           {t("settings.account")}
         </Text>
         <SettingsRow
+          icon="person-outline"
+          iconColor={colors.primary}
+          iconBg="bg-primary/10"
+          label={t("settings.editProfile")}
+          subtitle={t("settings.editProfileDesc")}
+          onPress={() => router.push("/edit-profile" as Href)}
+        />
+        <View className="mx-4 border-b border-gray-100" />
+        <SettingsRow
           icon="shield-checkmark-outline"
           iconColor={colors.success}
           iconBg="bg-green-100"
