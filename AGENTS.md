@@ -422,6 +422,7 @@ Fix errors before finishing.
 - Use Zustand for state
 - Use AsyncStorage for persistence
 - Use server/API only for secure operations
+- Never read `.env` — it contains secrets. To understand environment variables, read `.env.example` instead
 
 ---
 

@@ -18,6 +18,7 @@ interface AuthState {
   setAccessToken: (token: string | null) => void;
   setUser: (user: User | null) => void;
   setUsername: (username: string | null) => void;
+  patchUser: (partial: Partial<User>) => void;
   setDeviceId: (id: string | null) => void;
   setServerDeviceId: (id: string | null) => void;
   setPublicKey: (key: string | null) => void;
@@ -37,7 +38,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   publicKey: null,
   isAuthenticated: false,
   isRegistered: false,
-  isLoading: false,
+  isLoading: true,
   error: null,
 
   setAccessToken: (token) => {
@@ -50,8 +51,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   setUser: (user) => set({ user }),
-
   setUsername: (username) => set({ username }),
+  patchUser: (partial) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, ...partial } : null,
+    })),
 
   setDeviceId: (id) => {
     set({ deviceId: id });
