@@ -155,9 +155,9 @@ export default function EditProfileScreen() {
             setAvatarUrl(data.avatarUrl);
             showToast(t("editProfile.avatarUpdated"));
           },
-          onError: () => {
+          onError: (error) => {
             setAvatarUrl(user?.avatarUrl ?? null);
-            showToast(t("editProfile.uploadFailed"));
+            showToast(error.message || t("editProfile.uploadFailed"));
           },
         });
       } catch {

@@ -1,12 +1,6 @@
 import axios from "axios";
 import { apiConfig } from "./config";
-import {
-  ApiError,
-  NetworkError,
-  AuthenticationError,
-  NotFoundError,
-  ValidationError,
-} from "./errors";
+import { ApiError, NetworkError } from "./errors";
 import { tokenManager } from "@/services/auth/tokenManager";
 import { secureStore } from "@/services/auth/secureStore";
 import { useAuthStore } from "@/store/auth.store";
@@ -73,7 +67,6 @@ const client = axios.create({
   baseURL: apiConfig.apiUrl,
   timeout: 15000,
   headers: {
-    "Content-Type": "application/json",
     "x-api-key": apiConfig.apiKey,
   },
 });
@@ -89,7 +82,23 @@ client.interceptors.request.use((config) => {
 });
 
 client.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const body = response.data;
+
+    if (body?.success === false) {
+      throw new ApiError(
+        body.error.code,
+        body.error.message,
+        response.status,
+      );
+    }
+
+    if (body?.success) {
+      response.data = body.data;
+    }
+
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
     const status = error.response?.status;
@@ -112,19 +121,17 @@ client.interceptors.response.use(
     }
 
     if (error.response) {
-      const { data } = error.response;
-      const message = data?.message || "Request failed";
+      const body = error.response.data;
 
-      switch (status) {
-        case 400:
-          throw new ValidationError(message);
-        case 401:
-          throw new AuthenticationError(message);
-        case 404:
-          throw new NotFoundError(message);
-        default:
-          throw new ApiError(message, status);
+      if (body?.success === false) {
+        throw new ApiError(
+          body.error.code,
+          body.error.message,
+          error.response.status,
+        );
       }
+
+      throw new ApiError("ERROR", "Request failed", error.response.status);
     }
 
     if (error.request) {
@@ -139,47 +146,23 @@ async function get<T>(
   path: string,
   params?: Record<string, unknown>,
 ): Promise<T> {
-  const response = await client.get(path, { params });
-  const body = response.data;
-
-  if (body?.success) {
-    return body.data as T;
-  }
-
-  throw new ApiError(body?.message || "Request failed", response.status);
+  const { data } = await client.get(path, { params });
+  return data as T;
 }
 
-async function post<T>(path: string, data?: unknown): Promise<T> {
-  const response = await client.post(path, data);
-  const body = response.data;
-
-  if (body?.success) {
-    return body.data as T;
-  }
-
-  throw new ApiError(body?.message || "Request failed", response.status);
+async function post<T>(path: string, body?: unknown): Promise<T> {
+  const { data } = await client.post(path, body);
+  return data as T;
 }
 
 async function del<T>(path: string): Promise<T> {
-  const response = await client.delete(path);
-  const body = response.data;
-
-  if (body?.success) {
-    return body.data as T;
-  }
-
-  throw new ApiError(body?.message || "Request failed", response.status);
+  const { data } = await client.delete(path);
+  return data as T;
 }
 
-async function patch<T>(path: string, data?: unknown): Promise<T> {
-  const response = await client.patch(path, data);
-  const body = response.data;
-
-  if (body?.success) {
-    return body.data as T;
-  }
-
-  throw new ApiError(body?.message || "Request failed", response.status);
+async function patch<T>(path: string, body?: unknown): Promise<T> {
+  const { data } = await client.patch(path, body);
+  return data as T;
 }
 
 export { get, post, patch, del };

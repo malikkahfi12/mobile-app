@@ -2,11 +2,7 @@ import {
   GoogleSignin,
   statusCodes,
 } from "@react-native-google-signin/google-signin";
-import {
-  NetworkError,
-  AuthenticationError,
-  ApiError,
-} from "@/services/api/errors";
+import { NetworkError, ApiError } from "@/services/api/errors";
 import i18n from "@/lib/i18n";
 
 export function configureGoogleSignIn() {
@@ -106,11 +102,9 @@ export function getGoogleConnectErrorMessage(error: unknown): string {
     return i18n.t("common.errorNetwork");
   }
 
-  if (error instanceof AuthenticationError) {
-    return i18n.t("common.errorAuthFailed");
-  }
-
   if (error instanceof ApiError) {
+    if (error.statusCode === 401)
+      return i18n.t("common.errorAuthFailed");
     if (error.statusCode === 409)
       return i18n.t("common.errorGoogleAlreadyLinked");
     if (error.statusCode === 403)
