@@ -224,10 +224,39 @@ export const PlannerSheet = memo(function PlannerSheet() {
   );
 
   const handleClearOrigin = useCallback(() => {
-    setOrigin(null);
-    setResolvingOrigin(false);
+    const loc = useLocationStore.getState().currentLocation;
+    if (!loc) {
+      setOrigin(null);
+      setResolvingOrigin(false);
+      setOriginResolveError(null);
+      return;
+    }
+
+    const tripLoc: TripLocation = {
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+      name: t("planner.currentLocation"),
+      type: "currentLocation",
+    };
+    setOrigin(tripLoc);
+    setResolvingOrigin(true);
     setOriginResolveError(null);
-  }, [setOrigin]);
+
+    resolveToStop(loc.latitude, loc.longitude).then((nearest) => {
+      const current = useLocationStore.getState().origin;
+      if (current?.type !== "currentLocation") return;
+      setResolvingOrigin(false);
+      if (nearest) {
+        setOrigin({
+          ...tripLoc,
+          stopId: nearest.id,
+          resolvedStopName: nearest.name,
+        });
+      } else {
+        setOriginResolveError(t("planner.noNearbyStopCurrent"));
+      }
+    });
+  }, [setOrigin, t]);
 
   const handleClearDestination = useCallback(() => {
     setDestination(null);
@@ -446,16 +475,14 @@ export const PlannerSheet = memo(function PlannerSheet() {
         </Text>
         {renderTripRowSubtext(loc, slot)}
       </View>
-      {loc ? (
+      {loc && !(slot === "origin" && loc.type === "currentLocation") ? (
         <TouchableOpacity
           onPress={slot === "origin" ? handleClearOrigin : handleClearDestination}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <Ionicons name="close-circle" size={20} color={colors.textTertiary} />
         </TouchableOpacity>
-      ) : (
-        <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
-      )}
+      ) : null}
     </TouchableOpacity>
   );
 

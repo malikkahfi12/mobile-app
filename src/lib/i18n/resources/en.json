@@ -208,6 +208,7 @@
   "journey": {
     "startNavigation": "Start Navigation",
     "startNavigationSub": "Begin step-by-step guidance",
+    "startNavOnlyCurrentLocation": "Start Navigation is only available when using your current location as the origin.",
     "stepByStep": "Step-by-Step",
     "routeOptions": "Route Options",
     "duration": "Duration",
