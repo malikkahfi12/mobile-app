@@ -208,6 +208,7 @@
   "journey": {
     "startNavigation": "Mulai Navigasi",
     "startNavigationSub": "Mulai panduan langkah demi langkah",
+    "startNavOnlyCurrentLocation": "Mulai Navigasi hanya tersedia saat menggunakan lokasi saat ini sebagai titik awal.",
     "stepByStep": "Langkah demi Langkah",
     "routeOptions": "Opsi Rute",
     "duration": "Durasi",

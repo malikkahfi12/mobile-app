@@ -214,32 +214,50 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
       backgroundStyle={{ backgroundColor: colors.white }}
       footerComponent={
         option
-          ? () => (
-              <View
-                className="px-4 pt-4 bg-white border-t border-gray-100/60"
-                style={{ paddingBottom: insets.bottom + 16 }}
-              >
-                <TouchableOpacity
-                  className="items-center justify-center rounded-2xl bg-primary py-4"
-                  activeOpacity={0.7}
-                  onPress={handleStart}
+          ? origin?.type === "currentLocation"
+            ? () => (
+                <View
+                  className="px-4 pt-4 bg-white border-t border-gray-100/60"
+                  style={{ paddingBottom: insets.bottom + 16 }}
                 >
-                  <View className="flex-row items-center">
-                    <Ionicons
-                      name="navigate-outline"
-                      size={20}
-                      color={colors.white}
-                    />
-                    <Text className="ml-2 text-base font-semibold text-white">
-                      {t("journey.startNavigation")}
+                  <TouchableOpacity
+                    className="items-center justify-center rounded-2xl bg-primary py-4"
+                    activeOpacity={0.7}
+                    onPress={handleStart}
+                  >
+                    <View className="flex-row items-center">
+                      <Ionicons
+                        name="navigate-outline"
+                        size={20}
+                        color={colors.white}
+                      />
+                      <Text className="ml-2 text-base font-semibold text-white">
+                        {t("journey.startNavigation")}
+                      </Text>
+                    </View>
+                    <Text className="mt-1 text-[11px] text-white/70">
+                      {t("journey.startNavigationSub")}
                     </Text>
-                  </View>
-                  <Text className="mt-1 text-[11px] text-white/70">
-                    {t("journey.startNavigationSub")}
+                  </TouchableOpacity>
+                </View>
+              )
+            : () => (
+                <View
+                  className="px-4 pt-4 bg-white border-t border-gray-100/60"
+                  style={{ paddingBottom: insets.bottom + 16 }}
+                >
+                <View className="flex-row items-center rounded-2xl bg-primary/5 border border-primary/10 py-4 px-4">
+                  <Ionicons
+                    name="information-circle-outline"
+                    size={16}
+                    color={colors.primary}
+                  />
+                  <Text className="ml-2 text-sm text-gray-500 flex-1">
+                    {t("journey.startNavOnlyCurrentLocation")}
                   </Text>
-                </TouchableOpacity>
-              </View>
-            )
+                </View>
+                </View>
+              )
           : undefined
       }
     >
