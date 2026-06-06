@@ -208,11 +208,13 @@ export default function HomeScreen() {
   const currentGuidanceLegType: "walk" | "transit" | "transfer" | null =
     useMemo(() => {
       if (!guidanceActive || !selectedOption) return null;
-      const leg = selectedOption.legs[guidanceLegIndex];
-      if (!leg) return null;
-      if (leg.type === "WALK") return "walk";
+      const current = selectedOption.legs[guidanceLegIndex];
+      if (!current) return null;
+      if (current.type === "WALK") return "walk";
       const nextLeg = selectedOption.legs[guidanceLegIndex + 1];
-      return nextLeg?.type === "TRANSIT" ? "transfer" : "transit";
+      return nextLeg?.type === "TRANSIT" && current.routeId !== nextLeg.routeId
+        ? "transfer"
+        : "transit";
     }, [guidanceActive, selectedOption, guidanceLegIndex]);
 
   const stableCamera = useStableCameraFollow({

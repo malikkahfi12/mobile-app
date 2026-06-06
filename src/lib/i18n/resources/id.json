@@ -216,7 +216,8 @@
     "walking": "Jalan Kaki",
     "from": "Dari",
     "to": "Ke",
-    "linePrefix": "Jalur "
+    "linePrefix": "Jalur ",
+    "continueSameBus": "Lanjut di {{route}}"
   },
   "guidance": {
     "walkToStop": "Jalan ke halte",

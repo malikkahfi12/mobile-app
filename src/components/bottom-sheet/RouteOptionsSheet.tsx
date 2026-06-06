@@ -12,7 +12,7 @@ import BottomSheet, {
   BottomSheetScrollView,
   BottomSheetScrollViewMethods,
 } from "@gorhom/bottom-sheet";
-import type { RoutingResult, RouteOption, Leg } from "@/services/routing/routing.types";
+import type { RoutingResult, RouteOption } from "@/services/routing/routing.types";
 import { useRouteStore } from "@/store/route.store";
 import { useUIStore } from "@/store/ui.store";
 import {
@@ -20,6 +20,7 @@ import {
   getLegsSummary,
   isWalkOnly,
   getBestOptionIndex,
+  mergeConsecutiveTransitLegs,
 } from "@/lib/routing.helpers";
 import { colors } from "@/constants/colors";
 
@@ -33,10 +34,6 @@ interface RouteOptionsSheetProps {
   dataUpdatedAt?: number;
   onRetry: () => void;
   onClose: () => void;
-}
-
-function getTransitLegs(legs: Leg[]): Leg[] {
-  return legs.filter((l) => l.type === "TRANSIT");
 }
 
 const RouteOptionCard = memo(function RouteOptionCard({
@@ -54,8 +51,9 @@ const RouteOptionCard = memo(function RouteOptionCard({
     ? Math.round(option.walkingDurationSeconds / 60)
     : null;
   const transfers = option.transferCount;
-  const transitLegs = getTransitLegs(option.legs);
-  const legsSummary = getLegsSummary(option.legs);
+  const mergedLegs = useMemo(() => mergeConsecutiveTransitLegs(option.legs), [option.legs]);
+  const transitLegs = mergedLegs.filter((l) => l.type === "TRANSIT");
+  const legsSummary = getLegsSummary(mergedLegs);
 
   return (
     <TouchableOpacity

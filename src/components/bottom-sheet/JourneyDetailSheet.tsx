@@ -21,8 +21,10 @@ import {
   getLegIcon,
   getLegLabel,
   getLegsSummary,
+  getTransferCount,
+  mergeConsecutiveTransitLegs,
 } from "@/lib/routing.helpers";
-import type { Leg } from "@/services/routing/routing.types";
+import type { MergedLeg } from "@/lib/routing.helpers";
 
 const SNAP_POINTS = ["65%", "92%"];
 
@@ -30,7 +32,7 @@ const LegTimelineRow = memo(function LegTimelineRow({
   leg,
   isLast,
 }: {
-  leg: Leg;
+  leg: MergedLeg;
   isLast: boolean;
 }) {
   const { t } = useTranslation();
@@ -38,6 +40,11 @@ const LegTimelineRow = memo(function LegTimelineRow({
   const durationMin = Math.round(leg.durationSeconds / 60);
   const iconName = getLegIcon(leg);
   const label = getLegLabel(leg);
+  const hasIntermediateStops =
+    !isWalk && leg.intermediateStops && leg.intermediateStops.length > 2;
+
+  const formattedRoute =
+    leg.routeName ? `${t("journey.linePrefix")}${leg.routeName}` : "";
 
   return (
     <View className="flex-row">
@@ -76,24 +83,50 @@ const LegTimelineRow = memo(function LegTimelineRow({
 
         {!isWalk && leg.routeName && (
           <Text className="text-xs text-primary mt-0.5">
-            {t("journey.linePrefix")}{leg.routeName}
+            {formattedRoute}
           </Text>
         )}
 
-        <View className="mt-2 bg-gray-50 rounded-lg px-3 py-2">
-          <View className="flex-row items-center">
-            <Text className="text-xs font-medium text-gray-500 w-12">{t("journey.from")}</Text>
-            <Text className="text-xs text-gray-700 flex-1" numberOfLines={1}>
-              {leg.fromStopName}
-            </Text>
+        {hasIntermediateStops ? (
+          <View className="mt-2 bg-gray-50 rounded-lg px-3 py-2">
+            {leg.intermediateStops!.map((stopName, si) => (
+              <View key={si}>
+                {si > 0 && (
+                  <Text className="text-[11px] text-primary/50 my-1 ml-3">
+                    ↓ {t("journey.continueSameBus", { route: formattedRoute })}
+                  </Text>
+                )}
+                <View className="flex-row items-center">
+                  <View
+                    className={`h-1.5 w-1.5 rounded-full mr-2 ${
+                      si === 0 || si === leg.intermediateStops!.length - 1
+                        ? "bg-primary/50"
+                        : "bg-gray-300"
+                    }`}
+                  />
+                  <Text className="text-xs text-gray-700 flex-1" numberOfLines={1}>
+                    {stopName}
+                  </Text>
+                </View>
+              </View>
+            ))}
           </View>
-          <View className="flex-row items-center mt-1">
-            <Text className="text-xs font-medium text-gray-500 w-12">{t("journey.to")}</Text>
-            <Text className="text-xs text-gray-700 flex-1" numberOfLines={1}>
-              {leg.toStopName}
-            </Text>
+        ) : (
+          <View className="mt-2 bg-gray-50 rounded-lg px-3 py-2">
+            <View className="flex-row items-center">
+              <Text className="text-xs font-medium text-gray-500 w-12">{t("journey.from")}</Text>
+              <Text className="text-xs text-gray-700 flex-1" numberOfLines={1}>
+                {leg.fromStopName}
+              </Text>
+            </View>
+            <View className="flex-row items-center mt-1">
+              <Text className="text-xs font-medium text-gray-500 w-12">{t("journey.to")}</Text>
+              <Text className="text-xs text-gray-700 flex-1" numberOfLines={1}>
+                {leg.toStopName}
+              </Text>
+            </View>
           </View>
-        </View>
+        )}
       </View>
     </View>
   );
@@ -162,6 +195,11 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
     return journeyResult.options[selectedRouteOptionIndex] ?? null;
   }, [journeyResult, selectedRouteOptionIndex]);
 
+  const mergedLegs = useMemo(
+    () => option ? mergeConsecutiveTransitLegs(option.legs) : [],
+    [option],
+  );
+
   const totalDurationMin = option
     ? Math.round(option.totalDurationSeconds / 60)
     : 0;
@@ -169,8 +207,8 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
     option && option.walkingDurationSeconds > 0
       ? Math.round(option.walkingDurationSeconds / 60)
       : null;
-  const transfers = option ? option.transferCount : 0;
-  const legsSummary = option ? getLegsSummary(option.legs) : "";
+  const transfers = mergedLegs.length > 0 ? getTransferCount(mergedLegs) : 0;
+  const legsSummary = mergedLegs.length > 0 ? getLegsSummary(mergedLegs) : "";
 
   const originName = origin?.name;
   const destinationName = destination?.name;
@@ -327,11 +365,11 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
                 {t("journey.stepByStep")}
               </Text>
 
-              {option.legs.map((leg, li) => (
+              {mergedLegs.map((leg, li) => (
                 <LegTimelineRow
                   key={li}
                   leg={leg}
-                  isLast={li === option.legs.length - 1}
+                  isLast={li === mergedLegs.length - 1}
                 />
               ))}
             </View>

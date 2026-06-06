@@ -52,7 +52,9 @@ export const GuidanceCard = memo(function GuidanceCard() {
 
   const isLastLeg = currentLegIndex >= (routeOption?.legs.length ?? 0) - 1;
   const isTransfer =
-    currentLeg?.type === "TRANSIT" && nextLeg?.type === "TRANSIT";
+    currentLeg?.type === "TRANSIT" &&
+    nextLeg?.type === "TRANSIT" &&
+    currentLeg.routeId !== nextLeg.routeId;
 
   const totalLegs = routeOption?.legs.length ?? 0;
 
