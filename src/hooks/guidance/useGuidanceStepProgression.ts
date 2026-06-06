@@ -39,7 +39,7 @@ function getArrivalRadius(
   nextLeg: Leg | null,
 ): number {
   if (isLastLeg) return GUIDANCE_DESTINATION_RADIUS;
-  if (leg.type === "TRANSIT" && nextLeg?.type === "TRANSIT")
+  if (leg.type === "TRANSIT" && nextLeg?.type === "TRANSIT" && leg.routeId !== nextLeg?.routeId)
     return GUIDANCE_TRANSFER_RADIUS;
   return GUIDANCE_ARRIVAL_RADIUS;
 }
@@ -55,7 +55,7 @@ function getContextualMessage(
 
   if (isArrived) {
     if (isLastLeg) return i18n.t("guidance.destinationReached");
-    if (leg.type === "TRANSIT" && nextLeg?.type === "TRANSIT")
+    if (leg.type === "TRANSIT" && nextLeg?.type === "TRANSIT" && leg.routeId !== nextLeg?.routeId)
       return i18n.t("guidance.transferHereCaps");
     if (leg.type === "WALK") return i18n.t("guidance.boardNow");
     return null;

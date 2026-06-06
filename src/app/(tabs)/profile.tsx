@@ -12,6 +12,7 @@ import { useRouteStore } from "@/store/route.store";
 import { useGuidanceStore } from "@/store/guidance.store";
 import { LogoutDialog } from "@/components/ui/LogoutDialog";
 import { useGoogleRecoveryStore } from "@/store/googleRecovery.store";
+import { ProfileSkeleton } from "@/components/ui/ProfileSkeleton";
 
 export default function ProfileScreen() {
   const { t } = useTranslation();
@@ -19,6 +20,7 @@ export default function ProfileScreen() {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   const user = useAuthStore((s) => s.user);
+  const isLoading = useAuthStore((s) => s.isLoading);
 
   const displayName = user?.displayName || "Traveler";
   const username = user?.username || "";
@@ -44,6 +46,14 @@ export default function ProfileScreen() {
     await logoutUser();
     router.replace("/onboarding");
   }, []);
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.white }}>
+        <ProfileSkeleton variant="profile" />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.white }}>

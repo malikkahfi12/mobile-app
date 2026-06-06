@@ -43,7 +43,7 @@
     "errorGoogleCancelled": "Cancelled"
   },
   "navigation": {
-    "home": "Home",
+    "home": "Map",
     "explorer": "Explorer",
     "profile": "Profile",
     "settings": "Settings",
@@ -216,7 +216,8 @@
     "walking": "Walking",
     "from": "From",
     "to": "To",
-    "linePrefix": "Line "
+    "linePrefix": "Line ",
+    "continueSameBus": "Continue on {{route}}"
   },
   "guidance": {
     "walkToStop": "Walk to stop",

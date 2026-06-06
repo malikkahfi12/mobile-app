@@ -3,6 +3,50 @@ import type { RouteStop } from "@/services/routes/routes.types";
 import { parseCoordinatePair } from "./map.helpers";
 import i18n from "@/lib/i18n";
 
+export interface MergedLeg extends Leg {
+  intermediateStops?: string[];
+}
+
+export function mergeConsecutiveTransitLegs(legs: Leg[]): MergedLeg[] {
+  if (legs.length === 0) return [];
+
+  const result: MergedLeg[] = [];
+
+  for (const leg of legs) {
+    if (leg.type === "TRANSIT" && leg.routeId) {
+      const prev = result[result.length - 1];
+      if (
+        prev &&
+        prev.type === "TRANSIT" &&
+        prev.routeId === leg.routeId
+      ) {
+        prev.toStopId = leg.toStopId;
+        prev.toStopName = leg.toStopName;
+        prev.toCoordinates = leg.toCoordinates;
+        prev.durationSeconds += leg.durationSeconds;
+        if (leg.distanceMeters != null) {
+          prev.distanceMeters = (prev.distanceMeters ?? 0) + leg.distanceMeters;
+        }
+        if (leg.geometry && prev.geometry) {
+          prev.geometry.coordinates.push(...leg.geometry.coordinates);
+        } else if (leg.geometry) {
+          prev.geometry = leg.geometry;
+        }
+        prev.intermediateStops!.push(leg.toStopName);
+        continue;
+      }
+    }
+
+    const copy: MergedLeg = { ...leg };
+    if (leg.type === "TRANSIT" && leg.routeId) {
+      copy.intermediateStops = [leg.fromStopName, leg.toStopName];
+    }
+    result.push(copy);
+  }
+
+  return result;
+}
+
 export function getTotalDuration(legs: Leg[]): number {
   return Math.round(
     legs.reduce((sum, l) => sum + l.durationSeconds, 0) / 60,
@@ -22,8 +66,16 @@ export function getWalkingDuration(legs: Leg[]): number | null {
 }
 
 export function getTransferCount(legs: Leg[]): number {
-  const transit = legs.filter((l) => l.type === "TRANSIT").length;
-  return Math.max(0, transit - 1);
+  let count = 0;
+  let prevRouteId: string | null | undefined;
+  for (const leg of legs) {
+    if (leg.type !== "TRANSIT") continue;
+    if (prevRouteId != null && prevRouteId !== leg.routeId) {
+      count++;
+    }
+    prevRouteId = leg.routeId;
+  }
+  return count;
 }
 
 export function getTransitLegs(legs: Leg[]): Leg[] {
@@ -92,7 +144,16 @@ export function getLegDetail(leg: Leg): string {
 }
 
 export function getLegsSummary(legs: Leg[]): string {
-  return legs.map((leg) => getLegLabel(leg)).join(" → ");
+  const labels: string[] = [];
+  let lastLabel = "";
+  for (const leg of legs) {
+    const label = getLegLabel(leg);
+    if (label !== lastLabel) {
+      labels.push(label);
+      lastLabel = label;
+    }
+  }
+  return labels.join(" → ");
 }
 
 export function formatDistance(meters: number): string {
@@ -134,7 +195,12 @@ export function getWalkingInstruction(leg: Leg): string {
 }
 
 export function getTransferText(leg: Leg, nextLeg?: Leg): string | null {
-  if (leg.type !== "TRANSIT" || !nextLeg || nextLeg.type !== "TRANSIT")
+  if (
+    leg.type !== "TRANSIT" ||
+    !nextLeg ||
+    nextLeg.type !== "TRANSIT" ||
+    leg.routeId === nextLeg.routeId
+  )
     return null;
   const routeName = nextLeg.routeName || i18n.t("guidance.nextRoute");
   return i18n.t("guidance.transferAt", { routeName, stopName: leg.toStopName });
