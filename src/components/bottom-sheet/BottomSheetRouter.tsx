@@ -11,18 +11,12 @@ import { PlannerSheet } from "./PlannerSheet";
 import { JourneyDetailSheet } from "./JourneyDetailSheet";
 import { RouteDetailSheet } from "./RouteDetailSheet";
 import type { NearbyStop } from "@/services/stops/stops.types";
-import type { QuickPlace } from "@/types/quickPlaces.types";
 
 interface BottomSheetRouterProps {
   nearbyStops: NearbyStop[] | undefined;
   stopsLoading: boolean;
   stopsError?: boolean;
   onRetryStops?: () => void;
-  onAddPlace?: () => void;
-  onEditPlace?: (place: QuickPlace) => void;
-  onFocusCoordinate?: (lng: number, lat: number) => void;
-  onDeletePlace?: (placeId: string) => void;
-  onClearPlaces?: () => void;
 }
 
 export const BottomSheetRouter = memo(function BottomSheetRouter({
@@ -30,11 +24,6 @@ export const BottomSheetRouter = memo(function BottomSheetRouter({
   stopsLoading,
   stopsError,
   onRetryStops,
-  onAddPlace,
-  onEditPlace,
-  onFocusCoordinate,
-  onDeletePlace,
-  onClearPlaces,
 }: BottomSheetRouterProps) {
   const origin = useLocationStore((s) => s.origin);
   const destination = useLocationStore((s) => s.destination);
@@ -126,11 +115,6 @@ export const BottomSheetRouter = memo(function BottomSheetRouter({
       isLoading={stopsLoading}
       isError={stopsError}
       onRetry={onRetryStops}
-      onAddPlace={onAddPlace}
-      onEditPlace={onEditPlace}
-      onFocusCoordinate={onFocusCoordinate}
-      onDeletePlace={onDeletePlace}
-      onClearPlaces={onClearPlaces}
     />
   );
 });

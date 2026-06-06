@@ -10,7 +10,6 @@ import { RoutePolyline } from "@/components/maps/RoutePolyline";
 import { StopMarker } from "@/components/maps/StopMarker";
 import { TransferStopMarker } from "@/components/maps/TransferStopMarker";
 import { UserLocationMarker } from "@/components/maps/UserLocationMarker";
-import { QuickPlaceSheet } from "@/components/quick-places/QuickPlaceSheet";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { OfflineBanner } from "@/components/ui/OfflineBanner";
 import { colors } from "@/constants/colors";
@@ -34,10 +33,8 @@ import { getLastKnownPosition } from "@/services/location/location.service";
 import type { NearbyStop } from "@/services/stops/stops.types";
 import { useGuidanceStore } from "@/store/guidance.store";
 import { useLocationStore } from "@/store/location.store";
-import { useQuickPlacesStore } from "@/store/quickPlaces.store";
 import { useRouteStore } from "@/store/route.store";
 import { useUIStore } from "@/store/ui.store";
-import type { QuickPlace } from "@/types/quickPlaces.types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, Vibration, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -106,66 +103,6 @@ export default function HomeScreen() {
     () => (selectedOption ? getRouteCoordinates(selectedOption) : []),
     [selectedOption],
   );
-
-  const [quickPlaceModal, setQuickPlaceModal] = useState<{
-    visible: boolean;
-    place?: QuickPlace;
-  }>({ visible: false });
-  const addPlace = useQuickPlacesStore((s) => s.addPlace);
-  const updatePlace = useQuickPlacesStore((s) => s.updatePlace);
-  const removePlace = useQuickPlacesStore((s) => s.removePlace);
-
-  const handleOpenAddPlace = useCallback(() => {
-    setQuickPlaceModal({ visible: true });
-  }, []);
-
-  const handleOpenEditPlace = useCallback((place: QuickPlace) => {
-    setQuickPlaceModal({ visible: true, place });
-  }, []);
-
-  const handleClosePlaceModal = useCallback(() => {
-    setQuickPlaceModal({ visible: false });
-  }, []);
-
-  const handleSavePlace = useCallback(
-    (
-      data:
-        | QuickPlace
-        | Omit<QuickPlace, "id" | "createdAt" | "updatedAt">,
-    ) => {
-      if ("id" in data && data.name === "") {
-        removePlace(data.id);
-        setSelectedStop(null);
-      } else if ("id" in data) {
-        updatePlace(data.id, data);
-      } else {
-        addPlace(data);
-      }
-    },
-    [addPlace, updatePlace, removePlace, setSelectedStop],
-  );
-
-  const handleFocusCoordinate = useCallback(
-    (lng: number, lat: number) => {
-      setCameraCenter([lng, lat]);
-      setSelectedStop(null);
-    },
-    [setSelectedStop],
-  );
-
-  const handleDeletePlace = useCallback(
-    (placeId: string) => {
-      removePlace(placeId);
-    },
-    [removePlace],
-  );
-
-  const handleClearPlaces = useCallback(() => {
-    const places = useQuickPlacesStore.getState().places;
-    for (const p of places) {
-      removePlace(p.id);
-    }
-  }, [removePlace]);
 
   useEffect(() => {
     if (status === "undetermined") {
@@ -504,22 +441,9 @@ export default function HomeScreen() {
         stopsLoading={stopsLoading}
         stopsError={stopsError}
         onRetryStops={refetchStops}
-        onAddPlace={handleOpenAddPlace}
-        onEditPlace={handleOpenEditPlace}
-        onFocusCoordinate={handleFocusCoordinate}
-        onDeletePlace={handleDeletePlace}
-        onClearPlaces={handleClearPlaces}
       />
     </View>
     </ErrorBoundary>
-
-      <QuickPlaceSheet
-        visible={quickPlaceModal.visible}
-        place={quickPlaceModal.place}
-        nearbyStops={nearbyStops}
-        onSave={handleSavePlace}
-        onClose={handleClosePlaceModal}
-      />
     </>
   );
 }
