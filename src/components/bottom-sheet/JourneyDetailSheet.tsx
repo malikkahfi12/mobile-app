@@ -25,6 +25,7 @@ import {
   mergeConsecutiveTransitLegs,
 } from "@/lib/routing.helpers";
 import type { MergedLeg } from "@/lib/routing.helpers";
+import { TAB_BAR_HEIGHT, TAB_BAR_BOTTOM_MARGIN } from "@/components/navigation/FloatingTabBar";
 
 const SNAP_POINTS = ["65%", "92%"];
 
@@ -217,6 +218,7 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
   const setBottomSheet = useUIStore((s) => s.setBottomSheet);
   const closeBottomSheet = useUIStore((s) => s.closeBottomSheet);
   const insets = useSafeAreaInsets();
+  const bottomInset = insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_MARGIN;
 
   const handleStart = useCallback(async () => {
     if (!option) return;
@@ -245,6 +247,7 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
       index={1}
       enableDynamicSizing={false}
       enablePanDownToClose={false}
+      bottomInset={bottomInset}
       handleIndicatorStyle={{
         backgroundColor: colors.textTertiary,
         width: 40,

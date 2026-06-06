@@ -15,6 +15,7 @@ import { useRouteDetail } from "@/hooks/routes/useRouteDetail";
 import { useRouteStore } from "@/store/route.store";
 import { useUIStore } from "@/store/ui.store";
 import { colors } from "@/constants/colors";
+import { TAB_BAR_HEIGHT, TAB_BAR_BOTTOM_MARGIN } from "@/components/navigation/FloatingTabBar";
 import type { RouteStop } from "@/services/routes/routes.types";
 
 const SNAP_POINTS = ["50%", "85%"];
@@ -27,6 +28,7 @@ export const RouteDetailSheet = memo(function RouteDetailSheet() {
   const setBottomSheet = useUIStore((s) => s.setBottomSheet);
   const closeBottomSheet = useUIStore((s) => s.closeBottomSheet);
   const insets = useSafeAreaInsets();
+  const bottomInset = insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_MARGIN;
 
   const {
     route: routeData,
@@ -101,6 +103,7 @@ export const RouteDetailSheet = memo(function RouteDetailSheet() {
         index={1}
         enableDynamicSizing={false}
         enablePanDownToClose={false}
+        bottomInset={bottomInset}
         handleIndicatorStyle={{
           backgroundColor: colors.textTertiary,
           width: 40,
@@ -122,6 +125,7 @@ export const RouteDetailSheet = memo(function RouteDetailSheet() {
       index={1}
       enableDynamicSizing={false}
       enablePanDownToClose={false}
+      bottomInset={bottomInset}
       handleIndicatorStyle={{
         backgroundColor: colors.textTertiary,
         width: 40,

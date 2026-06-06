@@ -20,6 +20,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { TAB_BAR_HEIGHT, TAB_BAR_BOTTOM_MARGIN } from "@/components/navigation/FloatingTabBar";
 
 export const StopDetailSheet = memo(function StopDetailSheet() {
   const { t } = useTranslation();
@@ -29,6 +30,7 @@ export const StopDetailSheet = memo(function StopDetailSheet() {
   const closeBottomSheet = useUIStore((s) => s.closeBottomSheet);
   const setBottomSheet = useUIStore((s) => s.setBottomSheet);
   const insets = useSafeAreaInsets();
+  const bottomInset = insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_MARGIN;
 
   const stopId = selectedStop?.id ?? "";
   const { data, isLoading, isError, dataUpdatedAt, refetch } = useStopDetail(stopId);
@@ -98,6 +100,7 @@ export const StopDetailSheet = memo(function StopDetailSheet() {
       index={0}
       enablePanDownToClose={false}
       onChange={handleSheetChange}
+      bottomInset={bottomInset}
       handleIndicatorStyle={{
         backgroundColor: colors.textTertiary,
         width: 40,

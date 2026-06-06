@@ -9,6 +9,7 @@ import BottomSheet, {
 import { StopCard } from "./StopCard";
 import { useRouteStore } from "@/store/route.store";
 import { colors } from "@/constants/colors";
+import { TAB_BAR_HEIGHT, TAB_BAR_BOTTOM_MARGIN } from "@/components/navigation/FloatingTabBar";
 import type { NearbyStop } from "@/services/stops/stops.types";
 
 interface NearbyStopsSheetProps {
@@ -31,6 +32,7 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
   const selectedStop = useRouteStore((s) => s.selectedStop);
   const setSelectedStop = useRouteStore((s) => s.setSelectedStop);
   const insets = useSafeAreaInsets();
+  const bottomInset = insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_MARGIN;
 
   const snapPoints = useMemo(() => ["8%", "45%"], []);
 
@@ -69,6 +71,7 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
       snapPoints={snapPoints}
       index={0}
       enablePanDownToClose={false}
+      bottomInset={bottomInset}
       handleIndicatorStyle={{
         backgroundColor: colors.textTertiary,
         width: 40,

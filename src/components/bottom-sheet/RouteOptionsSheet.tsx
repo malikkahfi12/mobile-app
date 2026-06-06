@@ -23,6 +23,7 @@ import {
   mergeConsecutiveTransitLegs,
 } from "@/lib/routing.helpers";
 import { colors } from "@/constants/colors";
+import { TAB_BAR_HEIGHT, TAB_BAR_BOTTOM_MARGIN } from "@/components/navigation/FloatingTabBar";
 
 interface RouteOptionsSheetProps {
   result: RoutingResult | undefined;
@@ -158,6 +159,7 @@ export const RouteOptionsSheet = memo(function RouteOptionsSheet({
   const prevContentHeight = useRef(0);
   const snapPoints = useMemo(() => ["25%", "65%"], []);
   const insets = useSafeAreaInsets();
+  const bottomInset = insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_MARGIN;
 
   const options = useMemo(() => result?.options ?? [], [result?.options]);
   const showResults = !isLoading && !isError && options.length > 0;
@@ -193,6 +195,7 @@ export const RouteOptionsSheet = memo(function RouteOptionsSheet({
       snapPoints={snapPoints}
       index={0}
       enablePanDownToClose={false}
+      bottomInset={bottomInset}
       handleIndicatorStyle={{
         backgroundColor: colors.textTertiary,
         width: 40,

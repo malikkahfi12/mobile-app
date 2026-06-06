@@ -20,6 +20,7 @@ import { PlaceResultCard } from "@/components/search/PlaceResultCard";
 import { useLocationStore } from "@/store/location.store";
 import { useUIStore } from "@/store/ui.store";
 import { colors } from "@/constants/colors";
+import { TAB_BAR_HEIGHT, TAB_BAR_BOTTOM_MARGIN } from "@/components/navigation/FloatingTabBar";
 import type { SearchStopResult, SearchPlaceResult } from "@/services/search/search.types";
 import type { TripLocation } from "@/store/location.store";
 
@@ -46,6 +47,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
   const setBottomSheet = useUIStore((s) => s.setBottomSheet);
   const closeBottomSheet = useUIStore((s) => s.closeBottomSheet);
   const insets = useSafeAreaInsets();
+  const bottomInset = insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_MARGIN;
 
   const [activeSearch, setActiveSearch] = useState<SearchMode>(null);
   const [searchText, setSearchText] = useState("");
@@ -493,6 +495,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
       index={1}
       enableDynamicSizing={false}
       enablePanDownToClose={false}
+      bottomInset={bottomInset}
       handleIndicatorStyle={{
         backgroundColor: colors.textTertiary,
         width: 40,
