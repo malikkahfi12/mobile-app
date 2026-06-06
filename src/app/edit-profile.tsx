@@ -23,6 +23,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ProfileSkeleton } from "@/components/ui/ProfileSkeleton";
 
 const USERNAME_REGEX = /^[a-z0-9_.]{3,30}$/;
 
@@ -31,6 +32,7 @@ type ValidationError = "invalid" | "taken" | "reserved" | null;
 export default function EditProfileScreen() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
+  const isLoading = useAuthStore((s) => s.isLoading);
   const googleEmail = useGoogleRecoveryStore((s) => s.googleEmail);
 
   const updateMutation = useUpdateProfile();
@@ -246,6 +248,10 @@ export default function EditProfileScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.white }}>
+      {isLoading ? (
+        <ProfileSkeleton variant="edit" />
+      ) : (
+      <>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -434,6 +440,8 @@ export default function EditProfileScreen() {
         cancelLabel={t("common.cancel")}
         onCancel={() => setShowPhotoMenu(false)}
       />
+      </>
+      )}
     </SafeAreaView>
   );
 }

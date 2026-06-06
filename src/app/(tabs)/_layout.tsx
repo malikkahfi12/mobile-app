@@ -11,28 +11,30 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textTertiary,
+        tabBarShowLabel: false,
         tabBarStyle: {
           backgroundColor: colors.white,
           borderTopColor: colors.border,
         },
         headerShown: false,
       }}
+      initialRouteName="home"
     >
-      <Tabs.Screen
-        name="home"
-        options={{
-          title: t("navigation.home"),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
-          ),
-        }}
-      />
       <Tabs.Screen
         name="explorer"
         options={{
           title: t("navigation.explorer"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="compass-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: t("navigation.home"),
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="map-outline" size={size} color={color} />
           ),
         }}
       />

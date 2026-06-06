@@ -142,10 +142,12 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (selectedStop) {
-      setCameraCenter([
-        selectedStop.longitude,
-        selectedStop.latitude,
-      ]);
+      queueMicrotask(() => {
+        setCameraCenter([
+          selectedStop.longitude,
+          selectedStop.latitude,
+        ]);
+      });
     }
   }, [selectedStop]);
 
@@ -276,11 +278,11 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (!guidanceActive) {
-      setGuidanceBoundsPhase("fitting");
+      queueMicrotask(() => setGuidanceBoundsPhase("fitting"));
       return;
     }
 
-    setGuidanceBoundsPhase("fitting");
+    queueMicrotask(() => setGuidanceBoundsPhase("fitting"));
     useGuidanceStore.getState().setFollowMode(true);
 
     if (fitTimeoutRef.current) clearTimeout(fitTimeoutRef.current);
