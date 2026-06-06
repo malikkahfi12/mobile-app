@@ -23,14 +23,18 @@ export default function RootLayout() {
     configureGoogleSignIn();
 
     async function boot() {
-      await ensureDeviceRegistered();
-      await restoreSession();
+      try {
+        await ensureDeviceRegistered();
+        await restoreSession();
+      } catch {
+        // ensureDeviceRegistered can throw (network error, API down)
+      } finally {
+        const state = useAuthStore.getState();
+        state.setLoading(false);
 
-      const state = useAuthStore.getState();
-      state.setLoading(false);
-
-      if (!state.isAuthenticated) {
-        router.replace("/onboarding");
+        if (!state.isAuthenticated) {
+          router.replace("/onboarding");
+        }
       }
     }
     boot();
