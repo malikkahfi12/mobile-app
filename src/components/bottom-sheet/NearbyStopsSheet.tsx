@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, memo } from "react";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -8,24 +8,14 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import { StopCard } from "./StopCard";
 import { useRouteStore } from "@/store/route.store";
-import { useFavoritesStore } from "@/store/favorites.store";
-import { useQuickPlacesStore } from "@/store/quickPlaces.store";
-import { QuickPlaceChip } from "@/components/quick-places/QuickPlaceChip";
 import { colors } from "@/constants/colors";
 import type { NearbyStop } from "@/services/stops/stops.types";
-import type { SavedStop } from "@/store/favorites.store";
-import type { QuickPlace } from "@/types/quickPlaces.types";
 
 interface NearbyStopsSheetProps {
   stops: NearbyStop[] | undefined;
   isLoading: boolean;
   isError?: boolean;
   onRetry?: () => void;
-  onAddPlace?: () => void;
-  onEditPlace?: (place: QuickPlace) => void;
-  onFocusCoordinate?: (lng: number, lat: number) => void;
-  onDeletePlace?: (placeId: string) => void;
-  onClearPlaces?: () => void;
 }
 
 const EMPTY_ARRAY: NearbyStop[] = [];
@@ -35,24 +25,12 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
   isLoading,
   isError,
   onRetry,
-  onAddPlace,
-  onEditPlace,
-  onFocusCoordinate,
-  onDeletePlace,
-  onClearPlaces,
 }: NearbyStopsSheetProps) {
   const { t } = useTranslation();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const selectedStop = useRouteStore((s) => s.selectedStop);
   const setSelectedStop = useRouteStore((s) => s.setSelectedStop);
-  const savedStops = useFavoritesStore((s) => s.stops);
-  const places = useQuickPlacesStore((s) => s.places);
-  const placesHydrated = useQuickPlacesStore((s) => s._hasHydrated);
-  const stopsHydrated = useFavoritesStore((s) => s._hasHydrated);
-  const isHydrated = placesHydrated && stopsHydrated;
   const insets = useSafeAreaInsets();
-
-  const showQuickAccess = places.length > 0 || savedStops.length > 0;
 
   const snapPoints = useMemo(() => ["8%", "45%"], []);
 
@@ -67,99 +45,6 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
       useRouteStore.getState();
     set(curr?.id === stop.id ? null : stop);
   }, []);
-
-  const handleSavedStopLongPress = useCallback(
-    (saved: SavedStop) => {
-      Alert.alert(
-        t("stops.removeSavedStopTitle"),
-        t("stops.removeSavedStopMessage", { name: saved.name }),
-        [
-          { text: t("common.cancel"), style: "cancel" },
-          {
-            text: t("common.remove"),
-            style: "destructive",
-            onPress: () => {
-              useFavoritesStore.getState().removeStop(saved.id);
-            },
-          },
-        ],
-      );
-    },
-    [t],
-  );
-
-  const handleSavedStopPress = useCallback(
-    (saved: SavedStop) => {
-      setSelectedStop({
-        id: saved.id,
-        name: saved.name,
-        code: saved.code ?? "",
-        latitude: saved.latitude,
-        longitude: saved.longitude,
-        isStation: saved.isStation,
-        locationType: undefined,
-        distance_meters: 0,
-      });
-    },
-    [setSelectedStop],
-  );
-
-  const handleQuickPlacePress = useCallback(
-    (place: QuickPlace) => {
-      if (place.nearbyStopId) {
-        setSelectedStop({
-          id: place.nearbyStopId,
-          name: place.nearbyStopName ?? place.name,
-          code: "",
-          latitude: place.latitude,
-          longitude: place.longitude,
-          isStation: false,
-          locationType: undefined,
-          distance_meters: 0,
-        });
-      } else if (onFocusCoordinate) {
-        onFocusCoordinate(place.longitude, place.latitude);
-      }
-    },
-    [setSelectedStop, onFocusCoordinate],
-  );
-
-  const handleQuickPlaceLongPress = useCallback(
-    (place: QuickPlace) => {
-      Alert.alert(
-        t("stops.deletePlaceTitle"),
-        t("stops.deletePlaceMessage", { name: place.name }),
-        [
-          { text: t("common.cancel"), style: "cancel" },
-          {
-            text: t("common.delete"),
-            style: "destructive",
-            onPress: () => {
-              if (onDeletePlace) onDeletePlace(place.id);
-            },
-          },
-        ],
-      );
-    },
-    [onDeletePlace, t],
-  );
-
-  const handleClearPlaces = useCallback(() => {
-    Alert.alert(
-      t("stops.clearAllPlacesTitle"),
-      t("stops.clearAllPlacesMessage"),
-      [
-        { text: t("common.cancel"), style: "cancel" },
-        {
-          text: t("common.deleteAll"),
-          style: "destructive",
-          onPress: () => {
-            if (onClearPlaces) onClearPlaces();
-          },
-        },
-      ],
-    );
-  }, [onClearPlaces, t]);
 
   const isEmpty = !isLoading && !isError && (!stops || stops.length === 0);
   const hasStaleData = stops && stops.length > 0;
@@ -196,132 +81,14 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
         keyExtractor={keyExtractor}
         contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
         ListHeaderComponent={
-          <>
-            <View className="px-4 pt-3 pb-2 border-b border-gray-100">
-              <Text className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                {t("stops.quickAccess")}
-              </Text>
-              {!isHydrated ? (
-                <View className="flex-row gap-2">
-                  {[1, 2, 3].map((i) => (
-                    <View
-                      key={i}
-                      className="h-9 w-20 rounded-xl bg-gray-100 animate-pulse"
-                    />
-                  ))}
-                </View>
-              ) : showQuickAccess ? (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{ gap: 8 }}
-                >
-                  {places.map((place) => (
-                    <QuickPlaceChip
-                      key={place.id}
-                      place={place}
-                      isSelected={
-                        selectedStop != null &&
-                        place.nearbyStopId === selectedStop.id
-                      }
-                      onPress={() => handleQuickPlacePress(place)}
-                      onLongPress={() => handleQuickPlaceLongPress(place)}
-                    />
-                  ))}
-
-                  {savedStops.map((saved) => {
-                    const isSelected = selectedStop?.id === saved.id;
-                    return (
-                      <TouchableOpacity
-                        key={saved.id}
-                        onPress={() => handleSavedStopPress(saved)}
-                        onLongPress={() => handleSavedStopLongPress(saved)}
-                        activeOpacity={0.7}
-                        className={`flex-row items-center rounded-xl px-3 py-2.5 ${
-                          isSelected ? "bg-primary/15" : "bg-gray-50"
-                        }`}
-                      >
-                        <Ionicons
-                          name={saved.isStation ? "train-outline" : "bus-outline"}
-                          size={14}
-                          color={
-                            isSelected ? colors.primary : colors.textSecondary
-                          }
-                        />
-                        <Text
-                          className={`ml-1.5 text-xs font-medium ${
-                            isSelected ? "text-primary" : "text-gray-700"
-                          }`}
-                          numberOfLines={1}
-                          style={{ maxWidth: 100 }}
-                        >
-                          {saved.name}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-
-                  {places.length > 0 && (
-                    <TouchableOpacity
-                      onPress={handleClearPlaces}
-                      activeOpacity={0.7}
-                      className="flex-row items-center rounded-xl bg-red-50 px-3 py-2.5 border border-red-100"
-                    >
-                      <Ionicons
-                        name="trash-outline"
-                        size={14}
-                        color={colors.error}
-                      />
-                      <Text className="ml-1 text-xs font-medium text-red-500">
-                        {t("common.clear")}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-
-                  <TouchableOpacity
-                    onPress={onAddPlace}
-                    activeOpacity={0.7}
-                    className="flex-row items-center rounded-xl bg-gray-50 px-3 py-2.5 border border-dashed border-gray-300"
-                  >
-                    <Ionicons
-                      name="add-outline"
-                      size={14}
-                      color={colors.textSecondary}
-                    />
-                    <Text className="ml-1 text-xs font-medium text-gray-500">
-                      {t("common.add")}
-                    </Text>
-                  </TouchableOpacity>
-                </ScrollView>
-              ) : (
-                <TouchableOpacity
-                  onPress={onAddPlace}
-                  activeOpacity={0.7}
-                  className="items-center rounded-xl bg-gray-50 px-4 py-3 border border-dashed border-gray-300"
-                >
-                  <View className="flex-row items-center">
-                    <Ionicons
-                      name="add-outline"
-                      size={14}
-                      color={colors.textSecondary}
-                    />
-                    <Text className="ml-1.5 text-xs font-medium text-gray-500">
-                      {t("stops.addPlaceOrStop")}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View className="px-4 pb-2 pt-3">
-              <Text className="text-base font-bold text-gray-900">
-                {t("stops.nearbyStops")}
-              </Text>
-              {isLoading && (
-                <Text className="mt-1 text-xs text-gray-400">{t("common.loading")}</Text>
-              )}
-            </View>
-          </>
+          <View className="px-4 pb-2 pt-3">
+            <Text className="text-base font-bold text-gray-900">
+              {t("stops.nearbyStops")}
+            </Text>
+            {isLoading && (
+              <Text className="mt-1 text-xs text-gray-400">{t("common.loading")}</Text>
+            )}
+          </View>
         }
         ListEmptyComponent={
           <>

@@ -71,7 +71,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
     const tripLoc: TripLocation = {
       latitude: loc.latitude,
       longitude: loc.longitude,
-      name: "Current Location",
+      name: t("planner.currentLocation"),
       type: "currentLocation",
     };
     setOrigin(tripLoc);
@@ -79,7 +79,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
 
     resolveToStop(loc.latitude, loc.longitude).then((nearest) => {
       const current = useLocationStore.getState().origin;
-      if (current?.name !== "Current Location") return;
+      if (current?.type !== "currentLocation") return;
 
       setResolvingOrigin(false);
       if (nearest) {

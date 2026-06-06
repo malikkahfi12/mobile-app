@@ -67,15 +67,12 @@ export default function ProfileScreen() {
               <Text className="text-base font-bold text-gray-900">
                 {displayName}
               </Text>
-              <View className="flex-row items-center mt-0.5">
+              <View className="mt-0.5">
                 <Text className="text-xs text-gray-400">@{username}</Text>
                 {memberSinceYear && (
-                  <>
-                    <Text className="text-xs text-gray-300 mx-1">·</Text>
-                    <Text className="text-xs text-gray-400">
-                      {t("profile.memberSince", { year: memberSinceYear })}
-                    </Text>
-                  </>
+                  <Text className="text-xs text-gray-400 mt-0.5">
+                    {t("profile.memberSince", { year: memberSinceYear })}
+                  </Text>
                 )}
               </View>
             </View>

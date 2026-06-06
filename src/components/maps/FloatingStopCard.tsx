@@ -1,11 +1,10 @@
-import { useCallback, useMemo, memo } from "react";
+import { useCallback, memo } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useRouteStore } from "@/store/route.store";
 import { useUIStore } from "@/store/ui.store";
 import { useGuidanceStore } from "@/store/guidance.store";
-import { useQuickPlacesStore } from "@/store/quickPlaces.store";
 import { useQuickRoute } from "@/hooks/useQuickRoute";
 import { useNearbyStops } from "@/hooks/stops/useNearbyStops";
 import { colors } from "@/constants/colors";
@@ -23,17 +22,11 @@ export const FloatingStopCard = memo(function FloatingStopCard() {
   const bottomSheetContent = useUIStore((s) => s.bottomSheetContent);
   const setBottomSheet = useUIStore((s) => s.setBottomSheet);
   const isGuidanceActive = useGuidanceStore((s) => s.isActive);
-  const places = useQuickPlacesStore((s) => s.places);
   const { data: nearbyStops } = useNearbyStops();
   const { routeToHere, isRouting } = useQuickRoute(
     selectedStop,
     nearbyStops,
   );
-
-  const isQuickPlace = useMemo(() => {
-    if (!selectedStop) return false;
-    return places.some((p) => p.nearbyStopId === selectedStop.id);
-  }, [places, selectedStop]);
 
   const handleClose = useCallback(() => {
     setSelectedStop(null);
@@ -117,22 +110,20 @@ export const FloatingStopCard = memo(function FloatingStopCard() {
               {t("common.routeHere")}
             </Text>
           </TouchableOpacity>
-          {!isQuickPlace && (
-            <TouchableOpacity
-              onPress={handleViewDetails}
-              activeOpacity={0.7}
-              className="flex-1 flex-row items-center justify-center rounded-lg border border-primary/30 py-2"
-            >
-              <Ionicons
-                name="time-outline"
-                size={14}
-                color={colors.primary}
-              />
-              <Text className="ml-1 text-xs font-semibold text-primary">
-                {t("common.viewDetails")}
-              </Text>
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            onPress={handleViewDetails}
+            activeOpacity={0.7}
+            className="flex-1 flex-row items-center justify-center rounded-lg border border-primary/30 py-2"
+          >
+            <Ionicons
+              name="time-outline"
+              size={14}
+              color={colors.primary}
+            />
+            <Text className="ml-1 text-xs font-semibold text-primary">
+              {t("common.viewDetails")}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
