@@ -22,8 +22,6 @@ export async function restoreSession(): Promise<void> {
     store.setAccessToken(tokens.accessToken);
     store.setUser(user);
   } catch {
-    if (!tokenManager.getAccessToken()) {
-      await useAuthStore.getState().clearAuth();
-    }
+    await useAuthStore.getState().clearAuth();
   }
 }
