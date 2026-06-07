@@ -244,7 +244,10 @@
     "arriveDestination": "Arrive at destination",
     "getOff": "Get off",
     "minRide": " min ride",
-    "destination": "Destination"
+    "destination": "Destination",
+    "wrongBus": "Wrong bus?",
+    "offRoute": "You appear to be off your planned route",
+    "rerouteFromHere": "Re-route"
   },
   "location": {
     "servicesDisabled": "Location services are disabled. Enable in device Settings.",

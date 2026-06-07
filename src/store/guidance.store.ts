@@ -7,6 +7,7 @@ interface GuidanceState {
   currentLegIndex: number;
   contextualMessage: string | null;
   followMode: boolean;
+  isDeviated: boolean;
 
   startGuidance: (option: RouteOption) => void;
   nextStep: () => void;
@@ -14,6 +15,7 @@ interface GuidanceState {
   endGuidance: () => void;
   setContextualMessage: (message: string | null) => void;
   setFollowMode: (value: boolean) => void;
+  setDeviated: (value: boolean) => void;
 }
 
 export const useGuidanceStore = create<GuidanceState>((set, get) => ({
@@ -22,6 +24,7 @@ export const useGuidanceStore = create<GuidanceState>((set, get) => ({
   currentLegIndex: 0,
   contextualMessage: null,
   followMode: false,
+  isDeviated: false,
 
   startGuidance: (option) =>
     set({
@@ -30,6 +33,7 @@ export const useGuidanceStore = create<GuidanceState>((set, get) => ({
       currentLegIndex: 0,
       contextualMessage: null,
       followMode: true,
+      isDeviated: false,
     }),
 
   nextStep: () => {
@@ -54,8 +58,10 @@ export const useGuidanceStore = create<GuidanceState>((set, get) => ({
       currentLegIndex: 0,
       contextualMessage: null,
       followMode: false,
+      isDeviated: false,
     }),
 
   setContextualMessage: (message) => set({ contextualMessage: message }),
   setFollowMode: (value) => set({ followMode: value }),
+  setDeviated: (value) => set({ isDeviated: value }),
 }));

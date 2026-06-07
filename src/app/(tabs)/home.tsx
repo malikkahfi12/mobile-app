@@ -2,9 +2,9 @@ import { BottomSheetRouter } from "@/components/bottom-sheet/BottomSheetRouter";
 import { GuidanceCard } from "@/components/guidance/GuidanceCard";
 import { SearchBarOverlay } from "@/components/home/SearchBarOverlay";
 import { TransitribeMap } from "@/components/maps/TransitribeMap";
-import { FloatingStopCard } from "@/components/maps/FloatingStopCard";
 import { PlaceMarker } from "@/components/maps/PlaceMarker";
 import { RecenterButton } from "@/components/maps/RecenterButton";
+import { SettingsButton } from "@/components/maps/SettingsButton";
 import { RouteEndpointMarker } from "@/components/maps/RouteEndpointMarker";
 import { RoutePolyline } from "@/components/maps/RoutePolyline";
 import { StopMarker } from "@/components/maps/StopMarker";
@@ -54,7 +54,6 @@ export default function HomeScreen() {
   const { data: nearbyStops, isLoading: stopsLoading, isError: stopsError, refetch: refetchStops } =
     useNearbyStops();
   const selectedStop = useRouteStore((s) => s.selectedStop);
-  const setSelectedStop = useRouteStore((s) => s.setSelectedStop);
   const journeyResult = useRouteStore((s) => s.journeyResult);
   const selectedRouteOptionIndex = useRouteStore(
     (s) => s.selectedRouteOptionIndex,
@@ -191,12 +190,18 @@ export default function HomeScreen() {
     }
   }, [fetchLocation, setCurrentLocation]);
 
-  const handleStopPress = useCallback(
-    (stop: NearbyStop) => {
-      setSelectedStop(stop.id === selectedStop?.id ? null : stop);
-    },
-    [selectedStop, setSelectedStop],
-  );
+  const handleStopPress = useCallback((stop: NearbyStop) => {
+    if (useGuidanceStore.getState().isActive) return;
+    const { selectedStop: curr, setSelectedStop: set } =
+      useRouteStore.getState();
+    if (curr?.id === stop.id) {
+      set(null);
+      useUIStore.getState().closeBottomSheet();
+    } else {
+      set(stop);
+      useUIStore.getState().setBottomSheet("stopDetail");
+    }
+  }, []);
 
   const showPermissionBanner = useMemo(
     () => status === "denied" || (!isGranted && locationInitialized),
@@ -436,9 +441,9 @@ export default function HomeScreen() {
         isFollowing={effectiveFollowMode}
       />
 
-      <GuidanceCard />
+      <SettingsButton />
 
-      <FloatingStopCard />
+      <GuidanceCard />
 
       <BottomSheetRouter
         nearbyStops={nearbyStops}

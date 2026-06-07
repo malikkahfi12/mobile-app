@@ -6,7 +6,9 @@ import { useTranslation } from "react-i18next";
 import { useGuidanceStore } from "@/store/guidance.store";
 import { useRouteStore } from "@/store/route.store";
 import { useUIStore } from "@/store/ui.store";
+import { useLocationStore } from "@/store/location.store";
 import { useRouteDetail } from "@/hooks/routes/useRouteDetail";
+import { useReroute } from "@/hooks/guidance/useReroute";
 import { notifyTripEnded } from "@/services/notifications";
 import { colors } from "@/constants/colors";
 import {
@@ -38,6 +40,17 @@ export const GuidanceCard = memo(function GuidanceCard() {
   const currentLegIndex = useGuidanceStore((s) => s.currentLegIndex);
   const contextualMessage = useGuidanceStore((s) => s.contextualMessage);
   const endGuidance = useGuidanceStore((s) => s.endGuidance);
+  const isDeviated = useGuidanceStore((s) => s.isDeviated);
+  const locationAccuracy = useLocationStore((s) => s.locationAccuracy);
+
+  const { reroute } = useReroute();
+
+  const gpsColor = useMemo(() => {
+    if (locationAccuracy == null) return "#9CA3AF";
+    if (locationAccuracy <= 15) return "#16A34A";
+    if (locationAccuracy <= 50) return "#D97706";
+    return "#DC2626";
+  }, [locationAccuracy]);
 
   const currentLeg = useMemo(
     () => routeOption?.legs[currentLegIndex] ?? null,
@@ -146,6 +159,14 @@ export const GuidanceCard = memo(function GuidanceCard() {
     useUIStore.getState().closeBottomSheet();
   }, [endGuidance]);
 
+  const handleReroute = useCallback(() => {
+    reroute();
+  }, [reroute]);
+
+  const handleDismissDeviation = useCallback(() => {
+    useGuidanceStore.getState().setDeviated(false);
+  }, []);
+
   if (!isActive) return null;
 
   if (!currentLeg || !routeOption) {
@@ -189,10 +210,14 @@ export const GuidanceCard = memo(function GuidanceCard() {
     >
       <View className="px-4 pt-3 pb-3.5">
         <View className="flex-row items-center justify-between mb-2">
-          <View className="flex-1 mr-3">
+          <View className="flex-1 mr-3 flex-row items-center">
+            <View
+              className="h-2 w-2 rounded-full"
+              style={{ backgroundColor: gpsColor }}
+            />
             {destinationName && (
               <Text
-                className="text-sm font-semibold text-gray-900"
+                className="ml-1.5 text-sm font-semibold text-gray-900"
                 numberOfLines={1}
               >
                 {destinationName}
@@ -317,6 +342,38 @@ export const GuidanceCard = memo(function GuidanceCard() {
           </View>
         </View>
 
+        {isDeviated && (
+          <View className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
+            <View className="flex-row items-center">
+              <Ionicons
+                name="warning-outline"
+                size={14}
+                color="#B45309"
+              />
+              <Text className="ml-2 flex-1 text-xs text-amber-800">
+                {t("guidance.offRoute")}
+              </Text>
+              <TouchableOpacity
+                onPress={handleReroute}
+                className="rounded-lg bg-amber-200 px-3 py-1.5"
+                activeOpacity={0.7}
+              >
+                <Text className="text-[11px] font-semibold text-amber-900">
+                  {t("guidance.rerouteFromHere")}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleDismissDeviation}
+                className="ml-2 h-7 w-7 items-center justify-center rounded-full bg-amber-200"
+                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="close" size={13} color="#B45309" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
         {nextTitle && (
           <View className="mt-2 flex-row items-center rounded-xl bg-gray-50 px-3 py-2">
             <Ionicons
@@ -366,17 +423,36 @@ export const GuidanceCard = memo(function GuidanceCard() {
             )}
           </View>
 
-          <TouchableOpacity
-            onPress={handleEnd}
-            className="flex-row items-center rounded-xl bg-red-50 px-3 py-1.5"
-            hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="stop" size={12} color={colors.error} />
-            <Text className="ml-1 text-xs font-semibold text-red-500">
-              {t("guidance.end")}
-            </Text>
-          </TouchableOpacity>
+          <View className="flex-row items-center gap-2">
+            {currentLeg.type === "TRANSIT" && (
+              <TouchableOpacity
+                onPress={handleReroute}
+                className="flex-row items-center rounded-xl bg-gray-100 px-2.5 py-1.5"
+                hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name="refresh-outline"
+                  size={11}
+                  color={colors.textSecondary}
+                />
+                <Text className="ml-1 text-[11px] text-gray-500">
+                  {t("guidance.wrongBus")}
+                </Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              onPress={handleEnd}
+              className="flex-row items-center rounded-xl bg-red-50 px-3 py-1.5"
+              hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="stop" size={12} color={colors.error} />
+              <Text className="ml-1 text-xs font-semibold text-red-500">
+                {t("guidance.end")}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </View>
