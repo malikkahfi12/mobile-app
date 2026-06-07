@@ -30,7 +30,6 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
   const { t } = useTranslation();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const selectedStop = useRouteStore((s) => s.selectedStop);
-  const setSelectedStop = useRouteStore((s) => s.setSelectedStop);
   const insets = useSafeAreaInsets();
   const bottomInset = insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_MARGIN;
 

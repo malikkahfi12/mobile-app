@@ -8,7 +8,6 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
-import { colors } from "@/constants/colors";
 
 interface RecenterButtonProps {
   onPress: () => void;
@@ -59,7 +58,7 @@ export const RecenterButton = memo(function RecenterButton({
     outputRange: [0, -4, 4, -2, 0],
   });
 
-  const iconName = isFollowing ? "navigate" : "navigate-outline";
+  const iconName = "navigate-outline";
 
   return (
     <Animated.View
@@ -71,7 +70,7 @@ export const RecenterButton = memo(function RecenterButton({
     >
       <TouchableOpacity
         className="h-11 w-11 items-center justify-center rounded-full"
-        style={{ backgroundColor: colors.white }}
+        style={{ backgroundColor: "rgba(255,255,255,0.9)" }}
         onPress={onPress}
         disabled={isLoading}
         accessibilityLabel={

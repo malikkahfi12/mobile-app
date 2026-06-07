@@ -9,5 +9,6 @@ export interface TripNotificationData {
 }
 
 export const TRIP_NOTIFICATION_ID = "transitribe-active-trip";
+export const CONTEXTUAL_NOTIFICATION_ID = "transitribe-contextual";
 export const CATEGORY_TRIP = "trip-active";
 export const ACTION_END_TRIP = "end_trip";

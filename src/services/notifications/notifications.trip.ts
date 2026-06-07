@@ -2,6 +2,7 @@ import * as Notifications from "expo-notifications";
 import { getChannelId } from "./notifications.service";
 import {
   TRIP_NOTIFICATION_ID,
+  CONTEXTUAL_NOTIFICATION_ID,
   CATEGORY_TRIP,
 } from "./notifications.types";
 
@@ -79,10 +80,30 @@ async function cancelTripNotification(): Promise<void> {
   await Notifications.dismissAllNotificationsAsync();
 }
 
-export async function notifyUpcomingTransfer(): Promise<void> {
-  // placeholder for future transfer alerts
+export async function notifyContextualEvent(
+  title: string,
+  body: string,
+): Promise<void> {
+  if (!isActive) return;
+
+  const { status } = await Notifications.getPermissionsAsync();
+  if (status !== "granted") return;
+
+  await Notifications.scheduleNotificationAsync({
+    identifier: CONTEXTUAL_NOTIFICATION_ID,
+    content: {
+      title,
+      body,
+      data: { type: "trip-contextual" },
+      ...(getChannelId() ? { channelId: getChannelId() } : {}),
+    },
+    trigger: null,
+  });
 }
 
-export async function notifyNearDestination(): Promise<void> {
-  // placeholder for future destination alerts
+export async function dismissContextualNotification(): Promise<void> {
+  await Notifications.cancelScheduledNotificationAsync(
+    CONTEXTUAL_NOTIFICATION_ID,
+  );
+  await Notifications.dismissNotificationAsync(CONTEXTUAL_NOTIFICATION_ID);
 }

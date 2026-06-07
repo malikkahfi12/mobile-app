@@ -12,6 +12,8 @@ import {
   GUIDANCE_APPROACHING_RADIUS,
   GUIDANCE_AUTO_ADVANCE_MIN_INTERVAL,
   GUIDANCE_AUTO_ADVANCE_STABILITY,
+  GUIDANCE_DEVIATION_DISTANCE,
+  GUIDANCE_DEVIATION_STABILITY,
 } from "@/constants/location";
 
 interface UseGuidanceStepProgressionOptions {
@@ -66,6 +68,20 @@ function getContextualMessage(
   return null;
 }
 
+function minDistanceToPolyline(
+  user: { latitude: number; longitude: number },
+  coords: [number, number][],
+): number {
+  if (coords.length === 0) return Infinity;
+
+  let min = Infinity;
+  for (const [lng, lat] of coords) {
+    const d = haversineDistance(user, { latitude: lat, longitude: lng });
+    if (d < min) min = d;
+  }
+  return min;
+}
+
 export function useGuidanceStepProgression({
   enabled,
 }: UseGuidanceStepProgressionOptions) {
@@ -74,6 +90,7 @@ export function useGuidanceStepProgression({
   const autoAdvancingRef = useRef(false);
   const trackedLegIndexRef = useRef(0);
   const lastMessageRef = useRef<string | null>(null);
+  const deviationCounterRef = useRef(0);
 
   useEffect(() => {
     if (!enabled) return;
@@ -106,6 +123,8 @@ export function useGuidanceStepProgression({
         if (!autoAdvancingRef.current) {
           stabilityRef.current = 0;
           lastAdvanceRef.current = 0;
+          deviationCounterRef.current = 0;
+          useGuidanceStore.getState().setDeviated(false);
           if (lastMessageRef.current !== null) {
             useGuidanceStore.getState().setContextualMessage(null);
             lastMessageRef.current = null;
@@ -162,6 +181,31 @@ export function useGuidanceStepProgression({
       } else {
         stabilityRef.current = 0;
       }
+
+      if (
+        currentLeg.type === "TRANSIT" &&
+        currentLeg.geometry?.coordinates
+      ) {
+        const deviationDist = minDistanceToPolyline(
+          { latitude: user.latitude, longitude: user.longitude },
+          currentLeg.geometry.coordinates,
+        );
+
+        if (deviationDist > GUIDANCE_DEVIATION_DISTANCE) {
+          deviationCounterRef.current += 1;
+          if (
+            deviationCounterRef.current >= GUIDANCE_DEVIATION_STABILITY
+          ) {
+            deviationCounterRef.current = 0;
+            useGuidanceStore.getState().setDeviated(true);
+          }
+        } else {
+          deviationCounterRef.current = 0;
+          if (useGuidanceStore.getState().isDeviated) {
+            useGuidanceStore.getState().setDeviated(false);
+          }
+        }
+      }
     });
 
     const unsubGuidance = useGuidanceStore.subscribe(() => {
@@ -171,6 +215,7 @@ export function useGuidanceStepProgression({
         lastAdvanceRef.current = 0;
         autoAdvancingRef.current = false;
         lastMessageRef.current = null;
+        deviationCounterRef.current = 0;
       }
     });
 

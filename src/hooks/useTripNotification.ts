@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import i18n from "@/lib/i18n";
 import { useGuidanceStore } from "@/store/guidance.store";
 import { useLocationStore } from "@/store/location.store";
@@ -10,17 +10,31 @@ import {
   notifyTripStarted,
   notifyTripEnded,
   updateTripNotification,
+  notifyContextualEvent,
+  dismissContextualNotification,
 } from "@/services/notifications";
 import {
   getInstructionTitle,
   getInstructionSubtitle,
 } from "@/lib/routing.helpers";
 
+const MIN_CONTEXTUAL_INTERVAL = 30_000;
+
 export function useTripNotification({ enabled }: { enabled: boolean }) {
   const routeOption = useGuidanceStore((s) => s.routeOption);
   const currentLegIndex = useGuidanceStore((s) => s.currentLegIndex);
+  const contextualMessage = useGuidanceStore((s) => s.contextualMessage);
   const prevLegIndex = useRef<number | null>(null);
   const wasActive = useRef(false);
+  const lastNotifiedMessage = useRef<string | null>(null);
+  const lastNotifiedTime = useRef(0);
+
+  const messagesToNotify = useMemo(() => [
+    i18n.t("guidance.getOffSoon"),
+    i18n.t("guidance.transferHereCaps"),
+    i18n.t("guidance.boardNow"),
+    i18n.t("guidance.destinationReached"),
+  ], []);
 
   useEffect(() => {
     registerTripCategory();
@@ -44,8 +58,11 @@ export function useTripNotification({ enabled }: { enabled: boolean }) {
     if (!enabled || !routeOption) {
       if (wasActive.current) {
         notifyTripEnded();
+        dismissContextualNotification();
         wasActive.current = false;
         prevLegIndex.current = null;
+        lastNotifiedMessage.current = null;
+        lastNotifiedTime.current = 0;
       }
       return;
     }
@@ -53,7 +70,7 @@ export function useTripNotification({ enabled }: { enabled: boolean }) {
     const destinationName =
       useLocationStore.getState().destination?.resolvedStopName ??
       useLocationStore.getState().destination?.name ??
-      routeOption.legs[routeOption.legs.length - 1]      ?.toStopName ??
+      routeOption.legs[routeOption.legs.length - 1]?.toStopName ??
       i18n.t("guidance.destination");
 
     const isLastLeg = currentLegIndex >= routeOption.legs.length - 1;
@@ -76,7 +93,30 @@ export function useTripNotification({ enabled }: { enabled: boolean }) {
       notifyTripStarted(destinationName, instruction, subtitle);
     } else if (legChanged) {
       prevLegIndex.current = currentLegIndex;
+      lastNotifiedMessage.current = null;
+      lastNotifiedTime.current = 0;
       updateTripNotification(destinationName, instruction, subtitle);
     }
   }, [enabled, routeOption, currentLegIndex]);
+
+  useEffect(() => {
+    if (!enabled || !contextualMessage) return;
+    if (!messagesToNotify.includes(contextualMessage)) return;
+
+    if (contextualMessage === lastNotifiedMessage.current) {
+      if (Date.now() - lastNotifiedTime.current < MIN_CONTEXTUAL_INTERVAL) {
+        return;
+      }
+    }
+
+    lastNotifiedMessage.current = contextualMessage;
+    lastNotifiedTime.current = Date.now();
+
+    const title =
+      useLocationStore.getState().destination?.resolvedStopName ??
+      useLocationStore.getState().destination?.name ??
+      i18n.t("guidance.destination");
+
+    notifyContextualEvent(title, contextualMessage);
+  }, [enabled, contextualMessage, messagesToNotify]);
 }

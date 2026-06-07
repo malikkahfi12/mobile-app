@@ -244,7 +244,10 @@
     "arriveDestination": "Tiba di tujuan",
     "getOff": "Turun",
     "minRide": " mnt perjalanan",
-    "destination": "Tujuan"
+    "destination": "Tujuan",
+    "wrongBus": "Salah bus?",
+    "offRoute": "Kamu berada di luar rute yang direncanakan",
+    "rerouteFromHere": "Rute ulang"
   },
   "location": {
     "servicesDisabled": "Layanan lokasi dinonaktifkan. Aktifkan di Pengaturan perangkat.",

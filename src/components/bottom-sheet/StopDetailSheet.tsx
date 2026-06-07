@@ -40,7 +40,7 @@ export const StopDetailSheet = memo(function StopDetailSheet() {
     nearbyStops,
   );
 
-  const snapPoints = useMemo(() => ["45%", "85%"], []);
+  const snapPoints = useMemo(() => ["30%", "55%", "85%"], []);
 
   useEffect(() => {
     if (selectedStop) {
