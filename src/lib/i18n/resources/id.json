@@ -147,7 +147,29 @@
   },
   "explorer": {
     "title": "Jelajah",
-    "comingSoon": "Segera Hadir"
+    "searchPlaceholder": "Cari tempat...",
+    "searchHint": "Ketik minimal 2 karakter untuk mencari tempat",
+    "searchResults": "Hasil Pencarian",
+    "nearbyPlaces": "Tempat Terdekat",
+    "categoryResults": "Hasil",
+    "placesFound": "ditemukan",
+    "loadFailed": "Gagal memuat tempat. Periksa koneksi Anda.",
+    "detailFailed": "Gagal memuat detail tempat.",
+    "noResults": "Tidak ada tempat ditemukan untuk '{{query}}'",
+    "noPlacesNearby": "Tidak ada tempat ditemukan di area Anda.",
+    "nearestStop": "Halte terdekat",
+    "noTransitNearby": "Tidak ada halte transit terdekat",
+    "routeToPlace": "Rute ke Sini",
+    "seeAll": "Lihat Semua",
+    "openInMaps": "Buka di Peta",
+    "categories": {
+      "all": "Semua",
+      "food": "Makanan",
+      "coffee": "Kopi",
+      "shopping": "Belanja",
+      "parks": "Taman",
+      "hotels": "Hotel"
+    }
   },
   "home": {
     "findingStops": "Mencari halte...",

@@ -33,8 +33,8 @@ npm run lint     # Run ESLint
 
 ## Tech Stack
 
-- Expo SDK 55
-- React Native 0.83
+- Expo SDK 56
+- React Native 0.85.3
 - TypeScript
 - Expo Router
 
