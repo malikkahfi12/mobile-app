@@ -40,14 +40,26 @@ export const queryKeys = {
 
   search: {
     all: ["search"] as const,
-    unified: (query: string, lat?: number, lng?: number) =>
-      [...queryKeys.search.all, "unified", { query, lat, lng }] as const,
+    unified: (query: string, lat?: number, lng?: number, lang?: string) =>
+      [...queryKeys.search.all, "unified", { query, lat, lng, lang }] as const,
   },
 
   trips: {
     all: ["trips"] as const,
     shape: (tripId: string) =>
       [...queryKeys.trips.all, "shape", tripId] as const,
+  },
+
+  places: {
+    all: ["places"] as const,
+    search: (q: string, bbox?: string, lang?: string) =>
+      [...queryKeys.places.all, "search", { q, bbox, lang }] as const,
+    explore: (bbox: string, category?: string) =>
+      [...queryKeys.places.all, "explore", { bbox, category }] as const,
+    detail: (idOrName: string, lat?: number, lng?: number) =>
+      [...queryKeys.places.all, "detail", { idOrName, lat, lng }] as const,
+    reverse: (lat: number, lng: number) =>
+      [...queryKeys.places.all, "reverse", { lat, lng }] as const,
   },
 
   devices: {

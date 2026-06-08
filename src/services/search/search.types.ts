@@ -29,4 +29,5 @@ export interface UnifiedSearchParams {
   lat?: number;
   lng?: number;
   limit?: number;
+  lang?: string;
 }

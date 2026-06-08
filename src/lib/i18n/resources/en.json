@@ -147,7 +147,29 @@
   },
   "explorer": {
     "title": "Explorer",
-    "comingSoon": "Coming Soon"
+    "searchPlaceholder": "Search places...",
+    "searchHint": "Type at least 2 characters to search for places",
+    "searchResults": "Search Results",
+    "nearbyPlaces": "Nearby Places",
+    "categoryResults": "Results",
+    "placesFound": "found",
+    "loadFailed": "Failed to load places. Check your connection.",
+    "detailFailed": "Failed to load place details.",
+    "noResults": "No places found for '{{query}}'",
+    "noPlacesNearby": "No places found in your area.",
+    "nearestStop": "Nearest stop",
+    "noTransitNearby": "No transit stop nearby",
+    "routeToPlace": "Route Here",
+    "seeAll": "See All",
+    "openInMaps": "Open in Maps",
+    "categories": {
+      "all": "All",
+      "food": "Food",
+      "coffee": "Coffee",
+      "shopping": "Shopping",
+      "parks": "Parks",
+      "hotels": "Hotels"
+    }
   },
   "home": {
     "findingStops": "Finding stops...",
