@@ -36,7 +36,9 @@ export function uploadAvatar(uri: string): Promise<{ avatarUrl: string }> {
 
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `${apiConfig.apiUrl}/auth/me/avatar`);
-    xhr.setRequestHeader("x-api-key", apiConfig.apiKey);
+    if (apiConfig.apiKey) {
+      xhr.setRequestHeader("x-api-key", apiConfig.apiKey);
+    }
     xhr.setRequestHeader(
       "Authorization",
       `Bearer ${tokenManager.getAccessToken()}`,
