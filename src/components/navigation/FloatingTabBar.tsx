@@ -9,7 +9,7 @@ import { colors } from "@/constants/colors";
 export const TAB_BAR_HEIGHT = 64;
 export const TAB_BAR_BOTTOM_MARGIN = 0;
 
-type TabRoute = "explorer" | "home" | "profile";
+type TabRoute = "explorer" | "home";
 
 interface TabItem {
   route: TabRoute;
@@ -20,22 +20,16 @@ interface TabItem {
 
 const TABS: TabItem[] = [
   {
-    route: "explorer",
-    icon: "compass-outline",
-    activeIcon: "compass",
-    labelKey: "navigation.explorer",
-  },
-  {
     route: "home",
     icon: "map-outline",
     activeIcon: "map",
     labelKey: "navigation.home",
   },
   {
-    route: "profile",
-    icon: "person-outline",
-    activeIcon: "person",
-    labelKey: "navigation.profile",
+    route: "explorer",
+    icon: "compass-outline",
+    activeIcon: "compass",
+    labelKey: "navigation.explorer",
   },
 ];
 
@@ -46,7 +40,6 @@ export function FloatingTabBar() {
 
   const activeRoute = useMemo<TabRoute>(() => {
     if (pathname.includes("/explorer")) return "explorer";
-    if (pathname.includes("/profile")) return "profile";
     return "home";
   }, [pathname]);
 

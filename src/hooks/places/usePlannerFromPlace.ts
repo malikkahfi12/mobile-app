@@ -1,7 +1,9 @@
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { router } from "expo-router";
 import { useLocationStore } from "@/store/location.store";
 import { useUIStore } from "@/store/ui.store";
+import { useExplorerStore } from "@/store/explorer.store";
 import { resolveToStop } from "@/hooks/search/resolveToStop";
 import type { PlaceDetailResponse } from "@/services/places/places.types";
 
@@ -68,7 +70,9 @@ export function usePlannerFromPlace(place: PlaceDetailResponse | null) {
       }
     });
 
+    useExplorerStore.getState().setSelectedPlace(null);
     setBottomSheet("planner");
+    router.replace("/(tabs)/home" as any);
     setIsRouting(false);
   }, [place, isRouting, setOrigin, setDestination, setBottomSheet, t]);
 

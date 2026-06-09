@@ -1,5 +1,5 @@
-import { Tabs } from "expo-router";
 import { FloatingTabBar } from "@/components/navigation/FloatingTabBar";
+import { Tabs } from "expo-router";
 
 export default function TabLayout() {
   return (
@@ -10,9 +10,8 @@ export default function TabLayout() {
       tabBar={() => <FloatingTabBar />}
       initialRouteName="home"
     >
-      <Tabs.Screen name="explorer" />
       <Tabs.Screen name="home" />
-      <Tabs.Screen name="profile" />
+      <Tabs.Screen name="explorer" />
     </Tabs>
   );
 }

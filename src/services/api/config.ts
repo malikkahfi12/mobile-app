@@ -1,11 +1,11 @@
 const config = {
   development: {
-    apiUrl: process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000/api/v1",
-    apiKey: process.env.EXPO_PUBLIC_API_KEY || "dev_tly_api_7f3b9c2a8e1d4f6a",
+    apiUrl: process.env.EXPO_PUBLIC_API_URL,
+    apiKey: process.env.EXPO_PUBLIC_API_KEY,
   },
   production: {
-    apiUrl: "https://api.transitribe.com/api/v1",
-    apiKey: process.env.EXPO_PUBLIC_API_KEY || "",
+    apiUrl: process.env.EXPO_PUBLIC_PROD_API_URL,
+    apiKey: process.env.EXPO_PUBLIC_API_KEY,
   },
 } as const;
 

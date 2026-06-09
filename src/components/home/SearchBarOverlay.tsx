@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { useUIStore } from "@/store/ui.store";
 import { useRouteStore } from "@/store/route.store";
+import { useLocationStore } from "@/store/location.store";
 
 export const SearchBarOverlay = memo(function SearchBarOverlay() {
   const { t } = useTranslation();
@@ -17,6 +18,7 @@ export const SearchBarOverlay = memo(function SearchBarOverlay() {
       style={{ top: insets.top + 12 }}
       onPress={() => {
         useRouteStore.getState().setSelectedStop(null);
+        useLocationStore.getState().setDestination(null);
         setBottomSheet("planner");
       }}
       activeOpacity={0.9}

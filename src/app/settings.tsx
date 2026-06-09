@@ -1,8 +1,11 @@
 import { colors } from "@/constants/colors";
 import { LOCALE_LABELS } from "@/lib/i18n";
 import { useLocaleStore } from "@/store/locale.store";
+import { LogoutDialog } from "@/components/ui/LogoutDialog";
+import { logoutUser } from "@/services/auth/logout";
 import { Ionicons } from "@expo/vector-icons";
 import { Href, router } from "expo-router";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
 
@@ -54,6 +57,19 @@ function SettingsRow({
 export default function SettingsScreen() {
   const { t } = useTranslation();
   const locale = useLocaleStore((s) => s.locale);
+  const [logoutVisible, setLogoutVisible] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logoutUser();
+      router.replace("/onboarding");
+    } finally {
+      setIsLoggingOut(false);
+      setLogoutVisible(false);
+    }
+  };
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -102,6 +118,23 @@ export default function SettingsScreen() {
           onPress={() => router.push("/language")}
         />
       </View>
+
+      <View className="mx-4 mt-6 overflow-hidden rounded-xl bg-white">
+        <SettingsRow
+          icon="log-out-outline"
+          iconColor={colors.error}
+          iconBg="bg-red-100"
+          label={t("logout.title")}
+          onPress={() => setLogoutVisible(true)}
+        />
+      </View>
+
+      <LogoutDialog
+        visible={logoutVisible}
+        isLoading={isLoggingOut}
+        onCancel={() => setLogoutVisible(false)}
+        onConfirm={handleLogout}
+      />
     </View>
   );
 }
