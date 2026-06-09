@@ -27,7 +27,8 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.CAMERA",
-        "android.permission.READ_MEDIA_IMAGES"
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -90,8 +91,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "bf75fd17-3cc0-4d99-ae47-36d261152016"
+        "projectId": "08a72654-2d0c-49d5-9433-e62b4fa886f1"
       }
-    }
+    },
+    "owner": "malikkahfi"
   }
 }

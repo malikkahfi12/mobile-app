@@ -1,6 +1,6 @@
 import "../../global.css";
 
-import { ensureDeviceRegistered } from "@/services/auth/register";
+import { ensureDeviceKeypair } from "@/services/auth/deviceIdentity";
 import { restoreSession } from "@/services/auth/session";
 import { configureGoogleSignIn } from "@/lib/googleSignIn";
 import "@/lib/i18n";
@@ -24,10 +24,10 @@ export default function RootLayout() {
 
     async function boot() {
       try {
-        await ensureDeviceRegistered();
+        await ensureDeviceKeypair();
         await restoreSession();
       } catch {
-        // ensureDeviceRegistered can throw (network error, API down)
+
       } finally {
         const state = useAuthStore.getState();
         state.setLoading(false);

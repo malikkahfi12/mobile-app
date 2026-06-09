@@ -109,6 +109,10 @@ export const BottomSheetRouter = memo(function BottomSheetRouter({
     return <RouteDetailSheet />;
   }
 
+  if (isGuidanceActive) {
+    return null;
+  }
+
   return (
     <NearbyStopsSheet
       stops={nearbyStops}

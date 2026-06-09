@@ -8,7 +8,6 @@ import { secureStore } from "./secureStore";
 import { useAuthStore } from "@/store/auth.store";
 import { tokenManager } from "./tokenManager";
 import { post } from "@/services/api/client";
-import client from "@/services/api/client";
 import type {
   ChallengeResponse,
   LoginResponse,
@@ -68,24 +67,10 @@ export async function loginWithDeviceChallenge(): Promise<void> {
 
   const signature = signChallenge(challenge.challenge, privateKey);
 
-  let loginBody;
-  try {
-    const loginResponse = await client.post("/auth/login", {
-      challengeId: challenge.challengeId,
-      signature,
-    });
-    loginBody = loginResponse.data;
-  } catch (err: unknown) {
-    throw err;
-  }
-
-  if (!loginBody?.success) {
-    throw new Error(
-      `Login failed: ${loginBody?.message || JSON.stringify(loginBody) || "Request failed"}`,
-    );
-  }
-
-  const loginData = loginBody.data as LoginResponse;
+  const loginData = await post<LoginResponse>("/auth/login", {
+    challengeId: challenge.challengeId,
+    signature,
+  });
 
   tokenManager.setAccessToken(loginData.accessToken);
   await tokenManager.setRefreshToken(loginData.refreshToken);
