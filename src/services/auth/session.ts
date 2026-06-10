@@ -21,7 +21,8 @@ export async function restoreSession(): Promise<void> {
     const store = useAuthStore.getState();
     store.setAccessToken(tokens.accessToken);
     store.setUser(user);
-  } catch {
+  } catch (err) {
+    console.error("[SESSION] restoreSession failed:", (err as Error)?.constructor?.name, (err as Error)?.message);
     await useAuthStore.getState().clearAuth();
   }
 }

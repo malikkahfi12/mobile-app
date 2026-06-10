@@ -29,6 +29,7 @@ export default function OnboardingScreen() {
       await secureStore.setOnboardingCompleted();
       router.replace("/home");
     } catch (err: unknown) {
+      console.error("[ONBOARDING] Recovery failed:", (err as Error)?.constructor?.name, (err as Error)?.message, (err as any)?.code);
       if (err instanceof GoogleSignInError && err.code === "CANCELLED") {
         return;
       }
@@ -62,6 +63,7 @@ export default function OnboardingScreen() {
       await secureStore.setOnboardingCompleted();
       router.replace("/home");
     } catch (err) {
+      console.error("[ONBOARDING] GetStarted failed:", (err as Error)?.constructor?.name, (err as Error)?.message);
       const message =
         err instanceof Error
           ? err.message

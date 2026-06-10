@@ -135,6 +135,7 @@ client.interceptors.response.use(
     }
 
     if (error.request) {
+      console.error("[CLIENT] NetworkError on:", error.config?.baseURL, error.config?.url);
       throw new NetworkError();
     }
 
