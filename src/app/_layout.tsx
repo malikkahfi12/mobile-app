@@ -4,6 +4,7 @@ import { ensureDeviceKeypair } from "@/services/auth/deviceIdentity";
 import { restoreSession } from "@/services/auth/session";
 import { configureGoogleSignIn } from "@/lib/googleSignIn";
 import "@/lib/i18n";
+import { BottomSheetProvider } from "@swmansion/react-native-bottom-sheet";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { Stack, usePathname, router } from "expo-router";
 import { useEffect } from "react";
@@ -42,7 +43,8 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView className="flex-1">
-      <QueryProvider>
+      <BottomSheetProvider>
+        <QueryProvider>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="settings" options={{ headerShown: true, title: t("navigation.settings") }} />
           <Stack.Screen name="recovery-security" options={{ headerShown: true, title: t("navigation.recoverySecurity") }} />
@@ -55,6 +57,7 @@ export default function RootLayout() {
           onDismiss={dismissToast}
         />
       </QueryProvider>
+      </BottomSheetProvider>
     </GestureHandlerRootView>
   );
 }

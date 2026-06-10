@@ -221,6 +221,7 @@
     "detailsFailed": "Failed to load stop details.",
     "noDepartures": "No upcoming departures at this stop.",
     "noStopsNearby": "No stops found nearby",
+    "gettingLocation": "Getting your location...",
     "cachedData": "Cached data — may be outdated",
     "cachedWarning": "Showing cached results — data may be outdated",
     "staleRetry": "Retry",

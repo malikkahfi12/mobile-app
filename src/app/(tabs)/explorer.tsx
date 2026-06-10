@@ -1,41 +1,32 @@
-import { useCallback, useRef, useState, useEffect, useMemo, memo } from "react";
+import { TAB_BAR_HEIGHT } from "@/components/navigation/FloatingTabBar";
+import { CategoryTabs } from "@/components/places/CategoryTabs";
+import { ExplorePlaceCard } from "@/components/places/ExplorePlaceCard";
+import { PlaceDetailSheet } from "@/components/places/PlaceDetailSheet";
+import { SkeletonBlock } from "@/components/ui/SkeletonBlock";
+import { colors } from "@/constants/colors";
+import { usePlaceSearch } from "@/hooks/places/usePlaceSearch";
+import { usePlacesExplore } from "@/hooks/places/usePlacesExplore";
+import type { ExplorePlaceItem } from "@/services/places/places.types";
+import { useExplorerStore } from "@/store/explorer.store";
+import { useLocationStore } from "@/store/location.store";
+import { Ionicons } from "@expo/vector-icons";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   FlatList,
+  Keyboard,
+  LayoutAnimation,
+  Platform,
   RefreshControl,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Keyboard,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useTranslation } from "react-i18next";
-import { useExplorerStore } from "@/store/explorer.store";
-import { useLocationStore } from "@/store/location.store";
-import { usePlaceSearch } from "@/hooks/places/usePlaceSearch";
-import { usePlacesExplore } from "@/hooks/places/usePlacesExplore";
-import { useAllCategories } from "@/hooks/places/useAllCategories";
-import { ExplorePlaceCard } from "@/components/places/ExplorePlaceCard";
-import { CategoryChip } from "@/components/places/CategoryChip";
-import { CategorySectionHeader } from "@/components/places/CategorySectionHeader";
-import { PlaceDetailSheet } from "@/components/places/PlaceDetailSheet";
-import { SkeletonBlock } from "@/components/ui/SkeletonBlock";
-import { colors } from "@/constants/colors";
-import { TAB_BAR_HEIGHT } from "@/components/navigation/FloatingTabBar";
-import type { ExplorePlaceItem, PlaceCategory } from "@/services/places/places.types";
 
 const SEARCH_DEBOUNCE_MS = 350;
 const SKELETON_COUNT = 5;
-
-type FlatListItem =
-  | {
-      type: "section-header";
-      categoryKey: PlaceCategory;
-      count: number;
-      key: string;
-    }
-  | (ExplorePlaceItem & { type: "place"; key: string });
 
 const SearchBarInput = memo(function SearchBarInput({
   value,
@@ -52,14 +43,7 @@ const SearchBarInput = memo(function SearchBarInput({
 }) {
   return (
     <View
-      className="mx-4 mt-2 flex-row items-center rounded-xl bg-gray-100 px-3 py-2.5"
-      style={{
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.06,
-        shadowRadius: 4,
-        elevation: 2,
-      }}
+      className="mx-4 mt-3 flex-row items-center rounded-xl bg-white/90 px-4 py-3 shadow-sm"
     >
       <Ionicons name="search-outline" size={18} color={colors.textTertiary} />
       <TextInput
@@ -134,7 +118,7 @@ export default function ExplorerScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const flatListRef = useRef<FlatList<FlatListItem>>(null);
+  const flatListRef = useRef<FlatList<ExplorePlaceItem>>(null);
 
   const searchQuery = useExplorerStore((s) => s.searchQuery);
   const selectedCategory = useExplorerStore((s) => s.selectedCategory);
@@ -150,7 +134,6 @@ export default function ExplorerScreen() {
     currentLocationRef.current = currentLocation;
   }, [currentLocation]);
   const isSearchMode = searchQuery.length >= 2;
-  const isAllCategory = selectedCategory === "place";
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const searchInputRef = useRef<TextInput>(null);
 
@@ -163,13 +146,11 @@ export default function ExplorerScreen() {
     };
   }, [searchQuery]);
 
-  const [prevIsSearchMode, setPrevIsSearchMode] = useState(isSearchMode);
-  if (isSearchMode !== prevIsSearchMode) {
-    setPrevIsSearchMode(isSearchMode);
+  useEffect(() => {
     if (isSearchMode) {
       setSelectedPlace(null);
     }
-  }
+  }, [isSearchMode, setSelectedPlace]);
 
   const {
     data: searchData,
@@ -195,30 +176,6 @@ export default function ExplorerScreen() {
     selectedCategory,
   );
 
-  const {
-    categories: allCategoriesData,
-    isLoading: allLoading,
-    isFetching: allFetching,
-    isError: allError,
-    refetch: retryAll,
-  } = useAllCategories(
-    currentLocation?.latitude,
-    currentLocation?.longitude,
-  );
-
-  const prevCategoryRef = useRef(selectedCategory);
-
-  useEffect(() => {
-    if (prevCategoryRef.current === selectedCategory) return;
-    prevCategoryRef.current = selectedCategory;
-
-    flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-
-    if (isAllCategory) {
-      retryAll();
-    }
-  }, [selectedCategory, isAllCategory, retryAll]);
-
   const handlePlacePress = useCallback(
     (place: ExplorePlaceItem) => {
       Keyboard.dismiss();
@@ -228,93 +185,61 @@ export default function ExplorerScreen() {
   );
 
   const handleClearSearch = useCallback(() => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setSearchQuery("");
     setDebouncedQuery("");
   }, [setSearchQuery]);
 
-  const handleSeeAll = useCallback(
-    (categoryKey: PlaceCategory) => {
-      setSelectedCategory(categoryKey);
-    },
-    [setSelectedCategory],
-  );
+  const handleSearchChange = useCallback((value: string) => {
+    if ((value.length >= 2) !== (searchQuery.length >= 2)) {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    }
+    setSearchQuery(value);
+  }, [searchQuery.length, setSearchQuery]);
 
-  const effectiveFetching = !isSearchMode && isAllCategory ? allFetching : exploreFetching;
-  const isRefreshing = isSearchMode ? searchFetching : effectiveFetching;
+  const isRefreshing = isSearchMode ? searchFetching : exploreFetching;
 
   const handleRefresh = useCallback(() => {
-    if (isSearchMode) {
-      retrySearch();
-    } else if (isAllCategory) {
-      retryAll();
-    } else {
-      retryExplore();
+    if (isSearchMode) retrySearch();
+    else retryExplore();
+  }, [isSearchMode, retrySearch, retryExplore]);
+
+  const isFirstLoad = isSearchMode ? searchLoading : exploreLoading;
+
+  const [showSkeleton, setShowSkeleton] = useState(false);
+  useEffect(() => {
+    if (!isFirstLoad) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- timer-driven state sync is legitimate external system use
+      setShowSkeleton(false);
+      return;
     }
-  }, [isSearchMode, isAllCategory, retrySearch, retryAll, retryExplore]);
+    const id = setTimeout(() => setShowSkeleton(true), 300);
+    return () => clearTimeout(id);
+  }, [isFirstLoad]);
 
-  const isFirstLoad = isSearchMode
-    ? searchLoading
-    : isAllCategory
-      ? allLoading
-      : exploreLoading;
+  const isError = isSearchMode ? searchError : exploreError;
 
-  const isError = isSearchMode
-    ? searchError
-    : isAllCategory
-      ? allError
-      : exploreError;
-
-  const handleRetry = useMemo(() => {
-    if (isSearchMode) return () => retrySearch();
-    if (isAllCategory) return () => retryAll();
-    return () => retryExplore();
-  }, [isSearchMode, isAllCategory, retrySearch, retryAll, retryExplore]);
+  const handleRetry = useCallback(() => {
+    if (isSearchMode) retrySearch();
+    else retryExplore();
+  }, [isSearchMode, retrySearch, retryExplore]);
 
   const flatItems = useMemo(() => {
     if (isSearchMode) {
       return (searchData?.data ?? []).map((p) => ({
         ...p,
-        type: "place" as const,
         key: p.id,
       }));
     }
 
-    if (!isAllCategory) {
-      return (exploreData?.data ?? []).map((p) => ({
-        ...p,
-        type: "place" as const,
-        key: p.id,
-      }));
-    }
-
-    const items: FlatListItem[] = [];
-    for (const [categoryKey, places] of Object.entries(allCategoriesData)) {
-      if (!Array.isArray(places) || places.length === 0) continue;
-      items.push({
-        type: "section-header",
-        categoryKey: categoryKey as PlaceCategory,
-        count: places.length,
-        key: `${categoryKey}-header`,
-      });
-      for (const place of places) {
-        items.push({ ...place, type: "place" as const, key: place.id });
-      }
-    }
-    return items;
-  }, [isSearchMode, isAllCategory, searchData, exploreData, allCategoriesData]);
+    return (exploreData?.data ?? []).map((p) => ({
+      ...p,
+      key: p.id,
+    }));
+  }, [isSearchMode, searchData, exploreData]);
 
   const renderItem = useCallback(
-    ({ item }: { item: FlatListItem }) => {
-      if (item.type === "section-header") {
-        return (
-          <CategorySectionHeader
-            categoryKey={item.categoryKey}
-            count={item.count}
-            onSeeAll={() => handleSeeAll(item.categoryKey)}
-          />
-        );
-      }
-
+    ({ item }: { item: ExplorePlaceItem }) => {
       const loc = currentLocationRef.current;
       const distance =
         loc
@@ -334,11 +259,22 @@ export default function ExplorerScreen() {
         />
       );
     },
-    [handlePlacePress, handleSeeAll],
+    [handlePlacePress],
+  );
+
+  const ITEM_HEIGHT = 56;
+
+  const getItemLayout = useCallback(
+    (_: unknown, index: number) => ({
+      length: ITEM_HEIGHT,
+      offset: ITEM_HEIGHT * index,
+      index,
+    }),
+    [],
   );
 
   const keyExtractor = useCallback(
-    (item: FlatListItem) => item.key,
+    (item: ExplorePlaceItem) => item.id,
     [],
   );
 
@@ -348,12 +284,11 @@ export default function ExplorerScreen() {
     debouncedQuery.length >= 2 &&
     !isFirstLoad &&
     flatItems.length === 0;
-  const showLoading = isFirstLoad && flatItems.length === 0;
 
   const renderListHeader = useCallback(() => {
     if (isSearchMode && searchData?.meta && searchData.meta.count > 0) {
       return (
-        <View className="mx-4 mb-1 flex-row items-center justify-between">
+        <View className="mx-4 mb-1 flex-row items-center justify-between p-4">
           <Text className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
             {t("explorer.searchResults")}
           </Text>
@@ -364,7 +299,7 @@ export default function ExplorerScreen() {
       );
     }
 
-    if (!isSearchMode && !isAllCategory && exploreData?.meta && exploreData.meta.count > 0) {
+    if (!isSearchMode && exploreData?.meta && exploreData.meta.count > 0) {
       return (
         <View className="mx-4 mb-1 flex-row items-center justify-between">
           <Text className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -378,10 +313,10 @@ export default function ExplorerScreen() {
     }
 
     return null;
-  }, [isSearchMode, isAllCategory, exploreData, searchData, t]);
+  }, [isSearchMode, exploreData, searchData, t]);
 
   const renderEmpty = useCallback(() => {
-    if (showLoading) {
+    if (showSkeleton) {
       return <SkeletonList />;
     }
 
@@ -454,38 +389,33 @@ export default function ExplorerScreen() {
     }
 
     return null;
-  }, [showLoading, isError, showHint, showEmpty, isSearchMode, isFirstLoad, flatItems.length, handleRetry, searchQuery, t]);
+  }, [showSkeleton, isError, showHint, showEmpty, isSearchMode, isFirstLoad, flatItems.length, handleRetry, searchQuery, t]);
 
   return (
     <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
       <SearchBarInput
         value={searchQuery}
-        onChangeText={setSearchQuery}
+        onChangeText={handleSearchChange}
         onClear={handleClearSearch}
         placeholder={t("explorer.searchPlaceholder")}
         inputRef={searchInputRef}
       />
 
       {!isSearchMode && (
-        <View
-          className="bg-white pt-1 pb-1"
-          style={{
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.04,
-            shadowRadius: 3,
-            elevation: 1,
-          }}
-        >
-          <CategoryChip selected={selectedCategory} onSelect={setSelectedCategory} />
-        </View>
+        <CategoryTabs selected={selectedCategory} onSelect={setSelectedCategory} />
       )}
 
       <FlatList
+        key={isSearchMode ? "search" : selectedCategory}
         ref={flatListRef}
         data={flatItems}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
+        getItemLayout={getItemLayout}
+        windowSize={5}
+        maxToRenderPerBatch={10}
+        removeClippedSubviews={Platform.OS === "android"}
+        initialNumToRender={15}
         ListHeaderComponent={renderListHeader}
         ListEmptyComponent={renderEmpty}
         keyboardShouldPersistTaps="handled"
@@ -494,7 +424,7 @@ export default function ExplorerScreen() {
         onScrollBeginDrag={Keyboard.dismiss}
         scrollEventThrottle={16}
         refreshControl={
-          showLoading ? undefined : (
+          showSkeleton ? undefined : (
             <RefreshControl
               refreshing={isRefreshing}
               onRefresh={handleRefresh}

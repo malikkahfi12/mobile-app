@@ -14,7 +14,7 @@ interface ExplorerState {
 
 export const useExplorerStore = create<ExplorerState>((set) => ({
   searchQuery: "",
-  selectedCategory: "place",
+  selectedCategory: "coffee",
   selectedPlace: null,
 
   setSearchQuery: (query) => set({ searchQuery: query }),
