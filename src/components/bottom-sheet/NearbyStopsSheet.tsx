@@ -9,6 +9,7 @@ import BottomSheet, {
 import { StopCard } from "./StopCard";
 import { useRouteStore } from "@/store/route.store";
 import { useUIStore } from "@/store/ui.store";
+import { useLocationStore } from "@/store/location.store";
 import { colors } from "@/constants/colors";
 import { TAB_BAR_HEIGHT, TAB_BAR_BOTTOM_MARGIN } from "@/components/navigation/FloatingTabBar";
 import type { NearbyStop } from "@/services/stops/stops.types";
@@ -35,6 +36,11 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
   const bottomInset = insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_MARGIN;
 
   const snapPoints = useMemo(() => ["8%", "45%"], []);
+  const currentLocation = useLocationStore((s) => s.currentLocation);
+
+  useEffect(() => {
+    bottomSheetRef.current?.snapToIndex(1);
+  }, []);
 
   useEffect(() => {
     if (selectedStop) {
@@ -54,7 +60,8 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
     }
   }, []);
 
-  const isEmpty = !isLoading && !isError && (!stops || stops.length === 0);
+  const showWaiting = !isLoading && !isError && !stops && !currentLocation;
+  const isEmpty = !isLoading && !isError && (!stops || stops.length === 0) && !showWaiting;
   const hasStaleData = stops && stops.length > 0;
   const showError = isError && !isLoading;
 
@@ -97,6 +104,9 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
             {isLoading && (
               <Text className="mt-1 text-xs text-gray-400">{t("common.loading")}</Text>
             )}
+            {showWaiting && (
+              <Text className="mt-1 text-xs text-gray-400">{t("stops.gettingLocation")}</Text>
+            )}
           </View>
         }
         ListEmptyComponent={
@@ -122,6 +132,18 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
                     </Text>
                   </TouchableOpacity>
                 )}
+              </View>
+            )}
+            {showWaiting && (
+              <View className="items-center px-4 py-8">
+                <Ionicons
+                  name="location-outline"
+                  size={36}
+                  color={colors.textTertiary}
+                />
+                <Text className="mt-2 text-sm text-gray-500 text-center">
+                  {t("stops.gettingLocation")}
+                </Text>
               </View>
             )}
             {isEmpty && !showError && (

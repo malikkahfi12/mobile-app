@@ -221,6 +221,7 @@
     "detailsFailed": "Gagal memuat detail halte.",
     "noDepartures": "Tidak ada keberangkatan di halte ini.",
     "noStopsNearby": "Tidak ada halte ditemukan di sekitar",
+    "gettingLocation": "Mendapatkan lokasi Anda...",
     "cachedData": "Data cache — mungkin kedaluwarsa",
     "cachedWarning": "Menampilkan hasil cache — data mungkin kedaluwarsa",
     "staleRetry": "Coba Lagi",
