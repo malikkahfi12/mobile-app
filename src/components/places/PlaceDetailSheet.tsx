@@ -2,10 +2,19 @@ import { usePlaceDetail } from "@/hooks/places/usePlaceDetail";
 import { useExplorerStore } from "@/store/explorer.store";
 import { useUIStore } from "@/store/ui.store";
 import { Ionicons } from "@expo/vector-icons";
-import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
-import { memo, useCallback, useEffect, useMemo, useRef } from "react";
+import { ModalBottomSheet } from "@swmansion/react-native-bottom-sheet";
+import { memo, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Linking, Platform, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Linking,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors } from "@/constants/colors";
 import { usePlannerFromPlace } from "@/hooks/places/usePlannerFromPlace";
@@ -22,12 +31,12 @@ function formatDistance(meters: number): string {
 
 export const PlaceDetailSheet = memo(function PlaceDetailSheet() {
   const { t } = useTranslation();
-  const bottomSheetRef = useRef<BottomSheet>(null);
   const closeBottomSheet = useUIStore((s) => s.closeBottomSheet);
   const selectedPlace = useExplorerStore((s) => s.selectedPlace);
   const setSelectedPlace = useExplorerStore((s) => s.setSelectedPlace);
   const insets = useSafeAreaInsets();
-  const bottomInset = insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_MARGIN;
+
+  const [index, setIndex] = useState(0);
 
   const {
     data,
@@ -43,27 +52,27 @@ export const PlaceDetailSheet = memo(function PlaceDetailSheet() {
 
   const place = data?.data;
 
-  useEffect(() => {
-    if (place || selectedPlace) {
-      bottomSheetRef.current?.snapToIndex(0);
+  const [prevPlace, setPrevPlace] = useState(selectedPlace);
+  if (selectedPlace !== prevPlace) {
+    setPrevPlace(selectedPlace);
+    if (selectedPlace) {
+      setIndex(1);
     }
-  }, [place, selectedPlace]);
+  }
 
-  const handleClose = useCallback(() => {
-    setSelectedPlace(null);
-    closeBottomSheet();
-  }, [setSelectedPlace, closeBottomSheet]);
-
-  const handleSheetChange = useCallback(
-    (index: number) => {
-      if (index < 0) {
-        handleClose();
+  const handleSettle = useCallback(
+    (nextIndex: number) => {
+      if (nextIndex === 0) {
+        setSelectedPlace(null);
+        closeBottomSheet();
       }
     },
-    [handleClose],
+    [setSelectedPlace, closeBottomSheet],
   );
 
-  const snapPoints = useMemo(() => ["40%", "65%"], []);
+  const handleClose = useCallback(() => {
+    setIndex(0);
+  }, []);
 
   const { handleRouteHere, isRouting } = usePlannerFromPlace(
     place ?? null,
@@ -84,21 +93,27 @@ export const PlaceDetailSheet = memo(function PlaceDetailSheet() {
   const showLoading = isLoading && !data;
 
   return (
-    <BottomSheet
-      ref={bottomSheetRef}
-      snapPoints={snapPoints}
-      index={0}
-      enablePanDownToClose={false}
-      onChange={handleSheetChange}
-      bottomInset={bottomInset}
-      handleIndicatorStyle={{
-        backgroundColor: colors.textTertiary,
-        width: 40,
-      }}
-      backgroundStyle={{ backgroundColor: colors.white }}
+    <ModalBottomSheet
+      index={index}
+      onIndexChange={setIndex}
+      onSettle={handleSettle}
+      detents={[0, 400, "content"]}
+      scrimColor="rgba(0, 0, 0, 0.15)"
+      surface={
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              backgroundColor: colors.white,
+              borderTopLeftRadius: 16,
+              borderTopRightRadius: 16,
+            },
+          ]}
+        />
+      }
     >
-      <BottomSheetScrollView
-        contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_MARGIN + 24 }}
       >
         {showLoading ? (
           <View className="items-center py-16">
@@ -128,7 +143,7 @@ export const PlaceDetailSheet = memo(function PlaceDetailSheet() {
           </View>
         ) : place ? (
           <>
-            <View className="px-4 pt-2 flex-row items-center justify-between">
+            <View className="px-4 pt-6 flex-row items-center justify-between">
               <View className="flex-row items-center flex-1">
                 <View className="h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
                   <Ionicons
@@ -235,7 +250,7 @@ export const PlaceDetailSheet = memo(function PlaceDetailSheet() {
             </View>
           </>
         ) : null}
-      </BottomSheetScrollView>
-    </BottomSheet>
+      </ScrollView>
+    </ModalBottomSheet>
   );
 });
