@@ -29,7 +29,6 @@ export const BottomSheetRouter = memo(function BottomSheetRouter({
   const destination = useLocationStore((s) => s.destination);
   const bottomSheetContent = useUIStore((s) => s.bottomSheetContent);
   const closeBottomSheet = useUIStore((s) => s.closeBottomSheet);
-  const selectedStop = useRouteStore((s) => s.selectedStop);
   const setJourneyResult = useRouteStore((s) => s.setJourneyResult);
   const setSelectedRouteOptionIndex = useRouteStore(
     (s) => s.setSelectedRouteOptionIndex,
@@ -70,10 +69,12 @@ export const BottomSheetRouter = memo(function BottomSheetRouter({
   }, [inRoutingStates, setJourneyResult, setSelectedRouteOptionIndex]);
 
   useEffect(() => {
-    if (!selectedStop && isStopDetailActive) {
-      closeBottomSheet();
-    }
-  }, [selectedStop, isStopDetailActive, closeBottomSheet]);
+    return useRouteStore.subscribe((state, prev) => {
+      if (!state.selectedStop && prev.selectedStop) {
+        useUIStore.getState().closeBottomSheet();
+      }
+    });
+  }, []);
 
   if (isRoutingActive) {
     return (
