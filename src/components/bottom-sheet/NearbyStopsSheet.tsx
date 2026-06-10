@@ -8,6 +8,7 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import { StopCard } from "./StopCard";
 import { useRouteStore } from "@/store/route.store";
+import { useUIStore } from "@/store/ui.store";
 import { colors } from "@/constants/colors";
 import { TAB_BAR_HEIGHT, TAB_BAR_BOTTOM_MARGIN } from "@/components/navigation/FloatingTabBar";
 import type { NearbyStop } from "@/services/stops/stops.types";
@@ -44,7 +45,13 @@ export const NearbyStopsSheet = memo(function NearbyStopsSheet({
   const handleStopPress = useCallback((stop: NearbyStop) => {
     const { selectedStop: curr, setSelectedStop: set } =
       useRouteStore.getState();
-    set(curr?.id === stop.id ? null : stop);
+    if (curr?.id === stop.id) {
+      set(null);
+      useUIStore.getState().closeBottomSheet();
+    } else {
+      set(stop);
+      useUIStore.getState().setBottomSheet("stopDetail");
+    }
   }, []);
 
   const isEmpty = !isLoading && !isError && (!stops || stops.length === 0);
