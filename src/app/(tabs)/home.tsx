@@ -139,16 +139,11 @@ export default function HomeScreen() {
     init();
   }, [isGranted, locationInitialized, fetchLocation, setCurrentLocation]);
 
-  useEffect(() => {
-    if (selectedStop) {
-      queueMicrotask(() => {
-        setCameraCenter([
-          selectedStop.longitude,
-          selectedStop.latitude,
-        ]);
-      });
-    }
-  }, [selectedStop]);
+  const [prevSelectedStop, setPrevSelectedStop] = useState(selectedStop);
+  if (selectedStop !== prevSelectedStop && selectedStop) {
+    setPrevSelectedStop(selectedStop);
+    setCameraCenter([selectedStop.longitude, selectedStop.latitude]);
+  }
 
     const handleRecenter = useCallback(async () => {
     setRecenterTrigger((t) => t + 1);

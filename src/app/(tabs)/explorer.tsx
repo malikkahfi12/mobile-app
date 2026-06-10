@@ -163,11 +163,13 @@ export default function ExplorerScreen() {
     };
   }, [searchQuery]);
 
-  useEffect(() => {
+  const [prevIsSearchMode, setPrevIsSearchMode] = useState(isSearchMode);
+  if (isSearchMode !== prevIsSearchMode) {
+    setPrevIsSearchMode(isSearchMode);
     if (isSearchMode) {
       setSelectedPlace(null);
     }
-  }, [isSearchMode, setSelectedPlace]);
+  }
 
   const {
     data: searchData,
@@ -214,10 +216,8 @@ export default function ExplorerScreen() {
 
     if (isAllCategory) {
       retryAll();
-    } else {
-      retryExplore();
     }
-  }, [selectedCategory, isAllCategory, retryAll, retryExplore]);
+  }, [selectedCategory, isAllCategory, retryAll]);
 
   const handlePlacePress = useCallback(
     (place: ExplorePlaceItem) => {
