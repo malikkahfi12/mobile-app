@@ -122,7 +122,6 @@ export default function ExplorerScreen() {
 
   const searchQuery = useExplorerStore((s) => s.searchQuery);
   const selectedCategory = useExplorerStore((s) => s.selectedCategory);
-  const selectedPlace = useExplorerStore((s) => s.selectedPlace);
   const setSearchQuery = useExplorerStore((s) => s.setSearchQuery);
   const setSelectedCategory = useExplorerStore((s) => s.setSelectedCategory);
   const setSelectedPlace = useExplorerStore((s) => s.setSelectedPlace);
@@ -434,7 +433,7 @@ export default function ExplorerScreen() {
           )
         }
       />
-      {selectedPlace && <PlaceDetailSheet />}
+      <PlaceDetailSheet />
     </View>
   );
 }
