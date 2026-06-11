@@ -14,16 +14,18 @@ export function useReroute() {
 
     if (!currentLocation) return;
 
-    notifyTripEnded();
-    useGuidanceStore.getState().endGuidance();
-    useRouteStore.getState().clearSelection();
-
     const nearbyStops = await getNearbyStops(
       currentLocation.latitude,
       currentLocation.longitude,
       200,
       1,
     );
+
+    if (!useGuidanceStore.getState().isActive) return;
+
+    notifyTripEnded();
+    useGuidanceStore.getState().endGuidance();
+    useRouteStore.getState().clearSelection();
 
     if (!nearbyStops || nearbyStops.length === 0) {
       useLocationStore.getState().setOrigin({
@@ -37,6 +39,11 @@ export function useReroute() {
     }
 
     const nearest = nearbyStops[0];
+
+    useGuidanceStore.getState().setRerouteWalkLine({
+      from: [currentLocation.longitude, currentLocation.latitude],
+      to: [nearest.longitude, nearest.latitude],
+    });
 
     useLocationStore.getState().setOrigin({
       type: "stop",

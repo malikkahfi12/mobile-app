@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { colors } from "@/constants/colors";
 
-export const TAB_BAR_HEIGHT = 64;
+export const TAB_BAR_HEIGHT = 0;
 export const TAB_BAR_BOTTOM_MARGIN = 0;
 
 type TabRoute = "explorer" | "home";

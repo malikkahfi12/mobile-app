@@ -1,12 +1,14 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   ActivityIndicator,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { ModalBottomSheet } from "@swmansion/react-native-bottom-sheet";
+import BottomSheet, {
+  BottomSheetBackdrop,
+} from "@gorhom/bottom-sheet";
+import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -30,62 +32,65 @@ export function RevokeDeviceSheet({
 }: RevokeDeviceSheetProps) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const [index, setIndex] = useState(0);
+  const bottomSheetRef = useRef<BottomSheet>(null);
+
+  const snapPoints = useMemo(() => ["40%"], []);
 
   const revokeMutation = useRevokeDevice();
 
-  const [prevVisible, setPrevVisible] = useState(visible);
-  const [prevDevice, setPrevDevice] = useState(device);
-  if (visible !== prevVisible || device !== prevDevice) {
-    setPrevVisible(visible);
-    setPrevDevice(device);
+  useEffect(() => {
     if (visible && device) {
-      setIndex(1);
+      bottomSheetRef.current?.snapToIndex(0);
     }
-  }
+  }, [visible, device]);
 
-  const handleSettle = useCallback(
-    (nextIndex: number) => {
-      if (nextIndex === 0 && device) {
-        onClose();
-      }
-    },
-    [device, onClose],
-  );
+  const handleSheetClose = useCallback(() => {
+    onClose();
+  }, [onClose]);
 
   const handleClose = useCallback(() => {
-    setIndex(0);
+    bottomSheetRef.current?.close();
   }, []);
 
   const handleRevoke = useCallback(() => {
     if (!device) return;
     revokeMutation.mutate(device.id, {
       onSuccess: () => {
-        setIndex(0);
         onRevoked();
+        bottomSheetRef.current?.close();
       },
     });
   }, [device, revokeMutation, onRevoked]);
 
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        opacity={0.3}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
   return (
-    <ModalBottomSheet
-      index={index}
-      onIndexChange={setIndex}
-      onSettle={handleSettle}
-      detents={[0, "content"]}
-      scrimColor="rgba(0, 0, 0, 0.3)"
-      surface={
-        <View
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              backgroundColor: colors.white,
-              borderTopLeftRadius: 16,
-              borderTopRightRadius: 16,
-            },
-          ]}
-        />
-      }
+    <BottomSheet
+      ref={bottomSheetRef}
+      snapPoints={snapPoints}
+      index={-1}
+      animateOnMount={false}
+      enableDynamicSizing={false}
+      enablePanDownToClose={false}
+      bottomInset={insets.bottom}
+      handleIndicatorStyle={{
+        backgroundColor: colors.textTertiary,
+        width: 40,
+      }}
+      backgroundStyle={{ backgroundColor: colors.white }}
+      backdropComponent={renderBackdrop}
+      onClose={handleSheetClose}
     >
       {device ? (
         <View
@@ -157,6 +162,6 @@ export function RevokeDeviceSheet({
           </View>
         </View>
       ) : null}
-    </ModalBottomSheet>
+    </BottomSheet>
   );
 }

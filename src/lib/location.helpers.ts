@@ -66,3 +66,96 @@ export function shouldUpdateLocation(
   const distance = haversineDistance(previous, next);
   return distance >= minDistance;
 }
+
+const METERS_PER_DEG_LAT = 111_320;
+
+function metersPerDegLng(lat: number): number {
+  return METERS_PER_DEG_LAT * Math.cos(toRad(lat));
+}
+
+function toEuclidean(
+  lng: number,
+  lat: number,
+  originLat: number,
+  originLng: number,
+): [number, number] {
+  const y = (lat - originLat) * METERS_PER_DEG_LAT;
+  const x = (lng - originLng) * metersPerDegLng(originLat);
+  return [x, y];
+}
+
+function fromEuclidean(
+  x: number,
+  y: number,
+  originLat: number,
+  originLng: number,
+): [number, number] {
+  const lat = originLat + y / METERS_PER_DEG_LAT;
+  const lng = originLng + x / metersPerDegLng(originLat);
+  return [lng, lat];
+}
+
+export interface PolylineSplitResult {
+  past: [number, number][];
+  future: [number, number][];
+}
+
+export function splitPolylineAtUser(
+  coords: [number, number][],
+  user: Coordinates,
+): PolylineSplitResult | null {
+  if (coords.length < 2) return null;
+
+  let minDist = Infinity;
+  let closestIdx = 0;
+  for (let i = 0; i < coords.length; i++) {
+    const d = haversineDistance(user, {
+      latitude: coords[i][1],
+      longitude: coords[i][0],
+    });
+    if (d < minDist) {
+      minDist = d;
+      closestIdx = i;
+    }
+  }
+
+  let bestLng = coords[closestIdx][0];
+  let bestLat = coords[closestIdx][1];
+  let bestIdx = closestIdx;
+
+  const segments: [number, number][] = [];
+  if (closestIdx > 0) segments.push([closestIdx - 1, closestIdx]);
+  if (closestIdx < coords.length - 1) segments.push([closestIdx, closestIdx + 1]);
+
+  const olat = user.latitude;
+  const olng = user.longitude;
+
+  for (const [ai, bi] of segments) {
+    const [ax, ay] = toEuclidean(coords[ai][0], coords[ai][1], olat, olng);
+    const [bx, by] = toEuclidean(coords[bi][0], coords[bi][1], olat, olng);
+    const abx = bx - ax;
+    const aby = by - ay;
+    const lenSq = abx * abx + aby * aby;
+    if (lenSq < 1e-6) continue;
+
+    const t = Math.max(
+      0,
+      Math.min(1, ((0 - ax) * abx + (0 - ay) * aby) / lenSq),
+    );
+    const [plng, plat] = fromEuclidean(ax + t * abx, ay + t * aby, olat, olng);
+    const d = haversineDistance(user, { latitude: plat, longitude: plng });
+    if (d < minDist) {
+      minDist = d;
+      bestLng = plng;
+      bestLat = plat;
+      bestIdx = ai;
+    }
+  }
+
+  const splitPt: [number, number] = [bestLng, bestLat];
+  const past: [number, number][] = [...coords.slice(0, bestIdx + 1), splitPt];
+  const future: [number, number][] = [splitPt, ...coords.slice(bestIdx + 1)];
+
+  if (past.length < 2 && future.length < 2) return null;
+  return { past, future };
+}
