@@ -10,6 +10,7 @@ import { RoutePolyline } from "@/components/maps/RoutePolyline";
 import { StopMarker } from "@/components/maps/StopMarker";
 import { TransferStopMarker } from "@/components/maps/TransferStopMarker";
 import { UserLocationMarker } from "@/components/maps/UserLocationMarker";
+import { GeoJSONSource, Layer } from "@maplibre/maplibre-react-native";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { OfflineBanner } from "@/components/ui/OfflineBanner";
 import { colors } from "@/constants/colors";
@@ -61,6 +62,7 @@ export default function HomeScreen() {
   const bottomSheetContent = useUIStore((s) => s.bottomSheetContent);
   const guidanceActive = useGuidanceStore((s) => s.isActive);
   const guidanceLegIndex = useGuidanceStore((s) => s.currentLegIndex);
+  const rerouteWalkLine = useGuidanceStore((s) => s.rerouteWalkLine);
   const isRoutingActive =
     bottomSheetContent === "routingResult" ||
     guidanceActive ||
@@ -307,6 +309,12 @@ export default function HomeScreen() {
     };
   }, [guidanceActive, guidanceLegIndex]);
 
+  useEffect(() => {
+    if (selectedOption) {
+      useGuidanceStore.getState().setRerouteWalkLine(null);
+    }
+  }, [selectedOption]);
+
   const showRouteBounds = isRouteActive && !guidanceActive;
   const showGuidanceBounds =
     guidanceActive &&
@@ -322,7 +330,7 @@ export default function HomeScreen() {
   return (
     <>
       <ErrorBoundary>
-      <View className="flex-1">
+      <View className="flex-1" style={{ paddingBottom: insets.bottom }}>
         <OfflineBanner />
       <TransitribeMap
         cameraCenter={cameraCenter}
@@ -370,11 +378,37 @@ export default function HomeScreen() {
             coordinate={[destination.longitude, destination.latitude]}
           />
         )}
+        {rerouteWalkLine && !selectedOption && (
+          <GeoJSONSource
+            id="reroute-walk"
+            data={{
+              type: "Feature",
+              properties: {},
+              geometry: {
+                type: "LineString",
+                coordinates: [rerouteWalkLine.from, rerouteWalkLine.to],
+              },
+            }}
+          >
+            <Layer
+              id="reroute-walk-layer"
+              type="line"
+              paint={{
+                "line-color": "#9CA3AF",
+                "line-width": 2,
+                "line-dasharray": [4, 4],
+                "line-opacity": 0.6,
+              }}
+              layout={{ "line-cap": "round", "line-join": "round" }}
+            />
+          </GeoJSONSource>
+        )}
         {selectedOption && (
           <>
             <RoutePolyline
               legs={selectedOption.legs}
               activeLegIndex={guidanceActive ? guidanceLegIndex : undefined}
+              userLocation={guidanceActive ? userLocation : undefined}
             />
             <TransferStopMarker legs={selectedOption.legs} />
             <RouteEndpointMarker option={selectedOption} />

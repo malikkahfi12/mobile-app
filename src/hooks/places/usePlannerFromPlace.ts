@@ -72,7 +72,7 @@ export function usePlannerFromPlace(place: PlaceDetailResponse | null) {
 
     useExplorerStore.getState().setSelectedPlace(null);
     setBottomSheet("planner");
-    router.replace("/(tabs)/home" as any);
+    router.replace("/home" as any);
     setIsRouting(false);
   }, [place, isRouting, setOrigin, setDestination, setBottomSheet, t]);
 

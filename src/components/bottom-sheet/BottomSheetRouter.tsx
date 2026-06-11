@@ -10,6 +10,7 @@ import { NearbyStopsSheet } from "./NearbyStopsSheet";
 import { PlannerSheet } from "./PlannerSheet";
 import { JourneyDetailSheet } from "./JourneyDetailSheet";
 import { RouteDetailSheet } from "./RouteDetailSheet";
+import { BusPickerSheet } from "@/components/guidance/BusPickerSheet";
 import type { NearbyStop } from "@/services/stops/stops.types";
 
 interface BottomSheetRouterProps {
@@ -40,6 +41,7 @@ export const BottomSheetRouter = memo(function BottomSheetRouter({
   const isPlannerActive = bottomSheetContent === "planner";
   const isJourneyDetailActive = bottomSheetContent === "journeyDetail";
   const isRouteDetailActive = bottomSheetContent === "routeDetail";
+  const isBusPickerActive = bottomSheetContent === "busPicker";
 
   const routingParams = useMemo(() => {
     if (!isRoutingActive || !origin?.stopId || !destination?.stopId)
@@ -58,7 +60,7 @@ export const BottomSheetRouter = memo(function BottomSheetRouter({
 
   const wasInRoutingRef = useRef(false);
   const inRoutingStates =
-    isRoutingActive || isGuidanceActive || isPlannerActive || isJourneyDetailActive;
+    isRoutingActive || isGuidanceActive || isPlannerActive || isJourneyDetailActive || isBusPickerActive;
 
   useEffect(() => {
     if (wasInRoutingRef.current && !inRoutingStates) {
@@ -108,6 +110,10 @@ export const BottomSheetRouter = memo(function BottomSheetRouter({
 
   if (isRouteDetailActive) {
     return <RouteDetailSheet />;
+  }
+
+  if (isBusPickerActive) {
+    return <BusPickerSheet />;
   }
 
   if (isGuidanceActive) {

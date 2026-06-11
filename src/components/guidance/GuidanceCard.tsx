@@ -159,9 +159,21 @@ export const GuidanceCard = memo(function GuidanceCard() {
     useUIStore.getState().closeBottomSheet();
   }, [endGuidance]);
 
+  const handlePlanNewRoute = useCallback(() => {
+    notifyTripEnded();
+    endGuidance();
+    useRouteStore.getState().clearSelection();
+    useLocationStore.getState().clearTrip();
+    useUIStore.getState().setBottomSheet("planner");
+  }, [endGuidance]);
+
   const handleReroute = useCallback(() => {
     reroute();
   }, [reroute]);
+
+  const handleWrongBus = useCallback(() => {
+    useUIStore.getState().setBottomSheet("busPicker");
+  }, []);
 
   const handleDismissDeviation = useCallback(() => {
     useGuidanceStore.getState().setDeviated(false);
@@ -426,7 +438,7 @@ export const GuidanceCard = memo(function GuidanceCard() {
           <View className="flex-row items-center gap-2">
             {currentLeg.type === "TRANSIT" && (
               <TouchableOpacity
-                onPress={handleReroute}
+                onPress={handleWrongBus}
                 className="flex-row items-center rounded-xl bg-gray-100 px-2.5 py-1.5"
                 hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
                 activeOpacity={0.7}
@@ -441,6 +453,21 @@ export const GuidanceCard = memo(function GuidanceCard() {
                 </Text>
               </TouchableOpacity>
             )}
+            <TouchableOpacity
+              onPress={handlePlanNewRoute}
+              className="flex-row items-center rounded-xl bg-gray-100 px-2.5 py-1.5"
+              hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name="compass-outline"
+                size={11}
+                color={colors.textSecondary}
+              />
+              <Text className="ml-1 text-[11px] text-gray-500">
+                {t("guidance.newRoute")}
+              </Text>
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={handleEnd}
               className="flex-row items-center rounded-xl bg-red-50 px-3 py-1.5"

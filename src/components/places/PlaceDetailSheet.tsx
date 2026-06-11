@@ -2,15 +2,17 @@ import { usePlaceDetail } from "@/hooks/places/usePlaceDetail";
 import { useExplorerStore } from "@/store/explorer.store";
 import { useUIStore } from "@/store/ui.store";
 import { Ionicons } from "@expo/vector-icons";
-import { ModalBottomSheet } from "@swmansion/react-native-bottom-sheet";
-import { memo, useCallback, useState } from "react";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
+import type { BottomSheetBackdropProps } from "@gorhom/bottom-sheet";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Linking,
   Platform,
-  ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -36,7 +38,10 @@ export const PlaceDetailSheet = memo(function PlaceDetailSheet() {
   const setSelectedPlace = useExplorerStore((s) => s.setSelectedPlace);
   const insets = useSafeAreaInsets();
 
-  const [index, setIndex] = useState(0);
+  const bottomSheetRef = useRef<BottomSheet>(null);
+
+  const snapPoints = useMemo(() => ["30%", "85%"], []);
+  const bottomInset = insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_MARGIN;
 
   const {
     data,
@@ -52,27 +57,37 @@ export const PlaceDetailSheet = memo(function PlaceDetailSheet() {
 
   const place = data?.data;
 
-  const [prevPlace, setPrevPlace] = useState(selectedPlace);
-  if (selectedPlace !== prevPlace) {
-    setPrevPlace(selectedPlace);
+  useEffect(() => {
     if (selectedPlace) {
-      setIndex(1);
+      bottomSheetRef.current?.snapToIndex(0);
+    } else {
+      bottomSheetRef.current?.close();
     }
-  }
+  }, [selectedPlace]);
 
-  const handleSettle = useCallback(
-    (nextIndex: number) => {
-      if (nextIndex === 0) {
-        setSelectedPlace(null);
-        closeBottomSheet();
-      }
-    },
-    [setSelectedPlace, closeBottomSheet],
-  );
+  const handleSheetClose = useCallback(() => {
+    setSelectedPlace(null);
+    if (useUIStore.getState().bottomSheetContent !== "planner") {
+      closeBottomSheet();
+    }
+  }, [setSelectedPlace, closeBottomSheet]);
 
   const handleClose = useCallback(() => {
-    setIndex(0);
+    bottomSheetRef.current?.close();
   }, []);
+
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        opacity={0.15}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
 
   const { handleRouteHere, isRouting } = usePlannerFromPlace(
     place ?? null,
@@ -93,27 +108,24 @@ export const PlaceDetailSheet = memo(function PlaceDetailSheet() {
   const showLoading = isLoading && !data;
 
   return (
-    <ModalBottomSheet
-      index={index}
-      onIndexChange={setIndex}
-      onSettle={handleSettle}
-      detents={[0, 400, "content"]}
-      scrimColor="rgba(0, 0, 0, 0.15)"
-      surface={
-        <View
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              backgroundColor: colors.white,
-              borderTopLeftRadius: 16,
-              borderTopRightRadius: 16,
-            },
-          ]}
-        />
-      }
+    <BottomSheet
+      ref={bottomSheetRef}
+      snapPoints={snapPoints}
+      index={-1}
+      animateOnMount={false}
+      enableDynamicSizing={false}
+      enablePanDownToClose={false}
+      bottomInset={bottomInset}
+      handleIndicatorStyle={{
+        backgroundColor: colors.textTertiary,
+        width: 40,
+      }}
+      backgroundStyle={{ backgroundColor: colors.white }}
+      backdropComponent={renderBackdrop}
+      onClose={handleSheetClose}
     >
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_BOTTOM_MARGIN + 24 }}
+      <BottomSheetScrollView
+        contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
       >
         {showLoading ? (
           <View className="items-center py-16">
@@ -250,7 +262,7 @@ export const PlaceDetailSheet = memo(function PlaceDetailSheet() {
             </View>
           </>
         ) : null}
-      </ScrollView>
-    </ModalBottomSheet>
+      </BottomSheetScrollView>
+    </BottomSheet>
   );
 });

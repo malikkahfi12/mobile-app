@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { MapCameraState } from "@/types/map.types";
 
-type BottomSheetContent = "none" | "stopDetail" | "routingResult" | "planner" | "journeyDetail" | "routeDetail";
+type BottomSheetContent = "none" | "stopDetail" | "routingResult" | "planner" | "journeyDetail" | "routeDetail" | "busPicker";
 
 interface UIState {
   bottomSheetContent: BottomSheetContent;

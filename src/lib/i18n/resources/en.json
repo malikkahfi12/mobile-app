@@ -270,7 +270,13 @@
     "destination": "Destination",
     "wrongBus": "Wrong bus?",
     "offRoute": "You appear to be off your planned route",
-    "rerouteFromHere": "Re-route"
+    "rerouteFromHere": "Re-route",
+    "newRoute": "New route",
+    "busPickerTitle": "Which bus are you on?",
+    "busPickerHint": "Select your line to re-route",
+    "busPickerLoading": "Finding nearby lines...",
+    "busPickerEmpty": "No transit lines found nearby",
+    "busPickerError": "Failed to load nearby lines"
   },
   "location": {
     "servicesDisabled": "Location services are disabled. Enable in device Settings.",

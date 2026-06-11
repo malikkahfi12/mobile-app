@@ -8,6 +8,7 @@ interface GuidanceState {
   contextualMessage: string | null;
   followMode: boolean;
   isDeviated: boolean;
+  rerouteWalkLine: { from: [number, number]; to: [number, number] } | null;
 
   startGuidance: (option: RouteOption) => void;
   nextStep: () => void;
@@ -16,6 +17,7 @@ interface GuidanceState {
   setContextualMessage: (message: string | null) => void;
   setFollowMode: (value: boolean) => void;
   setDeviated: (value: boolean) => void;
+  setRerouteWalkLine: (line: { from: [number, number]; to: [number, number] } | null) => void;
 }
 
 export const useGuidanceStore = create<GuidanceState>((set, get) => ({
@@ -25,6 +27,7 @@ export const useGuidanceStore = create<GuidanceState>((set, get) => ({
   contextualMessage: null,
   followMode: false,
   isDeviated: false,
+  rerouteWalkLine: null,
 
   startGuidance: (option) =>
     set({
@@ -34,6 +37,7 @@ export const useGuidanceStore = create<GuidanceState>((set, get) => ({
       contextualMessage: null,
       followMode: true,
       isDeviated: false,
+      rerouteWalkLine: null,
     }),
 
   nextStep: () => {
@@ -59,9 +63,11 @@ export const useGuidanceStore = create<GuidanceState>((set, get) => ({
       contextualMessage: null,
       followMode: false,
       isDeviated: false,
+      rerouteWalkLine: null,
     }),
 
   setContextualMessage: (message) => set({ contextualMessage: message }),
   setFollowMode: (value) => set({ followMode: value }),
   setDeviated: (value) => set({ isDeviated: value }),
+  setRerouteWalkLine: (line) => set({ rerouteWalkLine: line }),
 }));

@@ -1,11 +1,14 @@
 import { memo, useMemo } from "react";
 import { GeoJSONSource, Layer } from "@maplibre/maplibre-react-native";
 import type { Leg } from "@/services/routing/routing.types";
+import type { Coordinates } from "@/services/location/location.types";
+import { splitPolylineAtUser } from "@/lib/location.helpers";
 import { parseCoordinatePair } from "@/lib/map.helpers";
 
 interface RoutePolylineProps {
   legs: Leg[];
   activeLegIndex?: number;
+  userLocation?: Coordinates | null;
 }
 
 const WALK_COLOR = "#9CA3AF";
@@ -17,6 +20,7 @@ const ACTIVE_TRANSIT_WIDTH = 5;
 const WALK_DASH = [4, 4];
 const WALK_OPACITY = 0.6;
 const PAST_TRANSIT_OPACITY = 0.7;
+const PAST_ACTIVE_OPACITY = 0.4;
 
 const LINE_LAYOUT = {
   "line-cap": "round" as const,
@@ -54,17 +58,55 @@ interface LegSourceData {
 function buildLegSources(
   legs: Leg[],
   activeLegIndex?: number,
+  userLocation?: Coordinates | null,
 ): LegSourceData[] {
-  return legs
-    .map((leg, li): LegSourceData | null => {
-      const coords = getLineCoordinates(leg);
-      if (!coords) return null;
-      const isWalk = leg.type === "WALK";
-      const isPast = activeLegIndex != null && li < activeLegIndex;
-      const isActive = activeLegIndex != null && li === activeLegIndex && !isWalk;
-      const color = isPast ? PAST_COLOR : isWalk ? WALK_COLOR : TRANSIT_COLOR;
-      const opacity = isWalk ? WALK_OPACITY : isPast ? PAST_TRANSIT_OPACITY : 1;
-      return {
+  return legs.flatMap((leg, li) => {
+    const coords = getLineCoordinates(leg);
+    if (!coords) return [];
+
+    const isWalk = leg.type === "WALK";
+    const isPast = activeLegIndex != null && li < activeLegIndex;
+    const isActive = activeLegIndex != null && li === activeLegIndex && !isWalk;
+
+    if (isActive && userLocation && coords.length >= 2) {
+      const split = splitPolylineAtUser(coords, userLocation);
+      if (split) {
+        const entries: LegSourceData[] = [];
+
+        if (split.past.length >= 2) {
+          entries.push({
+            sourceId: `route-leg-${li}-past`,
+            layerId: `route-leg-layer-${li}-past`,
+            coords: split.past,
+            isWalk: false,
+            isPast: true,
+            color: PAST_COLOR,
+            opacity: PAST_ACTIVE_OPACITY,
+            width: TRANSIT_WIDTH,
+          });
+        }
+
+        if (split.future.length >= 2) {
+          entries.push({
+            sourceId: `route-leg-${li}-future`,
+            layerId: `route-leg-layer-${li}-future`,
+            coords: split.future,
+            isWalk: false,
+            isPast: false,
+            color: TRANSIT_COLOR,
+            opacity: 1,
+            width: ACTIVE_TRANSIT_WIDTH,
+          });
+        }
+
+        if (entries.length > 0) return entries;
+      }
+    }
+
+    const color = isPast ? PAST_COLOR : isWalk ? WALK_COLOR : TRANSIT_COLOR;
+    const opacity = isWalk ? WALK_OPACITY : isPast ? PAST_TRANSIT_OPACITY : 1;
+    return [
+      {
         sourceId: `route-leg-${li}`,
         layerId: `route-leg-layer-${li}`,
         coords,
@@ -77,18 +119,19 @@ function buildLegSources(
           : isWalk
             ? WALK_WIDTH
             : TRANSIT_WIDTH,
-      };
-    })
-    .filter((d): d is LegSourceData => d !== null);
+      },
+    ];
+  });
 }
 
 export const RoutePolyline = memo(function RoutePolyline({
   legs,
   activeLegIndex,
+  userLocation,
 }: RoutePolylineProps) {
   const legSources = useMemo(
-    () => buildLegSources(legs, activeLegIndex),
-    [legs, activeLegIndex],
+    () => buildLegSources(legs, activeLegIndex, userLocation),
+    [legs, activeLegIndex, userLocation],
   );
 
   return (

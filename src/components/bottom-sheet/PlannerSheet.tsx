@@ -21,6 +21,11 @@ import { useLocationStore } from "@/store/location.store";
 import { useUIStore } from "@/store/ui.store";
 import { colors } from "@/constants/colors";
 import { TAB_BAR_HEIGHT, TAB_BAR_BOTTOM_MARGIN } from "@/components/navigation/FloatingTabBar";
+import { haversineDistance } from "@/lib/location.helpers";
+import {
+  ORIGIN_AUTO_RE_RESOLVE_DISTANCE,
+  ORIGIN_AUTO_RE_RESOLVE_MIN_INTERVAL,
+} from "@/constants/location";
 import type { SearchStopResult, SearchPlaceResult } from "@/services/search/search.types";
 import type { TripLocation } from "@/store/location.store";
 
@@ -41,6 +46,7 @@ export const PlannerSheet = memo(function PlannerSheet() {
 
   const origin = useLocationStore((s) => s.origin);
   const destination = useLocationStore((s) => s.destination);
+  const currentLocation = useLocationStore((s) => s.currentLocation);
   const setOrigin = useLocationStore((s) => s.setOrigin);
   const setDestination = useLocationStore((s) => s.setDestination);
   const swapOriginDestination = useLocationStore((s) => s.swapOriginDestination);
@@ -61,6 +67,10 @@ export const PlannerSheet = memo(function PlannerSheet() {
   const searchCenter = useSearchCenter();
 
   const hasAutoSetOrigin = useRef(false);
+
+  const lastResolveCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
+  const lastResolveTimeRef = useRef<number>(0);
+  const autoResolvingRef = useRef(false);
 
   useEffect(() => {
     if (hasAutoSetOrigin.current) return;
@@ -90,11 +100,79 @@ export const PlannerSheet = memo(function PlannerSheet() {
           stopId: nearest.id,
           resolvedStopName: nearest.name,
         });
+        lastResolveCoordsRef.current = { lat: loc.latitude, lng: loc.longitude };
+        lastResolveTimeRef.current = Date.now();
       } else {
         setOriginResolveError(t("planner.noNearbyStopCurrent"));
       }
     });
   }, [origin, setOrigin, t]);
+
+  const originRef = useRef(origin);
+  originRef.current = origin;
+  const resolvingRef = useRef(resolvingOrigin);
+  resolvingRef.current = resolvingOrigin;
+
+  useEffect(() => {
+    if (!currentLocation) return;
+    if (originRef.current?.type !== "currentLocation") return;
+    if (!originRef.current?.stopId) return;
+    if (resolvingRef.current) return;
+    if (autoResolvingRef.current) return;
+
+    const last = lastResolveCoordsRef.current;
+    if (!last) {
+      if (originRef.current) {
+        lastResolveCoordsRef.current = {
+          lat: originRef.current.latitude,
+          lng: originRef.current.longitude,
+        };
+        lastResolveTimeRef.current = Date.now();
+      }
+      return;
+    }
+
+    const elapsed = Date.now() - lastResolveTimeRef.current;
+    if (elapsed < ORIGIN_AUTO_RE_RESOLVE_MIN_INTERVAL) return;
+
+    const distance = haversineDistance(
+      { latitude: last.lat, longitude: last.lng },
+      { latitude: currentLocation.latitude, longitude: currentLocation.longitude },
+    );
+    if (distance < ORIGIN_AUTO_RE_RESOLVE_DISTANCE) return;
+
+    autoResolvingRef.current = true;
+    lastResolveCoordsRef.current = {
+      lat: currentLocation.latitude,
+      lng: currentLocation.longitude,
+    };
+    lastResolveTimeRef.current = Date.now();
+    setResolvingOrigin(true);
+
+    resolveToStop(currentLocation.latitude, currentLocation.longitude)
+      .then((nearest) => {
+        const cur = useLocationStore.getState().origin;
+        if (cur?.type !== "currentLocation") return;
+
+        setResolvingOrigin(false);
+        autoResolvingRef.current = false;
+
+        if (nearest) {
+          setOrigin({
+            latitude: currentLocation.latitude,
+            longitude: currentLocation.longitude,
+            name: t("planner.currentLocation"),
+            type: "currentLocation",
+            stopId: nearest.id,
+            resolvedStopName: nearest.name,
+          });
+        }
+      })
+      .catch(() => {
+        setResolvingOrigin(false);
+        autoResolvingRef.current = false;
+      });
+  }, [currentLocation, setOrigin, setResolvingOrigin, t]);
 
   useEffect(() => {
     if (searchText.length === 0) {
@@ -254,6 +332,8 @@ export const PlannerSheet = memo(function PlannerSheet() {
           stopId: nearest.id,
           resolvedStopName: nearest.name,
         });
+        lastResolveCoordsRef.current = { lat: loc.latitude, lng: loc.longitude };
+        lastResolveTimeRef.current = Date.now();
       } else {
         setOriginResolveError(t("planner.noNearbyStopCurrent"));
       }

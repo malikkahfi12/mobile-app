@@ -270,7 +270,13 @@
     "destination": "Tujuan",
     "wrongBus": "Salah bus?",
     "offRoute": "Kamu berada di luar rute yang direncanakan",
-    "rerouteFromHere": "Rute ulang"
+    "rerouteFromHere": "Rute ulang",
+    "newRoute": "Rute baru",
+    "busPickerTitle": "Naik bus yang mana?",
+    "busPickerHint": "Pilih rute untuk merencanakan ulang",
+    "busPickerLoading": "Mencari rute terdekat...",
+    "busPickerEmpty": "Tidak ada rute transit di sekitar",
+    "busPickerError": "Gagal memuat rute terdekat"
   },
   "location": {
     "servicesDisabled": "Layanan lokasi dinonaktifkan. Aktifkan di Pengaturan perangkat.",
