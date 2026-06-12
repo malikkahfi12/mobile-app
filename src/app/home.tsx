@@ -38,7 +38,7 @@ import { useRouteStore } from "@/store/route.store";
 import { useUIStore } from "@/store/ui.store";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, Vibration, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
 export default function HomeScreen() {
@@ -330,7 +330,7 @@ export default function HomeScreen() {
   return (
     <>
       <ErrorBoundary>
-      <View className="flex-1" style={{ paddingBottom: insets.bottom }}>
+      <SafeAreaView className="flex-1" edges={['bottom']} style={{ backgroundColor: colors.background }}>
         <OfflineBanner />
       <TransitribeMap
         cameraCenter={cameraCenter}
@@ -347,6 +347,7 @@ export default function HomeScreen() {
         followAnimationMs={followAnimationMs}
         followZoom={followZoom}
         recenterTrigger={recenterTrigger}
+        contentInset={{ bottom: insets.bottom }}
       >
         {isGranted && <UserLocationMarker />}
         {nearbyStops?.map((stop) => (
@@ -480,7 +481,7 @@ export default function HomeScreen() {
         stopsError={stopsError}
         onRetryStops={refetchStops}
       />
-    </View>
+    </SafeAreaView>
     </ErrorBoundary>
     </>
   );
