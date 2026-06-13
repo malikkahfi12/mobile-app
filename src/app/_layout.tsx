@@ -8,7 +8,7 @@ import { QueryProvider } from "@/providers/QueryProvider";
 import { ensureDeviceKeypair } from "@/services/auth/deviceIdentity";
 import { restoreSession } from "@/services/auth/session";
 import { useAuthStore } from "@/store/auth.store";
-import { Stack, router } from "expo-router";
+import { Stack, router, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -16,7 +16,9 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function RootLayout() {
   const { t } = useTranslation();
-  const { toastVisible, toastMessage, dismissToast } = useExitBackHandler(true);
+  const segments = useSegments();
+  const isHome = segments.length === 1 && segments[0] === "home";
+  const { toastVisible, toastMessage, dismissToast } = useExitBackHandler(isHome);
 
   useEffect(() => {
     configureGoogleSignIn();

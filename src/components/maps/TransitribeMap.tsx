@@ -1,5 +1,5 @@
 import { type ReactNode, memo, useCallback } from "react";
-import { Map } from "@maplibre/maplibre-react-native";
+import { Map, type ViewPadding } from "@maplibre/maplibre-react-native";
 import { MapCamera } from "./MapCamera";
 import { MAP_STYLE, INITIAL_CENTER, INITIAL_ZOOM } from "@/constants/map";
 import type { Bounds } from "@/lib/map.helpers";
@@ -20,6 +20,7 @@ interface TransitribeMapProps {
   followAnimationMs?: number;
   followZoom?: number;
   recenterTrigger?: number;
+  contentInset?: ViewPadding;
 }
 
 export const TransitribeMap = memo(function TransitribeMap({
@@ -38,6 +39,7 @@ export const TransitribeMap = memo(function TransitribeMap({
   followAnimationMs,
   followZoom,
   recenterTrigger,
+  contentInset,
 }: TransitribeMapProps) {
   const handleRegionWillChange = useCallback(
     (feature: Record<string, unknown>) => {
@@ -54,7 +56,9 @@ export const TransitribeMap = memo(function TransitribeMap({
   return (
     <Map
       className="flex-1"
+      androidView="texture"
       mapStyle={MAP_STYLE}
+      contentInset={contentInset}
       onRegionWillChange={handleRegionWillChange as never}
     >
       <MapCamera
