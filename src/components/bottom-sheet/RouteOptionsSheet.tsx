@@ -21,6 +21,10 @@ import {
   isWalkOnly,
   getBestOptionIndex,
   mergeConsecutiveTransitLegs,
+  getStrategyLabel,
+  getStrategyColor,
+  getStrategyIcon,
+  formatWaitingTime,
 } from "@/lib/routing.helpers";
 import { colors } from "@/constants/colors";
 import { TAB_BAR_HEIGHT, TAB_BAR_BOTTOM_MARGIN } from "@/components/navigation/FloatingTabBar";
@@ -55,6 +59,24 @@ const RouteOptionCard = memo(function RouteOptionCard({
   const mergedLegs = useMemo(() => mergeConsecutiveTransitLegs(option.legs), [option.legs]);
   const transitLegs = mergedLegs.filter((l) => l.type === "TRANSIT");
   const legsSummary = getLegsSummary(mergedLegs);
+  const strategyLabel = getStrategyLabel(option.strategy);
+  const strategyColor = getStrategyColor(option.strategy);
+  const strategyIcon = getStrategyIcon(option.strategy);
+  const waitingLabel = formatWaitingTime(option.waitingDurationSeconds);
+
+  const altNames = useMemo(() => {
+    const seen = new Set<string>();
+    const names: string[] = [];
+    for (const leg of transitLegs) {
+      for (const r of leg.alternativeRoutes ?? []) {
+        if (!seen.has(r.routeName)) {
+          seen.add(r.routeName);
+          names.push(r.routeName);
+        }
+      }
+    }
+    return names;
+  }, [transitLegs]);
 
   return (
     <TouchableOpacity
@@ -74,7 +96,7 @@ const RouteOptionCard = memo(function RouteOptionCard({
       )}
 
       <View className="px-4 py-3.5">
-        <View className="flex-row items-center justify-between">
+        <View className="flex-row flex-wrap items-center gap-x-3 gap-y-1.5">
           <View className="flex-row items-center">
             <Ionicons
               name="time-outline"
@@ -86,52 +108,90 @@ const RouteOptionCard = memo(function RouteOptionCard({
             </Text>
           </View>
 
-          <View className="flex-row items-center gap-2">
-            {walkingDuration != null && (
-              <View className="flex-row items-center rounded-full bg-gray-100 px-2 py-0.5">
-                <Ionicons
-                  name="walk-outline"
-                  size={11}
-                  color={colors.textSecondary}
-                />
-                <Text className="ml-1 text-[11px] font-medium text-gray-500">
-                  {walkingDuration}{t("routes.minWalk")}
-                </Text>
-              </View>
-            )}
+          <View
+            className="flex-row items-center rounded-full px-2 py-0.5"
+            style={{ backgroundColor: strategyColor + "15" }}
+          >
+            <Ionicons
+              name={strategyIcon}
+              size={10}
+              color={strategyColor}
+            />
+            <Text className="ml-1 text-[10px] font-semibold" style={{ color: strategyColor }}>
+              {strategyLabel}
+            </Text>
+          </View>
+
+          {waitingLabel && (
             <View className="flex-row items-center rounded-full bg-gray-100 px-2 py-0.5">
               <Ionicons
-                name="swap-horizontal-outline"
+                name="hourglass-outline"
                 size={11}
                 color={colors.textSecondary}
               />
               <Text className="ml-1 text-[11px] font-medium text-gray-500">
-                {transfers === 0
-                  ? t("common.direct")
-                  : `${transfers} ${transfers > 1 ? t("routes.transfers") : t("routes.transfer")}`}
+                {waitingLabel}
               </Text>
             </View>
+          )}
+          {walkingDuration != null && (
+            <View className="flex-row items-center rounded-full bg-gray-100 px-2 py-0.5">
+              <Ionicons
+                name="walk-outline"
+                size={11}
+                color={colors.textSecondary}
+              />
+              <Text className="ml-1 text-[11px] font-medium text-gray-500">
+                {walkingDuration}{t("routes.minWalk")}
+              </Text>
+            </View>
+          )}
+          <View className="flex-row items-center rounded-full bg-gray-100 px-2 py-0.5">
+            <Ionicons
+              name="swap-horizontal-outline"
+              size={11}
+              color={colors.textSecondary}
+            />
+            <Text className="ml-1 text-[11px] font-medium text-gray-500">
+              {transfers === 0
+                ? t("common.direct")
+                : `${transfers} ${transfers > 1 ? t("routes.transfers") : t("routes.transfer")}`}
+            </Text>
           </View>
         </View>
 
         {transitLegs.length > 0 && (
-          <View className="mt-2 flex-row flex-wrap items-center gap-x-2 gap-y-1">
-            {transitLegs.map((leg, li) => (
-              <View
-                key={li}
-                className="flex-row items-center rounded-full bg-primary/10 px-2 py-0.5"
-              >
+          <>
+            <View className="mt-2 flex-row flex-wrap items-center gap-x-2 gap-y-1">
+              {transitLegs.map((leg, li) => (
+                <View
+                  key={li}
+                  className="flex-row items-center rounded-full bg-primary/10 px-2 py-0.5"
+                >
+                  <Ionicons
+                    name={getLegIcon(leg)}
+                    size={12}
+                    color={colors.primary}
+                  />
+                  <Text className="ml-1 text-[11px] font-medium text-primary">
+                    {leg.routeName || t("common.transit")}
+                  </Text>
+                </View>
+              ))}
+            </View>
+            {altNames.length > 0 && (
+              <View className="mt-1 flex-row items-center">
                 <Ionicons
-                  name={getLegIcon(leg)}
-                  size={12}
-                  color={colors.primary}
+                  name="git-branch-outline"
+                  size={10}
+                  color={colors.textTertiary}
                 />
-                <Text className="ml-1 text-[11px] font-medium text-primary">
-                  {leg.routeName || t("common.transit")}
+                <Text className="ml-0.5 text-[10px] text-gray-400" numberOfLines={1}>
+                  {t("journey.alsoServes")} {altNames.join(", ")}
                 </Text>
               </View>
-            ))}
-          </View>
+            )}
+          </>
         )}
 
         <Text className="mt-2 text-[13px] text-gray-400" numberOfLines={1}>

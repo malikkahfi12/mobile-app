@@ -30,4 +30,6 @@ export interface UnifiedSearchParams {
   lng?: number;
   limit?: number;
   lang?: string;
+  bbox?: string;
+  layers?: string;
 }

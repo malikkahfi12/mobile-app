@@ -33,11 +33,22 @@ export function mergeConsecutiveTransitLegs(legs: Leg[]): MergedLeg[] {
           prev.geometry = leg.geometry;
         }
         prev.intermediateStops!.push(leg.toStopName);
+        if (leg.alternativeRoutes) {
+          prev.alternativeRoutes = prev.alternativeRoutes ?? [];
+          const existingIds = new Set(prev.alternativeRoutes.map((r) => r.routeId));
+          for (const r of leg.alternativeRoutes) {
+            if (r.routeId !== leg.routeId && !existingIds.has(r.routeId)) {
+              prev.alternativeRoutes.push(r);
+              existingIds.add(r.routeId);
+            }
+          }
+        }
         continue;
       }
     }
 
-    const copy: MergedLeg = { ...leg };
+    const filtered = leg.alternativeRoutes?.filter((r) => r.routeId !== leg.routeId);
+    const copy: MergedLeg = { ...leg, alternativeRoutes: filtered?.length ? filtered : undefined };
     if (leg.type === "TRANSIT" && leg.routeId) {
       copy.intermediateStops = [leg.fromStopName, leg.toStopName];
     }
@@ -69,6 +80,10 @@ export function getTransferCount(legs: Leg[]): number {
   let count = 0;
   let prevRouteId: string | null | undefined;
   for (const leg of legs) {
+    if (leg.type === "TRANSFER") {
+      count++;
+      continue;
+    }
     if (leg.type !== "TRANSIT") continue;
     if (prevRouteId != null && prevRouteId !== leg.routeId) {
       count++;
@@ -104,8 +119,9 @@ export function getBestOptionIndex(options: RouteOption[]): number | null {
 
 export function getLegIcon(
   leg: Leg,
-): "walk-outline" | "train-outline" | "subway-outline" | "bus-outline" {
+): "walk-outline" | "train-outline" | "subway-outline" | "bus-outline" | "swap-horizontal-outline" {
   if (leg.type === "WALK") return "walk-outline";
+  if (leg.type === "TRANSFER") return "swap-horizontal-outline";
 
   const name = (leg.routeName ?? "").toLowerCase();
   if (name.includes("train") || name.includes("rail") || name.includes("mrt"))
@@ -128,6 +144,9 @@ export function getLegLabel(leg: Leg): string {
       return `${i18n.t("common.walk")} ${dist}`;
     }
     return i18n.t("common.walk");
+  }
+  if (leg.type === "TRANSFER") {
+    return i18n.t("journey.transferStation");
   }
   return leg.routeName || i18n.t("common.transit");
 }
@@ -255,6 +274,56 @@ export function countLegStops(
   if (fromIdx === -1 || toIdx === -1) return null;
   const diff = Math.abs(toIdx - fromIdx);
   return diff;
+}
+
+export function getStrategyLabel(strategy: string): string {
+  switch (strategy) {
+    case "FASTEST":
+      return i18n.t("routes.strategyFastest");
+    case "FEWER_TRANSITS":
+      return i18n.t("routes.strategyFewerTransfers");
+    case "LESS_WALKING":
+      return i18n.t("routes.strategyLessWalking");
+    default:
+      return strategy;
+  }
+}
+
+export function getStrategyColor(strategy: string): string {
+  switch (strategy) {
+    case "FASTEST":
+      return "#22C55E";
+    case "FEWER_TRANSITS":
+      return "#3B82F6";
+    case "LESS_WALKING":
+      return "#F59E0B";
+    default:
+      return "#6B7280";
+  }
+}
+
+export function getStrategyIcon(strategy: string): "flash-outline" | "layers-outline" | "walk-outline" | "help-circle-outline" {
+  switch (strategy) {
+    case "FASTEST":
+      return "flash-outline";
+    case "FEWER_TRANSITS":
+      return "layers-outline";
+    case "LESS_WALKING":
+      return "walk-outline";
+    default:
+      return "help-circle-outline";
+  }
+}
+
+export function formatWaitingTime(seconds: number): string | null {
+  if (seconds <= 0) return null;
+  const min = Math.round(seconds / 60);
+  return `${min} ${i18n.t("routes.minWait")}`;
+}
+
+export function getAlternativeRoutesLabel(alternativeRoutes?: { routeId: string; routeName: string }[]): string | null {
+  if (!alternativeRoutes || alternativeRoutes.length === 0) return null;
+  return alternativeRoutes.map((r) => r.routeName).join(" / ");
 }
 
 function dedupeCoords(coords: [number, number][]): [number, number][] {

@@ -33,6 +33,7 @@ export interface PlaceSearchParams {
   lng?: number;
   limit?: number;
   lang?: string;
+  layers?: string;
 }
 
 export interface PlaceExploreParams {

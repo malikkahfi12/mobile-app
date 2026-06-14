@@ -212,7 +212,11 @@
     "detailsFailed": "Failed to load route details.",
     "minWalk": " min walk",
     "transfer": "transfer",
-    "transfers": "transfers"
+    "transfers": "transfers",
+    "strategyFastest": "Fastest",
+    "strategyFewerTransfers": "Fewer Transfers",
+    "strategyLessWalking": "Less Walking",
+    "minWait": "min wait"
   },
   "stops": {
     "nearbyStops": "Nearby Stops",
@@ -240,7 +244,10 @@
     "from": "From",
     "to": "To",
     "linePrefix": "Line ",
-    "continueSameBus": "Continue on {{route}}"
+    "continueSameBus": "Continue on {{route}}",
+    "transferStation": "Transfer",
+    "waitingTime": "Waiting",
+    "alsoServes": "Also:"
   },
   "guidance": {
     "walkToStop": "Walk to stop",

@@ -23,6 +23,11 @@ import {
   getLegsSummary,
   getTransferCount,
   mergeConsecutiveTransitLegs,
+  getStrategyLabel,
+  getStrategyColor,
+  getStrategyIcon,
+  getAlternativeRoutesLabel,
+  formatETATime,
 } from "@/lib/routing.helpers";
 import type { MergedLeg } from "@/lib/routing.helpers";
 import { TAB_BAR_HEIGHT, TAB_BAR_BOTTOM_MARGIN } from "@/components/navigation/FloatingTabBar";
@@ -38,30 +43,49 @@ const LegTimelineRow = memo(function LegTimelineRow({
 }) {
   const { t } = useTranslation();
   const isWalk = leg.type === "WALK";
+  const isTransfer = leg.type === "TRANSFER";
+  const isTransit = leg.type === "TRANSIT";
   const durationMin = Math.round(leg.durationSeconds / 60);
   const iconName = getLegIcon(leg);
   const label = getLegLabel(leg);
   const hasIntermediateStops =
-    !isWalk && leg.intermediateStops && leg.intermediateStops.length > 2;
+    !isWalk && !isTransfer && leg.intermediateStops && leg.intermediateStops.length > 2;
+  const altRoutesLabel = isTransit ? getAlternativeRoutesLabel(leg.alternativeRoutes) : null;
+  const departureTime = leg.departureTimeSeconds != null ? formatETATime(leg.departureTimeSeconds) : null;
+  const arrivalTime = leg.arrivalTimeSeconds != null ? formatETATime(leg.arrivalTimeSeconds) : null;
 
   const formattedRoute =
     leg.routeName ? `${t("journey.linePrefix")}${leg.routeName}` : "";
+
+  const iconBgColor = isWalk
+    ? "bg-gray-100"
+    : isTransfer
+      ? "bg-amber-50"
+      : "bg-primary/10";
+  const iconColor = isWalk
+    ? colors.textSecondary
+    : isTransfer
+      ? "#B45309"
+      : colors.primary;
+  const lineColor = isWalk
+    ? "bg-gray-200"
+    : isTransfer
+      ? "bg-amber-200"
+      : "bg-gray-200";
 
   return (
     <View className="flex-row">
       <View className="items-center mr-4 w-8">
         <View
-          className={`h-8 w-8 items-center justify-center rounded-full ${
-            isWalk ? "bg-gray-100" : "bg-primary/10"
-          }`}
+          className={`h-8 w-8 items-center justify-center rounded-full ${iconBgColor}`}
         >
           <Ionicons
             name={iconName}
             size={16}
-            color={isWalk ? colors.textSecondary : colors.primary}
+            color={iconColor}
           />
         </View>
-        {!isLast && <View className="flex-1 w-0.5 bg-gray-200 my-1" />}
+        {!isLast && <View className={`flex-1 w-0.5 my-1 ${lineColor}`} />}
       </View>
 
       <View className="flex-1 pb-4">
@@ -74,6 +98,11 @@ const LegTimelineRow = memo(function LegTimelineRow({
               {durationMin} min
             </Text>
           )}
+          {durationMin === 0 && isTransfer && (
+            <Text className="text-xs font-medium text-amber-500">
+              {t("common.direct")}
+            </Text>
+          )}
         </View>
 
         {isWalk && leg.distanceMeters != null && (
@@ -82,10 +111,50 @@ const LegTimelineRow = memo(function LegTimelineRow({
           </Text>
         )}
 
-        {!isWalk && leg.routeName && (
+        {isTransit && leg.routeName && (
           <Text className="text-xs text-primary mt-0.5">
             {formattedRoute}
           </Text>
+        )}
+
+        {isTransit && (departureTime || arrivalTime) && (
+          <Text className="text-xs text-gray-400 mt-0.5">
+            {departureTime && arrivalTime
+              ? `${departureTime} — ${arrivalTime}`
+              : departureTime || arrivalTime}
+          </Text>
+        )}
+
+        {isTransit && leg.headsign && (
+          <Text className="text-xs text-gray-400 mt-0.5">
+            {t("guidance.toward", { headsign: leg.headsign })}
+          </Text>
+        )}
+
+        {altRoutesLabel && (
+          <View className="flex-row items-center mt-1">
+            <Ionicons name="git-branch-outline" size={10} color={colors.textTertiary} />
+            <Text className="ml-1 text-[11px] text-gray-400">
+              {t("journey.alsoServes")} {altRoutesLabel}
+            </Text>
+          </View>
+        )}
+
+        {isTransfer && (
+          <View className="mt-2 bg-amber-50 rounded-lg px-3 py-2 border border-amber-100">
+            <View className="flex-row items-center">
+              <Text className="text-xs font-medium text-amber-600 w-12">{t("journey.from")}</Text>
+              <Text className="text-xs text-amber-800 flex-1" numberOfLines={1}>
+                {leg.fromStopName}
+              </Text>
+            </View>
+            <View className="flex-row items-center mt-1">
+              <Text className="text-xs font-medium text-amber-600 w-12">{t("journey.to")}</Text>
+              <Text className="text-xs text-amber-800 flex-1" numberOfLines={1}>
+                {leg.toStopName}
+              </Text>
+            </View>
+          </View>
         )}
 
         {hasIntermediateStops ? (
@@ -113,20 +182,22 @@ const LegTimelineRow = memo(function LegTimelineRow({
             ))}
           </View>
         ) : (
-          <View className="mt-2 bg-gray-50 rounded-lg px-3 py-2">
-            <View className="flex-row items-center">
-              <Text className="text-xs font-medium text-gray-500 w-12">{t("journey.from")}</Text>
-              <Text className="text-xs text-gray-700 flex-1" numberOfLines={1}>
-                {leg.fromStopName}
-              </Text>
+          !isTransfer && (
+            <View className="mt-2 bg-gray-50 rounded-lg px-3 py-2">
+              <View className="flex-row items-center">
+                <Text className="text-xs font-medium text-gray-500 w-12">{t("journey.from")}</Text>
+                <Text className="text-xs text-gray-700 flex-1" numberOfLines={1}>
+                  {leg.fromStopName}
+                </Text>
+              </View>
+              <View className="flex-row items-center mt-1">
+                <Text className="text-xs font-medium text-gray-500 w-12">{t("journey.to")}</Text>
+                <Text className="text-xs text-gray-700 flex-1" numberOfLines={1}>
+                  {leg.toStopName}
+                </Text>
+              </View>
             </View>
-            <View className="flex-row items-center mt-1">
-              <Text className="text-xs font-medium text-gray-500 w-12">{t("journey.to")}</Text>
-              <Text className="text-xs text-gray-700 flex-1" numberOfLines={1}>
-                {leg.toStopName}
-              </Text>
-            </View>
-          </View>
+          )
         )}
       </View>
     </View>
@@ -137,10 +208,12 @@ function JourneySummaryBar({
   totalDurationMin,
   transfers,
   walkingDurationMin,
+  waitingDurationMin,
 }: {
   totalDurationMin: number;
   transfers: number;
   walkingDurationMin: number | null;
+  waitingDurationMin: number | null;
 }) {
   const { t } = useTranslation();
   const items: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string }[] = [];
@@ -162,6 +235,14 @@ function JourneySummaryBar({
       icon: "walk-outline",
       label: t("journey.walking"),
       value: `${walkingDurationMin} min`,
+    });
+  }
+
+  if (waitingDurationMin != null) {
+    items.push({
+      icon: "hourglass-outline",
+      label: t("journey.waitingTime"),
+      value: `${waitingDurationMin} min`,
     });
   }
 
@@ -208,8 +289,16 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
     option && option.walkingDurationSeconds > 0
       ? Math.round(option.walkingDurationSeconds / 60)
       : null;
+  const waitingDurationMin =
+    option && option.waitingDurationSeconds > 0
+      ? Math.round(option.waitingDurationSeconds / 60)
+      : null;
   const transfers = mergedLegs.length > 0 ? getTransferCount(mergedLegs) : 0;
   const legsSummary = mergedLegs.length > 0 ? getLegsSummary(mergedLegs) : "";
+  const strategyLabel = option ? getStrategyLabel(option.strategy) : "";
+  const strategyColor = option ? getStrategyColor(option.strategy) : colors.primary;
+  const strategyIcon = option ? getStrategyIcon(option.strategy) : "help-circle-outline";
+  const warnings = journeyResult?.warnings;
 
   const originName = origin?.name;
   const destinationName = destination?.name;
@@ -329,12 +418,46 @@ export const JourneyDetailSheet = memo(function JourneyDetailSheet() {
         {option && (
           <>
             <View className="px-4 pt-4 pb-2">
+              <View className="flex-row items-center mb-3">
+                <View
+                  className="flex-row items-center rounded-full px-2.5 py-1"
+                  style={{ backgroundColor: strategyColor + "15" }}
+                >
+                  <Ionicons
+                    name={strategyIcon}
+                    size={12}
+                    color={strategyColor}
+                  />
+                  <Text className="ml-1 text-[11px] font-semibold" style={{ color: strategyColor }}>
+                    {strategyLabel}
+                  </Text>
+                </View>
+              </View>
               <JourneySummaryBar
                 totalDurationMin={totalDurationMin}
                 transfers={transfers}
                 walkingDurationMin={walkingDurationMin}
+                waitingDurationMin={waitingDurationMin}
               />
             </View>
+
+            {warnings && warnings.length > 0 && (
+              <View className="mx-4 mt-1 mb-2 rounded-xl bg-amber-50 px-4 py-3 border border-amber-200">
+                {warnings.map((warning, wi) => (
+                  <View key={wi} className="flex-row items-start mb-1 last:mb-0">
+                    <Ionicons
+                      name="warning-outline"
+                      size={14}
+                      color="#B45309"
+                      style={{ marginTop: 1 }}
+                    />
+                    <Text className="ml-2 text-xs text-amber-800 flex-1">
+                      {warning}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
 
             {originName && destinationName ? (
               <View className="px-4 mb-1">

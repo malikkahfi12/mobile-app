@@ -120,22 +120,59 @@ export function useGuidanceStepProgression({
       const nextLeg = isLastLeg ? null : legs[currentLegIndex + 1];
 
       if (currentLegIndex !== trackedLegIndexRef.current) {
-        if (!autoAdvancingRef.current) {
-          stabilityRef.current = 0;
-          lastAdvanceRef.current = 0;
-          deviationCounterRef.current = 0;
-          useGuidanceStore.getState().setDeviated(false);
-          if (lastMessageRef.current !== null) {
-            useGuidanceStore.getState().setContextualMessage(null);
-            lastMessageRef.current = null;
-          }
+        stabilityRef.current = 0;
+        lastAdvanceRef.current = 0;
+        deviationCounterRef.current = 0;
+        useGuidanceStore.getState().setDeviated(false);
+        if (lastMessageRef.current !== null) {
+          useGuidanceStore.getState().setContextualMessage(null);
+          lastMessageRef.current = null;
         }
         trackedLegIndexRef.current = currentLegIndex;
         autoAdvancingRef.current = false;
       }
 
+      if (currentLeg.type === "TRANSFER") {
+        if (!isLastLeg) {
+          const now = Date.now();
+          if (now - lastAdvanceRef.current >= GUIDANCE_AUTO_ADVANCE_MIN_INTERVAL) {
+            lastAdvanceRef.current = now;
+            lastMessageRef.current = null;
+            useGuidanceStore.getState().nextStep();
+            trackedLegIndexRef.current = useGuidanceStore.getState().currentLegIndex;
+          }
+        }
+        return;
+      }
+
       const legEndCoords = getLegEndCoordinate(currentLeg);
-      if (!legEndCoords) return;
+      if (!legEndCoords) {
+        if (!isLastLeg && nextLeg) {
+          const nextStart = parseCoordinatePair(nextLeg.fromCoordinates);
+          if (nextStart) {
+            const distance = haversineDistance(
+              { latitude: user.latitude, longitude: user.longitude },
+              { latitude: nextStart[1], longitude: nextStart[0] },
+            );
+            if (distance <= GUIDANCE_APPROACHING_RADIUS) {
+              stabilityRef.current += 1;
+              if (
+                stabilityRef.current >= GUIDANCE_AUTO_ADVANCE_STABILITY &&
+                Date.now() - lastAdvanceRef.current >= GUIDANCE_AUTO_ADVANCE_MIN_INTERVAL
+              ) {
+                lastAdvanceRef.current = Date.now();
+                stabilityRef.current = 0;
+                lastMessageRef.current = null;
+                useGuidanceStore.getState().nextStep();
+                trackedLegIndexRef.current = useGuidanceStore.getState().currentLegIndex;
+              }
+            } else {
+              stabilityRef.current = 0;
+            }
+          }
+        }
+        return;
+      }
 
       const distance = haversineDistance(
         { latitude: user.latitude, longitude: user.longitude },

@@ -1,4 +1,4 @@
-export type LegType = "WALK" | "TRANSIT";
+export type LegType = "WALK" | "TRANSIT" | "TRANSFER";
 
 export interface Leg {
   type: LegType;
@@ -16,6 +16,7 @@ export interface Leg {
   headsign?: string;
   departureTimeSeconds?: number;
   arrivalTimeSeconds?: number;
+  alternativeRoutes?: { routeId: string; routeName: string }[];
   geometry?: { type: "LineString"; coordinates: [number, number][] };
 }
 
@@ -31,6 +32,9 @@ export interface RouteOption {
 export interface RoutingResult {
   fromStopId: string;
   toStopId: string;
+  fromStopName: string;
+  toStopName: string;
+  warnings?: string[];
   options: RouteOption[];
 }
 
