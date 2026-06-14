@@ -40,8 +40,8 @@ export const queryKeys = {
 
   search: {
     all: ["search"] as const,
-    unified: (query: string, lat?: number, lng?: number, lang?: string) =>
-      [...queryKeys.search.all, "unified", { query, lat, lng, lang }] as const,
+    unified: (query: string, lat?: number, lng?: number, lang?: string, layers?: string) =>
+      [...queryKeys.search.all, "unified", { query, lat, lng, lang, layers }] as const,
   },
 
   trips: {
@@ -52,8 +52,8 @@ export const queryKeys = {
 
   places: {
     all: ["places"] as const,
-    search: (q: string, bbox?: string, lang?: string) =>
-      [...queryKeys.places.all, "search", { q, bbox, lang }] as const,
+    search: (q: string, bbox?: string, lang?: string, layers?: string) =>
+      [...queryKeys.places.all, "search", { q, bbox, lang, layers }] as const,
     explore: (bbox: string, category?: string) =>
       [...queryKeys.places.all, "explore", { bbox, category }] as const,
     detail: (idOrName: string, lat?: number, lng?: number) =>

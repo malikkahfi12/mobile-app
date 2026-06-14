@@ -9,12 +9,13 @@ export function usePlaceSearch(query: string, lat?: number, lng?: number) {
   const locale = useLocaleStore((s) => s.locale);
   const canSearch = query.length >= 2;
   const bbox = lat != null && lng != null ? buildBbox(lat, lng, 50) : undefined;
+  const layers = "poi,address,locality";
 
   return useQuery<{ data: ExplorePlaceItem[]; meta: { query: string; count: number } }>({
-    queryKey: queryKeys.places.search(query, bbox, locale),
+    queryKey: queryKeys.places.search(query, bbox, locale, layers),
     queryFn: canSearch
       ? async () => {
-          const result = await searchPlaces({ q: query, bbox, limit: 20, lang: locale });
+          const result = await searchPlaces({ q: query, bbox, limit: 20, lang: locale, layers });
           return { data: result, meta: { query, count: result.length } };
         }
       : skipToken,

@@ -212,7 +212,11 @@
     "detailsFailed": "Gagal memuat detail rute.",
     "minWalk": " mnt jalan",
     "transfer": "transit",
-    "transfers": "transit"
+    "transfers": "transit",
+    "strategyFastest": "Tercepat",
+    "strategyFewerTransfers": "Sedikit Transit",
+    "strategyLessWalking": "Minim Jalan",
+    "minWait": "mnt tunggu"
   },
   "stops": {
     "nearbyStops": "Halte Terdekat",
@@ -240,7 +244,10 @@
     "from": "Dari",
     "to": "Ke",
     "linePrefix": "Jalur ",
-    "continueSameBus": "Lanjut di {{route}}"
+    "continueSameBus": "Lanjut di {{route}}",
+    "transferStation": "Transit",
+    "waitingTime": "Tunggu",
+    "alsoServes": "Juga:"
   },
   "guidance": {
     "walkToStop": "Jalan ke halte",

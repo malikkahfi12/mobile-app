@@ -407,79 +407,74 @@ export const GuidanceCard = memo(function GuidanceCard() {
           </View>
         )}
 
-        <View className="flex-row items-center justify-between mt-3">
-          <View className="flex-row items-center gap-3">
-            <View className="flex-row items-center">
-              <Ionicons name="time-outline" size={11} color={colors.textSecondary} />
-              <Text className="ml-1 text-[11px] text-gray-500">
-                {totalMin} min
-              </Text>
-            </View>
-            <View className="flex-row items-center">
-              <Ionicons
-                name="swap-horizontal-outline"
-                size={11}
-                color={colors.textSecondary}
-              />
-              <Text className="ml-1 text-[11px] text-gray-500">
-                {transferCount === 0 ? t("common.direct") : `${transferCount} ${t("routes.transfers")}`}
-              </Text>
-            </View>
-            {remainingMin > 0 && (
-              <View className="flex-row items-center">
-                <Ionicons name="trending-down" size={11} color={colors.textSecondary} />
-                <Text className="ml-1 text-[11px] text-gray-500">
-                  {remainingMin}{t("guidance.mLeft")}
-                </Text>
-              </View>
-            )}
+        <View className="flex-row flex-wrap items-center gap-x-3 gap-y-1.5 mt-3">
+          <View className="flex-row items-center">
+            <Ionicons name="time-outline" size={11} color={colors.textSecondary} />
+            <Text className="ml-1 text-[11px] text-gray-500">
+              {totalMin} min
+            </Text>
           </View>
+          <View className="flex-row items-center">
+            <Ionicons
+              name="swap-horizontal-outline"
+              size={11}
+              color={colors.textSecondary}
+            />
+            <Text className="ml-1 text-[11px] text-gray-500">
+              {transferCount === 0 ? t("common.direct") : `${transferCount} ${t("routes.transfers")}`}
+            </Text>
+          </View>
+          {remainingMin > 0 && (
+            <View className="flex-row items-center">
+              <Ionicons name="trending-down" size={11} color={colors.textSecondary} />
+              <Text className="ml-1 text-[11px] text-gray-500">
+                {remainingMin}{t("guidance.mLeft")}
+              </Text>
+            </View>
+          )}
+        </View>
 
-          <View className="flex-row items-center gap-2">
-            {currentLeg.type === "TRANSIT" && (
-              <TouchableOpacity
-                onPress={handleWrongBus}
-                className="flex-row items-center rounded-xl bg-gray-100 px-2.5 py-1.5"
-                hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name="refresh-outline"
-                  size={11}
-                  color={colors.textSecondary}
-                />
-                <Text className="ml-1 text-[11px] text-gray-500">
-                  {t("guidance.wrongBus")}
-                </Text>
-              </TouchableOpacity>
-            )}
+        <View className="flex-row items-center gap-2 mt-2.5">
+          {currentLeg.type === "TRANSIT" && (
             <TouchableOpacity
-              onPress={handlePlanNewRoute}
-              className="flex-row items-center rounded-xl bg-gray-100 px-2.5 py-1.5"
-              hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
+              onPress={handleWrongBus}
+              className="flex-row items-center justify-center rounded-xl bg-gray-100 px-2.5 py-2 flex-1"
               activeOpacity={0.7}
             >
               <Ionicons
-                name="compass-outline"
-                size={11}
+                name="refresh-outline"
+                size={12}
                 color={colors.textSecondary}
               />
-              <Text className="ml-1 text-[11px] text-gray-500">
-                {t("guidance.newRoute")}
+              <Text className="ml-1 text-[11px] font-medium text-gray-600">
+                {t("guidance.wrongBus")}
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleEnd}
-              className="flex-row items-center rounded-xl bg-red-50 px-3 py-1.5"
-              hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="stop" size={12} color={colors.error} />
-              <Text className="ml-1 text-xs font-semibold text-red-500">
-                {t("guidance.end")}
-              </Text>
-            </TouchableOpacity>
-          </View>
+          )}
+          <TouchableOpacity
+            onPress={handlePlanNewRoute}
+            className="flex-row items-center justify-center rounded-xl bg-gray-100 px-2.5 py-2 flex-1"
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="compass-outline"
+              size={12}
+              color={colors.textSecondary}
+            />
+            <Text className="ml-1 text-[11px] font-medium text-gray-600">
+              {t("guidance.newRoute")}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleEnd}
+            className="flex-row items-center justify-center rounded-xl bg-red-50 px-3 py-2 flex-1"
+            activeOpacity={0.7}
+          >
+            <Ionicons name="stop" size={12} color={colors.error} />
+            <Text className="ml-1 text-[11px] font-semibold text-red-500">
+              {t("guidance.end")}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>

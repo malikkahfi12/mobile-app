@@ -7,11 +7,12 @@ import type { UnifiedSearchResponse } from "@/services/search/search.types";
 export function useUnifiedSearch(query: string, lat?: number, lng?: number) {
   const locale = useLocaleStore((s) => s.locale);
   const canSearch = query.length >= 2;
+  const layers = "poi,address,locality";
 
   return useQuery<UnifiedSearchResponse>({
-    queryKey: queryKeys.search.unified(query, lat, lng, locale),
+    queryKey: queryKeys.search.unified(query, lat, lng, locale, layers),
     queryFn: canSearch
-      ? () => unifiedSearch({ q: query, lat, lng, limit: 5, lang: locale })
+      ? () => unifiedSearch({ q: query, lat, lng, limit: 5, lang: locale, layers })
       : skipToken,
     enabled: canSearch,
     staleTime: 1000 * 60 * 2,
